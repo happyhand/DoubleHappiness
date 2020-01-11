@@ -6,6 +6,9 @@ using System.Linq;
 
 namespace MGT.API.Controllers
 {
+    /// <summary>
+    /// 測試 API
+    /// </summary>
     [ApiController]
     [Route("[controller]")]
     public class ApiController : ControllerBase

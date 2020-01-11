@@ -17,7 +17,7 @@ namespace MGT.Repository.Managers
         /// <summary>
         /// Mgt DataBase 編號
         /// </summary>
-        private const int MgtDataBase = 2;
+        private const int MgtDataBase = 3;
 
         /// <summary>
         /// connectionMultiplexer

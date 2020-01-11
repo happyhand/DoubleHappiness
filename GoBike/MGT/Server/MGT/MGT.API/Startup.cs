@@ -16,19 +16,36 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace MGT.API
 {
+    /// <summary>
+    /// Startup
+    /// </summary>
     public class Startup
     {
+        /// <summary>
+        /// Startup
+        /// </summary>
+        /// <param name="configuration">configuration</param>
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
 
+        /// <summary>
+        /// Configuration
+        /// </summary>
         public IConfiguration Configuration { get; }
 
+        /// <summary>
+        /// Configure
+        /// </summary>
+        /// <param name="app">app</param>
+        /// <param name="env">env</param>
+        /// <param name="mgtdb">mgtdb</param>
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, Mgtdb mgtdb)
         {
@@ -41,9 +58,10 @@ namespace MGT.API
                 app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection(); // 強制使用 HTTPS Cors (先註解掉，等有憑證再回來試)
             app.UseRouting();
             app.UseCors("ProductNoPolicy"); // 必須建立在  app.UseMvc 之前
+            app.UseAuthentication();
             app.UseAuthorization();
             app.UseEndpoints(endpoints =>
             {
@@ -69,6 +87,10 @@ namespace MGT.API
             #endregion Swagger
         }
 
+        /// <summary>
+        /// ConfigureServices
+        /// </summary>
+        /// <param name="services">services</param>
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
@@ -84,11 +106,9 @@ namespace MGT.API
                 // CorsPolicy 是自訂的 Policy 名稱
                 options.AddPolicy("ProductNoPolicy", policy =>
                 {
-                    policy.WithOrigins("http://saboteur.hopto.org:18593")
-                          .AllowAnyOrigin()
+                    policy.WithOrigins("http://mgtgobike.hopto.org:18595")
                           .AllowAnyHeader()
-                          .AllowAnyMethod()
-                          .AllowCredentials();
+                          .AllowAnyMethod();
                 });
             });
         }
@@ -156,7 +176,7 @@ namespace MGT.API
         {
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info { Title = "GoBike MGT", Version = "v1", Description = "mgtgobike.hopto.org:18595" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1", Description = "mgtgobike.hopto.org:18595" });
                 var basePath = Path.GetDirectoryName(typeof(Program).Assembly.Location);
                 var xmlPath = Path.Combine(basePath, "GoBike.MGT.Swagger.xml");
                 c.IncludeXmlComments(xmlPath);

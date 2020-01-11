@@ -6,6 +6,9 @@ using NLog.Web;
 
 namespace MGT.API
 {
+    /// <summary>
+    /// Program
+    /// </summary>
     public class Program
     {
         /// <summary>
@@ -20,6 +23,10 @@ namespace MGT.API
                     webBuilder.UseStartup<Startup>().UseNLog();
                 });
 
+        /// <summary>
+        /// Main
+        /// </summary>
+        /// <param name="args">args</param>
         public static void Main(string[] args)
         {
             // NLog: setup the logger first to catch all errors
