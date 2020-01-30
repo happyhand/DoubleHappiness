@@ -9,3 +9,14 @@
 /GoBike/MGT/Server/MGT/MGT.Service/bin
 /GoBike/MGT/Server/MGT/.vs
 /GoBike/mgt.gobike.com
+/GoBike/api.gobike.com
+/GoBike/DataInfo/.vs
+/GoBike/DataInfo/DataInfo.Api/obj
+/GoBike/DataInfo/DataInfo.Api/.config
+/GoBike/DataInfo/DataInfo.Api/bin
+/GoBike/DataInfo/DataInfo.Core/obj
+/GoBike/DataInfo/DataInfo.Core/bin
+/GoBike/DataInfo/DataInfo.Repository/bin
+/GoBike/DataInfo/DataInfo.Repository/obj
+/GoBike/DataInfo/DataInfo.Service/bin
+/GoBike/DataInfo/DataInfo.Service/obj

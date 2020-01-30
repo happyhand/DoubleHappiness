@@ -1,0 +1,4 @@
+﻿[*.cs]
+
+# CA1034: 巢狀型別不應可見
+dotnet_diagnostic.CA1034.severity = none
