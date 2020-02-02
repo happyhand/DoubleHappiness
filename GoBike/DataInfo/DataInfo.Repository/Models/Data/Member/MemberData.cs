@@ -55,14 +55,14 @@ namespace DataInfo.Repository.Models.Data.Member
         public string GoogleToken { get; set; }
 
         /// <summary>
-        /// Gets or sets Id
-        /// </summary>
-        public long Id { get; set; }
-
-        /// <summary>
         /// Gets or sets 登入時間
         /// </summary>
         public DateTime LoginDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets MemberID
+        /// </summary>
+        public long MemberID { get; set; }
 
         /// <summary>
         /// Gets or sets 手機

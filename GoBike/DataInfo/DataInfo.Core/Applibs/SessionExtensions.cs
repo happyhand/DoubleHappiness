@@ -17,8 +17,8 @@ namespace DataInfo.Core.Applibs
         /// <returns>T</returns>
         public static T GetObject<T>(this ISession session, string key)
         {
-            string value = session.GetObject<string>(key);
-            return value == null ? default : JsonConvert.DeserializeObject<T>(value);
+            string value = session.GetString(key);
+            return value == null ? default(T) : JsonConvert.DeserializeObject<T>(value);
         }
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace DataInfo.Core.Applibs
         /// <param name="value">value</param>
         public static void SetObject<T>(this ISession session, string key, T value)
         {
-            session.SetObject(key, JsonConvert.SerializeObject(value));
+            session.SetString(key, JsonConvert.SerializeObject(value));
         }
     }
 }

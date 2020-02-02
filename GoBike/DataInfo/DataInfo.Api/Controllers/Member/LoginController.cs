@@ -10,16 +10,15 @@ using Newtonsoft.Json;
 namespace DataInfo.Api.Controllers.Member
 {
     /// <summary>
-    /// 會員搜尋
+    /// 會員登入功能
     /// </summary>
-    [Route("api/Member/[controller]")]
     [ApiController]
-    public class SearchController : ApiController
+    public class LoginController : ApiController
     {
         /// <summary>
         /// logger
         /// </summary>
-        private readonly ILogger<RegisterController> logger;
+        private readonly ILogger<LoginController> logger;
 
         /// <summary>
         /// memberService
@@ -31,31 +30,30 @@ namespace DataInfo.Api.Controllers.Member
         /// </summary>
         /// <param name="logger">logger</param>
         /// <param name="memberService">memberService</param>
-        public SearchController(ILogger<RegisterController> logger, IMemberService memberService)
+        public LoginController(ILogger<LoginController> logger, IMemberService memberService)
         {
             this.logger = logger;
             this.memberService = memberService;
         }
 
         /// <summary>
-        /// 會員搜尋
+        /// 會員登入 - 一般登入
         /// </summary>
         /// <param name="postData">postData</param>
         /// <returns>IActionResult</returns>
         [HttpPost]
-        public async Task<IActionResult> Post(MemberSearchPostData postData)
+        [Route("api/Member/[controller]/[action]")]
+        public async Task<IActionResult> Normal(MemberLoginPostData postData)
         {
             try
             {
-                this.logger.LogInformation(this, "會員搜尋", $"Data:{JsonConvert.SerializeObject(postData)}");
+                this.logger.LogInformation(this, "會員一般登入", $"Data:{JsonConvert.SerializeObject(postData)}");
                 if (postData == null)
                 {
-                    return BadRequest("無會員搜尋資料.");
+                    return BadRequest("無會員登入資料.");
                 }
 
-                ResponseResultDto responseResult = string.IsNullOrEmpty(postData.Email) ?
-                    await memberService.Search(postData.MemberID).ConfigureAwait(false) :
-                    await memberService.Search(postData.Email).ConfigureAwait(false);
+                ResponseResultDto responseResult = await memberService.Login(this.HttpContext.Session, postData.Email, postData.Password).ConfigureAwait(false);
                 if (responseResult.Ok)
                 {
                     return Ok(responseResult.Data);
@@ -65,15 +63,15 @@ namespace DataInfo.Api.Controllers.Member
             }
             catch (Exception ex)
             {
-                this.logger.LogError(this, "會員搜尋發生錯誤", $"Data:{JsonConvert.SerializeObject(postData)}", ex);
-                return BadRequest("會員搜尋發生錯誤.");
+                this.logger.LogError(this, "會員一般登入發生錯誤", $"Data:{JsonConvert.SerializeObject(postData)}", ex);
+                return BadRequest("會員登入發生錯誤.");
             }
         }
 
         /// <summary>
-        /// 會員搜尋 Post 資料
+        /// 會員登入 Post 資料
         /// </summary>
-        public class MemberSearchPostData
+        public class MemberLoginPostData
         {
             /// <summary>
             /// Gets or sets Email
@@ -81,9 +79,9 @@ namespace DataInfo.Api.Controllers.Member
             public string Email { get; set; }
 
             /// <summary>
-            /// Gets or sets MemberID
+            /// Gets or sets Password
             /// </summary>
-            public long MemberID { get; set; }
+            public string Password { get; set; }
         }
     }
 }

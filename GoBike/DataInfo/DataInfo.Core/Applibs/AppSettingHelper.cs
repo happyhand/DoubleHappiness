@@ -59,5 +59,30 @@ namespace DataInfo.Core.Applibs
         }
 
         #endregion Service Domain 設定資料
+
+        #region Server 設定資料
+
+        /// <summary>
+        /// Gets or sets ServerConfig
+        /// </summary>
+        public ServerConfigSetting ServerConfig { get; set; }
+
+        /// <summary>
+        /// ServerConfigSetting
+        /// </summary>
+        public class ServerConfigSetting
+        {
+            /// <summary>
+            /// Gets or sets Ip
+            /// </summary>
+            public string Ip { get; set; }
+
+            /// <summary>
+            /// Gets or sets Port
+            /// </summary>
+            public int Port { get; set; }
+        }
+
+        #endregion Server 設定資料
     }
 }

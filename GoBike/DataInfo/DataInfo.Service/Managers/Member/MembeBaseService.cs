@@ -10,6 +10,7 @@ using DataInfo.Core.Resource;
 using DataInfo.Core.Resource.Enum;
 using DataInfo.Repository.Interface;
 using DataInfo.Repository.Models.Data.Member;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using StackExchange.Redis;
@@ -96,8 +97,10 @@ namespace DataInfo.Service.Managers.Member
         /// <returns>MemberData</returns>
         protected MemberData CreateMemberData(string email, string password, string fbToken, string googleToken)
         {
+            Random random = new Random();
             return new MemberData()
             {
+                MemberID = Convert.ToInt64(random.Next(100001, 999999)), //// TODO 待改由 DB 設定
                 RegisterDate = DateTime.Now,
                 RegisterSource = string.IsNullOrEmpty(fbToken) ? string.IsNullOrEmpty(googleToken) ? (int)RegisterSourceType.Normal : (int)RegisterSourceType.Google : (int)RegisterSourceType.FB,
                 AccountName = email,
@@ -272,6 +275,33 @@ namespace DataInfo.Service.Managers.Member
             {
                 this.logger.LogError(this, "取得會員資料發生錯誤", string.Empty, ex);
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// 紀錄會員 Session ID
+        /// </summary>
+        /// <param name="session">session</param>
+        /// <param name="memberID">memberID</param>
+        /// <returns></returns>
+        protected void RecordSessionID(ISession session, long memberID)
+        {
+            try
+            {
+                session.SetObject(CommonFlagHelper.CommonFlag.SessionFlag.MemberID, memberID);
+                string cacheKey = $"{CommonFlagHelper.CommonFlag.RedisFlag.Session}-{session.Id}-{memberID}";
+                TaskAwaiter<bool> isSetCacheSuccess = this.redisRepository.SetCache(cacheKey, memberID.ToString(), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.SeesionDeadline)).GetAwaiter();
+                isSetCacheSuccess.OnCompleted(() =>
+                {
+                    if (!isSetCacheSuccess.GetResult())
+                    {
+                        this.logger.LogWarning(this, "寫入【紀錄會員 Session ID】快取資料失敗", $"CacheKey:{cacheKey} Session:{session?.Id} MemberID:{memberID}");
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(this, "紀錄會員 Session ID發生錯誤", $"Session:{session?.Id} MemberID:{memberID}", ex);
             }
         }
 

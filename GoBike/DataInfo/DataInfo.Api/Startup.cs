@@ -59,6 +59,7 @@ namespace DataInfo.Api
                 app.UseHsts();
             }
 
+            app.UseSession();
             //app.UseHttpsRedirection(); // 強制使用 HTTPS Cors (先註解掉，等有憑證再回來試)
             app.UseRouting();
             app.UseCors("ProductNoPolicy"); // 必須建立在  app.UseMvc 之前
@@ -68,8 +69,6 @@ namespace DataInfo.Api
             {
                 endpoints.MapControllers();
             });
-
-            app.UseSession();
 
             #region Swagger
 
