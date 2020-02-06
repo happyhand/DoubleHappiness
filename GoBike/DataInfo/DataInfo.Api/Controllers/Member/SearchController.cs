@@ -4,8 +4,8 @@ using DataInfo.Core.Applibs;
 using DataInfo.Service.Interface.Member;
 using DataInfo.Service.Models.Response;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using NLog;
 
 namespace DataInfo.Api.Controllers.Member
 {
@@ -19,7 +19,7 @@ namespace DataInfo.Api.Controllers.Member
         /// <summary>
         /// logger
         /// </summary>
-        private readonly ILogger<RegisterController> logger;
+        private readonly ILogger logger = LogManager.GetLogger("SearchController");
 
         /// <summary>
         /// memberService
@@ -31,9 +31,8 @@ namespace DataInfo.Api.Controllers.Member
         /// </summary>
         /// <param name="logger">logger</param>
         /// <param name="memberService">memberService</param>
-        public SearchController(ILogger<RegisterController> logger, IMemberService memberService)
+        public SearchController(IMemberService memberService)
         {
-            this.logger = logger;
             this.memberService = memberService;
         }
 
@@ -47,7 +46,7 @@ namespace DataInfo.Api.Controllers.Member
         {
             try
             {
-                this.logger.LogInformation(this, "會員搜尋", $"Data:{JsonConvert.SerializeObject(postData)}");
+                //this.logger.LogInformation(this, "會員搜尋", $"Data:{JsonConvert.SerializeObject(postData)}");
                 if (postData == null)
                 {
                     return BadRequest("無會員搜尋資料.");
@@ -65,7 +64,7 @@ namespace DataInfo.Api.Controllers.Member
             }
             catch (Exception ex)
             {
-                this.logger.LogError(this, "會員搜尋發生錯誤", $"Data:{JsonConvert.SerializeObject(postData)}", ex);
+                //this.logger.LogError(this, "會員搜尋發生錯誤", $"Data:{JsonConvert.SerializeObject(postData)}", ex);
                 return BadRequest("會員搜尋發生錯誤.");
             }
         }

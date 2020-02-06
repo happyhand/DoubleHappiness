@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
-using DataInfo.Core.Applibs;
+using DataInfo.Core.Extensions;
 using DataInfo.Service.Interface.Member;
 using DataInfo.Service.Models.Response;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using NLog;
 
 namespace DataInfo.Api.Controllers.Member
 {
@@ -18,7 +18,7 @@ namespace DataInfo.Api.Controllers.Member
         /// <summary>
         /// logger
         /// </summary>
-        private readonly ILogger<LoginController> logger;
+        private readonly ILogger logger = LogManager.GetLogger("LoginController");
 
         /// <summary>
         /// memberService
@@ -30,9 +30,8 @@ namespace DataInfo.Api.Controllers.Member
         /// </summary>
         /// <param name="logger">logger</param>
         /// <param name="memberService">memberService</param>
-        public LoginController(ILogger<LoginController> logger, IMemberService memberService)
+        public LoginController(IMemberService memberService)
         {
-            this.logger = logger;
             this.memberService = memberService;
         }
 
@@ -42,14 +41,15 @@ namespace DataInfo.Api.Controllers.Member
         /// <param name="postData">postData</param>
         /// <returns>IActionResult</returns>
         [HttpPost]
-        [Route("api/Member/[controller]/[action]")]
+        [Route("api/Member/[controller]")]
         public async Task<IActionResult> Normal(MemberLoginPostData postData)
         {
             try
             {
-                this.logger.LogInformation(this, "會員一般登入", $"Data:{JsonConvert.SerializeObject(postData)}");
+                this.logger.LogInfo("會員請求登入(一般登入)", $"Data: {JsonConvert.SerializeObject(postData)}", null);
                 if (postData == null)
                 {
+                    this.logger.LogWarn("會員請求登入失敗(一般登入)", "Data: 無資料", null);
                     return BadRequest("無會員登入資料.");
                 }
 
@@ -63,7 +63,7 @@ namespace DataInfo.Api.Controllers.Member
             }
             catch (Exception ex)
             {
-                this.logger.LogError(this, "會員一般登入發生錯誤", $"Data:{JsonConvert.SerializeObject(postData)}", ex);
+                this.logger.LogInfo("會員請求登入發生錯誤(一般登入)", $"Data: {JsonConvert.SerializeObject(postData)}", ex);
                 return BadRequest("會員登入發生錯誤.");
             }
         }

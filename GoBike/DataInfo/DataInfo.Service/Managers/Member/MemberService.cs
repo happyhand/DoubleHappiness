@@ -1,18 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using DataInfo.Core.Applibs;
+using DataInfo.Core.Extensions;
 using DataInfo.Core.Resource;
 using DataInfo.Repository.Interface;
+using DataInfo.Repository.Interface.Sql;
 using DataInfo.Repository.Models.Data.Member;
 using DataInfo.Service.Interface.Member;
-using DataInfo.Service.Models.Member;
+using DataInfo.Service.Models.Member.view;
 using DataInfo.Service.Models.Response;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace DataInfo.Service.Managers.Member
@@ -25,15 +23,124 @@ namespace DataInfo.Service.Managers.Member
         /// <summary>
         /// 建構式
         /// </summary>
-        /// <param name="logger">logger</param>
         /// <param name="mapper">mapper</param>
         /// <param name="memberRepository">memberRepository</param>
         /// <param name="redisRepository">redisRepository</param>
-        public MemberService(ILogger<MemberService> logger, IMapper mapper, IMemberRepository memberRepository, IRedisRepository redisRepository) : base(logger, mapper, memberRepository, redisRepository)
+        public MemberService(IMapper mapper, ISQLMemberRepository memberRepository, IRedisRepository redisRepository) : base(mapper, memberRepository, redisRepository)
         {
         }
 
         #region 註冊\登入
+
+        /// <summary>
+        /// 會員登入
+        /// </summary>
+        /// <param name="session">session</param>
+        /// <param name="email">email</param>
+        /// <param name="password">password</param>
+        /// <returns>ResponseResultDto</returns>
+        public async Task<ResponseResultDto> Login(ISession session, string email, string password)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+                {
+                    this.logger.LogWarn("會員登入結果", $"Result: 驗證失敗 Email: {email} Password: {password}", null);
+                    return new ResponseResultDto()
+                    {
+                        Ok = false,
+                        Data = "信箱或密碼無效."
+                    };
+                }
+
+                MemberData memberData = await this.GetMemberData(email);
+                if (memberData == null)
+                {
+                    this.logger.LogWarn("會員登入結果", $"Result: 無會員資料 Email: {email} Password: {password}", null);
+                    return new ResponseResultDto() { Ok = false, Data = "無法根據信箱查詢到相關會員." };
+                }
+
+                string decryptAESPassword = Utility.DecryptAES(memberData.Password);
+                if (!decryptAESPassword.Equals(password))
+                {
+                    this.logger.LogWarn("會員登入結果", $"Result: 密碼驗證失敗 Email: {email} Password: {password}", null);
+                    return new ResponseResultDto()
+                    {
+                        Ok = false,
+                        Data = "密碼驗證失敗."
+                    };
+                }
+
+                string token = this.CreateLoginToken(email, password, string.Empty, string.Empty);
+                this.RecordSessionID(session, memberData.MemberID);
+                return new ResponseResultDto()
+                {
+                    Ok = true,
+                    Data = new MemberLoginInfoViewDto { MemberID = memberData.MemberID, Token = token, ServerIP = AppSettingHelper.Appsetting.ServerConfig.Ip, ServerPort = AppSettingHelper.Appsetting.ServerConfig.Port }
+                };
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("會員登入發生錯誤", $"Email:{email} Password:{password}", ex);
+                return new ResponseResultDto()
+                {
+                    Ok = false,
+                    Data = "會員登入發生錯誤."
+                };
+            }
+        }
+
+        /// <summary>
+        /// 會員註冊
+        /// </summary>
+        /// <param name="email">email</param>
+        /// <param name="password">password</param>
+        /// <returns>ResponseResultDto</returns>
+        public async Task<ResponseResultDto> Register(string email, string password, bool isVerifyPassword, string fbToken, string googleToken)
+        {
+            try
+            {
+                string verifyMemberRegisterResult = await this.VerifyMemberRegister(email, password, isVerifyPassword);
+                if (!string.IsNullOrEmpty(verifyMemberRegisterResult))
+                {
+                    this.logger.LogWarn("會員註冊結果", $"Result: 驗證失敗({verifyMemberRegisterResult}) Email: {email} Password: {password} IsVerifyPassword: {isVerifyPassword} FbToken: {fbToken} GoogleToken: {googleToken}", null);
+                    return new ResponseResultDto()
+                    {
+                        Ok = false,
+                        Data = verifyMemberRegisterResult
+                    };
+                }
+
+                MemberData memberData = this.CreateMemberData(email, password, fbToken, googleToken);
+                bool isSuccess = await this.memberRepository.CreateMemberData(memberData);
+                this.logger.LogInfo("會員註冊結果", $"Result: {isSuccess} MemberData: {JsonConvert.SerializeObject(memberData)}", null);
+                if (isSuccess)
+                {
+                    return new ResponseResultDto()
+                    {
+                        Ok = true,
+                        Data = "會員註冊成功."
+                    };
+                }
+
+                return new ResponseResultDto()
+                {
+                    Ok = false,
+                    Data = "會員註冊失敗."
+                };
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("會員註冊發生錯誤", $"Email: {email} Password: {password} IsVerifyPassword: {isVerifyPassword} FbToken: {fbToken} GoogleToken: {googleToken}", ex);
+                return new ResponseResultDto()
+                {
+                    Ok = false,
+                    Data = "會員註冊發生錯誤."
+                };
+            }
+        }
+
+        #region TODO
 
         /// <summary>
         /// 刪除會員 Session ID
@@ -121,65 +228,6 @@ namespace DataInfo.Service.Managers.Member
                 Ok = false,
                 Data = "TODO."
             };
-        }
-
-        /// <summary>
-        /// 會員登入
-        /// </summary>
-        /// <param name="session">session</param>
-        /// <param name="email">email</param>
-        /// <param name="password">password</param>
-        /// <returns>ResponseResultDto</returns>
-        public async Task<ResponseResultDto> Login(ISession session, string email, string password)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
-                {
-                    return new ResponseResultDto()
-                    {
-                        Ok = false,
-                        Data = "信箱或密碼無效."
-                    };
-                }
-
-                MemberData memberData = await this.GetMemberData(email);
-                if (memberData == null)
-                {
-                    return new ResponseResultDto()
-                    {
-                        Ok = false,
-                        Data = "無法根據信箱查詢到相關會員."
-                    };
-                }
-
-                string decryptAESPassword = string.IsNullOrEmpty(memberData.Password) ? string.Empty : Utility.DecryptAES(memberData.Password);
-                if (string.IsNullOrEmpty(decryptAESPassword) || !decryptAESPassword.Equals(password))
-                {
-                    return new ResponseResultDto()
-                    {
-                        Ok = false,
-                        Data = "密碼驗證失敗."
-                    };
-                }
-
-                string token = this.CreateLoginToken(email, password, string.Empty, string.Empty);
-                this.RecordSessionID(session, memberData.MemberID);
-                return new ResponseResultDto()
-                {
-                    Ok = true,
-                    Data = new MemberLoginInfoViewDto { MemberID = memberData.MemberID, Token = token, ServerIP = AppSettingHelper.Appsetting.ServerConfig.Ip, ServerPort = AppSettingHelper.Appsetting.ServerConfig.Port }
-                };
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError($"Login Error >>> Email:{email} Password:{password}\n{ex}");
-                return new ResponseResultDto()
-                {
-                    Ok = false,
-                    Data = "會員登入發生錯誤."
-                };
-            }
         }
 
         /// <summary>
@@ -313,53 +361,7 @@ namespace DataInfo.Service.Managers.Member
             };
         }
 
-        /// <summary>
-        /// 會員註冊
-        /// </summary>
-        /// <param name="email">email</param>
-        /// <param name="password">password</param>
-        /// <returns>ResponseResultDto</returns>
-        public async Task<ResponseResultDto> Register(string email, string password, bool isVerifyPassword, string fbToken, string googleToken)
-        {
-            try
-            {
-                string verifyMemberRegisterResult = await this.VerifyMemberRegister(email, password, isVerifyPassword);
-                if (!string.IsNullOrEmpty(verifyMemberRegisterResult))
-                {
-                    return new ResponseResultDto()
-                    {
-                        Ok = false,
-                        Data = verifyMemberRegisterResult
-                    };
-                }
-
-                MemberData memberData = this.CreateMemberData(email, password, fbToken, googleToken);
-                bool isSuccess = await this.AddMemberData(memberData);
-                if (!isSuccess)
-                {
-                    return new ResponseResultDto()
-                    {
-                        Ok = false,
-                        Data = "會員註冊失敗."
-                    };
-                }
-
-                return new ResponseResultDto()
-                {
-                    Ok = true,
-                    Data = "會員註冊成功."
-                };
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError(this, "會員註冊發生錯誤", $"Email:{email} Password:{password}", ex);
-                return new ResponseResultDto()
-                {
-                    Ok = false,
-                    Data = "會員註冊發生錯誤."
-                };
-            }
-        }
+        #endregion TODO
 
         #endregion 註冊\登入
 
@@ -372,41 +374,47 @@ namespace DataInfo.Service.Managers.Member
         /// <returns>ResponseResultDto</returns>
         public async Task<ResponseResultDto> Search(dynamic searchKey)
         {
-            try
-            {
-                MemberData memberData = null;
-                //// 判斷 Search Key
-                if (searchKey is string && searchKey.Contains("@"))
-                {
-                    memberData = await this.GetMemberData(searchKey);
-                    if (memberData != null)
-                    {
-                        return new ResponseResultDto()
-                        {
-                            Ok = true,
-                            Data = memberData
-                        };
-                    }
-                }
-                else if (searchKey is long) //// 目前只能先寫死，待思考有沒有其他更好的方式
-                {
-                }
+            //try
+            //{
+            //    MemberData memberData = null;
+            //    //// 判斷 Search Key
+            //    if (searchKey is string && searchKey.Contains("@"))
+            //    {
+            //        memberData = await this.GetMemberData(searchKey);
+            //        if (memberData != null)
+            //        {
+            //            return new ResponseResultDto()
+            //            {
+            //                Ok = true,
+            //                Data = memberData
+            //            };
+            //        }
+            //    }
+            //    else if (searchKey is long) //// 目前只能先寫死，待思考有沒有其他更好的方式
+            //    {
+            //    }
 
-                return new ResponseResultDto()
-                {
-                    Ok = false,
-                    Data = "會員搜尋參數無效."
-                };
-            }
-            catch (Exception ex)
+            //    return new ResponseResultDto()
+            //    {
+            //        Ok = false,
+            //        Data = "會員搜尋參數無效."
+            //    };
+            //}
+            //catch (Exception ex)
+            //{
+            //    this.logger.LogError(this, "會員搜尋發生錯誤", $"SearchKey:{searchKey}", ex);
+            //    return new ResponseResultDto()
+            //    {
+            //        Ok = false,
+            //        Data = "會員搜尋發生錯誤."
+            //    };
+            //}
+
+            return new ResponseResultDto()
             {
-                this.logger.LogError(this, "會員搜尋發生錯誤", $"SearchKey:{searchKey}", ex);
-                return new ResponseResultDto()
-                {
-                    Ok = false,
-                    Data = "會員搜尋發生錯誤."
-                };
-            }
+                Ok = false,
+                Data = "TODO."
+            };
         }
 
         #endregion 會員資料

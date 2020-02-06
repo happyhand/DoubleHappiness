@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 
-namespace DataInfo.Core.Applibs
+namespace DataInfo.Core.Extensions
 {
     /// <summary>
     /// Session 擴充方法

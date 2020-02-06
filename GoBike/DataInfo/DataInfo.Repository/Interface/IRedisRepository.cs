@@ -36,6 +36,14 @@ namespace DataInfo.Repository.Interface
         /// 讀取快取資料
         /// </summary>
         /// <param name="cacheKey">cacheKey</param>
+        /// <param name="hashKey">hashKey</param>
+        /// <returns>RedisValues</returns>
+        Task<RedisValue[]> GetCache(string cacheKey, string[] hashKeys);
+
+        /// <summary>
+        /// 讀取快取資料
+        /// </summary>
+        /// <param name="cacheKey">cacheKey</param>
         /// <returns>HashEntrys</returns>
         Task<HashEntry[]> GetHashAllCache(string cacheKey);
 
@@ -52,8 +60,7 @@ namespace DataInfo.Repository.Interface
         /// <param name="cacheKey">cacheKey</param>
         /// <param name="dataJSON">dataJSON</param>
         /// <param name="cacheTimes">cacheTimes</param>
-        /// <returns>bool</returns>
-        Task<bool> SetCache(string cacheKey, string dataJSON, TimeSpan cacheTimes);
+        void SetCache(string cacheKey, string dataJSON, TimeSpan cacheTimes);
 
         /// <summary>
         /// 寫入快取資料
@@ -62,17 +69,7 @@ namespace DataInfo.Repository.Interface
         /// <param name="hashKey">hashKey</param>
         /// <param name="dataJSON">dataJSON</param>
         /// <param name="cacheTimes">cacheTimes</param>
-        /// <returns>bool</returns>
-        Task<bool> SetCache(string cacheKey, string hashKey, string dataJSON, TimeSpan cacheTimes);
-
-        /// <summary>
-        /// 寫入快取資料
-        /// </summary>
-        /// <param name="cacheKey">cacheKey</param>
-        /// <param name="hashFields">hashFields</param>
-        /// <param name="cacheTimes">cacheTimes</param>
-        /// <returns>bool</returns>
-        Task<bool> SetCache(string cacheKey, HashEntry[] hashFields, TimeSpan cacheTimes);
+        void SetCache(string cacheKey, string hashKey, string dataJSON, TimeSpan cacheTimes);
 
         /// <summary>
         /// 更新快取資料到期時間

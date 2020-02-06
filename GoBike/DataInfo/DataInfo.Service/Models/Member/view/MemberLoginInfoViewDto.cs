@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace DataInfo.Service.Models.Member
+namespace DataInfo.Service.Models.Member.view
 {
     /// <summary>
     /// 會員登入可視資料
@@ -12,7 +12,7 @@ namespace DataInfo.Service.Models.Member
         /// <summary>
         /// Gets or sets MemberID
         /// </summary>
-        public long MemberID { get; set; }
+        public string MemberID { get; set; }
 
         /// <summary>
         /// Gets or sets ServerIP

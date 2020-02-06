@@ -1,9 +1,9 @@
-﻿using DataInfo.Core.Applibs;
+﻿using DataInfo.Core.Extensions;
 using DataInfo.Core.Resource;
 using DataInfo.Service.Interface.Member;
 using DataInfo.Service.Models.Response;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+using NLog;
 using System;
 using System.Threading.Tasks;
 
@@ -19,7 +19,7 @@ namespace DataInfo.Api.Controllers.Member
         /// <summary>
         /// logger
         /// </summary>
-        private readonly ILogger<KeepOnlineController> logger;
+        private readonly ILogger logger = LogManager.GetLogger("KeepOnlineController");
 
         /// <summary>
         /// memberService
@@ -29,11 +29,9 @@ namespace DataInfo.Api.Controllers.Member
         /// <summary>
         /// 建構式
         /// </summary>
-        /// <param name="logger">logger</param>
         /// <param name="memberService">memberService</param>
-        public KeepOnlineController(ILogger<KeepOnlineController> logger, IMemberService memberService)
+        public KeepOnlineController(IMemberService memberService)
         {
-            this.logger = logger;
             this.memberService = memberService;
         }
 
@@ -56,7 +54,7 @@ namespace DataInfo.Api.Controllers.Member
             }
             catch (Exception ex)
             {
-                this.logger.LogError(this, "會員保持在線發生錯誤", string.Empty, ex);
+                //this.logger.LogError(this, "會員保持在線發生錯誤", string.Empty, ex);
                 return BadRequest("Keep Online Error.");
             }
         }

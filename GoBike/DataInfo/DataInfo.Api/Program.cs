@@ -9,7 +9,7 @@ namespace DataInfo.Api
     /// <summary>
     /// Program
     /// </summary>
-    public class Program
+    public static class Program
     {
         /// <summary>
         /// CreateHostBuilder
@@ -20,7 +20,7 @@ namespace DataInfo.Api
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseStartup<Startup>().UseNLog();
+                    webBuilder.UseStartup<Startup>();
                 });
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace DataInfo.Api
         /// <param name="args">args</param>
         public static void Main(string[] args)
         {
-            Logger logger = NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
+            Logger logger = LogManager.GetLogger("System");
             try
             {
                 logger.Debug("init main");

@@ -38,16 +38,14 @@ namespace DataInfo.Repository.Managers
         }
 
         /// <summary>
-        /// 取得會員資料
+        /// 取得會員資料 (By Email)
         /// </summary>
         /// <param name="email">email</param>
         /// <returns>MemberData</returns>
-        public async Task<MemberData> GetMemberData(string email)
+        public async Task<MemberData> GetMemberDataByEmail(string email)
         {
             return null;
         }
-
-        #endregion New
 
         /// <summary>
         /// 取得會員資料 (By FBToken)
@@ -78,6 +76,8 @@ namespace DataInfo.Repository.Managers
         {
             return null;
         }
+
+        #endregion New
 
         /// <summary>
         /// 取得會員資料列表

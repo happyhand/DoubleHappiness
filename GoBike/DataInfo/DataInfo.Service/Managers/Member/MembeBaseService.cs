@@ -1,19 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using DataInfo.Core.Applibs;
+using DataInfo.Core.Extensions;
 using DataInfo.Core.Resource;
 using DataInfo.Core.Resource.Enum;
 using DataInfo.Repository.Interface;
+using DataInfo.Repository.Interface.Sql;
 using DataInfo.Repository.Models.Data.Member;
+using DataInfo.Service.Models.Response;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using StackExchange.Redis;
+using NLog;
 
 namespace DataInfo.Service.Managers.Member
 {
@@ -25,7 +24,7 @@ namespace DataInfo.Service.Managers.Member
         /// <summary>
         /// logger
         /// </summary>
-        protected readonly ILogger<MemberService> logger;
+        protected readonly ILogger logger = LogManager.GetLogger("MemberService");
 
         /// <summary>
         /// mapper
@@ -35,7 +34,7 @@ namespace DataInfo.Service.Managers.Member
         /// <summary>
         /// memberRepository
         /// </summary>
-        protected readonly IMemberRepository memberRepository;
+        protected readonly ISQLMemberRepository memberRepository;
 
         /// <summary>
         /// redisRepository
@@ -49,9 +48,8 @@ namespace DataInfo.Service.Managers.Member
         /// <param name="mapper">mapper</param>
         /// <param name="memberRepository">memberRepository</param>
         /// <param name="redisRepository">redisRepository</param>
-        public MembeBaseService(ILogger<MemberService> logger, IMapper mapper, IMemberRepository memberRepository, IRedisRepository redisRepository)
+        public MembeBaseService(IMapper mapper, ISQLMemberRepository memberRepository, IRedisRepository redisRepository)
         {
-            this.logger = logger;
             this.mapper = mapper;
             this.memberRepository = memberRepository;
             this.redisRepository = redisRepository;
@@ -97,10 +95,12 @@ namespace DataInfo.Service.Managers.Member
         /// <returns>MemberData</returns>
         protected MemberData CreateMemberData(string email, string password, string fbToken, string googleToken)
         {
-            Random random = new Random();
+            byte[] dateTimeBytes = BitConverter.GetBytes(DateTime.Now.Ticks);
+            Array.Resize(ref dateTimeBytes, 16);
+            string memberID = new Guid(dateTimeBytes).ToString().Substring(0, 8);
             return new MemberData()
             {
-                MemberID = Convert.ToInt64(random.Next(100001, 999999)), //// TODO 待改由 DB 設定
+                MemberID = memberID,
                 RegisterDate = DateTime.Now,
                 RegisterSource = string.IsNullOrEmpty(fbToken) ? string.IsNullOrEmpty(googleToken) ? (int)RegisterSourceType.Normal : (int)RegisterSourceType.Google : (int)RegisterSourceType.FB,
                 AccountName = email,
@@ -205,75 +205,28 @@ namespace DataInfo.Service.Managers.Member
         #region 資料庫功能
 
         /// <summary>
-        /// 新增會員資料
-        /// </summary>
-        /// <param name="memberData">memberData</param>
-        /// <returns>bool</returns>
-        protected async Task<bool> AddMemberData(MemberData memberData)
-        {
-            try
-            {
-                bool isCreateSuccess = await this.memberRepository.CreateMemberData(memberData);
-                if (!isCreateSuccess)
-                {
-                    return false;
-                }
-
-                string cacheKey = $"{CommonFlagHelper.CommonFlag.RedisFlag.Member}";
-                TaskAwaiter<bool> isSetCacheSuccess = this.redisRepository.SetCache(cacheKey, memberData.AccountName, JsonConvert.SerializeObject(memberData), TimeSpan.FromHours(2)).GetAwaiter();
-                isSetCacheSuccess.OnCompleted(() =>
-                {
-                    if (!isSetCacheSuccess.GetResult())
-                    {
-                        this.logger.LogWarning(this, "寫入【新增會員資料】快取資料失敗", $"CacheKey:{cacheKey} Email:{memberData.AccountName}");
-                    }
-                });
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError(this, "新增會員資料發生錯誤", string.Empty, ex);
-                return false;
-            }
-        }
-
-        /// <summary>
         /// 取得會員資料
         /// </summary>
         /// <returns>MemberData</returns>
-        protected async Task<MemberData> GetMemberData(string email)
+        protected async Task<MemberData> GetMemberData(string searchKey)
         {
             try
             {
-                string cacheKey = $"{CommonFlagHelper.CommonFlag.RedisFlag.Member}";
-                string redisJsonData = await this.redisRepository.GetCache(cacheKey, email);
-                MemberData memberData = null;
-                if (string.IsNullOrEmpty(redisJsonData))
+                this.logger.LogInfo("取得會員資料", $"SearchKey: {searchKey}", null);
+                if (searchKey.Contains("@"))
                 {
-                    memberData = await this.memberRepository.GetMemberData(email);
-                    if (memberData != null)
-                    {
-                        TaskAwaiter<bool> isSuccess = this.redisRepository.SetCache(cacheKey, JsonConvert.SerializeObject(memberData), TimeSpan.FromHours(2)).GetAwaiter();
-                        isSuccess.OnCompleted(() =>
-                        {
-                            if (!isSuccess.GetResult())
-                            {
-                                this.logger.LogWarning(this, "寫入【取得會員資料】快取資料失敗", $"CacheKey:{cacheKey} Email:{email}");
-                            }
-                        });
-                    }
+                    return await this.memberRepository.GetMemberDataByEmail(searchKey);
                 }
-                else
+                else if (searchKey.Length == 8) //// 目前只能先寫死，待思考有沒有其他更好的方式
                 {
-                    memberData = JsonConvert.DeserializeObject<MemberData>(redisJsonData);
+                    return await this.memberRepository.GetMemberDataByMemberID(searchKey);
                 }
 
-                return memberData;
+                return null;
             }
             catch (Exception ex)
             {
-                this.logger.LogError(this, "取得會員資料發生錯誤", string.Empty, ex);
+                this.logger.LogError("取得會員資料發生錯誤", $"SearchKey: {searchKey}", ex);
                 return null;
             }
         }
@@ -284,24 +237,24 @@ namespace DataInfo.Service.Managers.Member
         /// <param name="session">session</param>
         /// <param name="memberID">memberID</param>
         /// <returns></returns>
-        protected void RecordSessionID(ISession session, long memberID)
+        protected void RecordSessionID(ISession session, string memberID)
         {
             try
             {
-                session.SetObject(CommonFlagHelper.CommonFlag.SessionFlag.MemberID, memberID);
-                string cacheKey = $"{CommonFlagHelper.CommonFlag.RedisFlag.Session}-{session.Id}-{memberID}";
-                TaskAwaiter<bool> isSetCacheSuccess = this.redisRepository.SetCache(cacheKey, memberID.ToString(), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.SeesionDeadline)).GetAwaiter();
-                isSetCacheSuccess.OnCompleted(() =>
+                if (session == null)
                 {
-                    if (!isSetCacheSuccess.GetResult())
-                    {
-                        this.logger.LogWarning(this, "寫入【紀錄會員 Session ID】快取資料失敗", $"CacheKey:{cacheKey} Session:{session?.Id} MemberID:{memberID}");
-                    }
-                });
+                    this.logger.LogWarn("紀錄會員 Session ID失敗", $"Message: Session 為空值 MemberID:{memberID}", null);
+                    return;
+                }
+
+                this.logger.LogInfo("紀錄會員 Session ID", $"Session:{session.Id} MemberID:{memberID}", null);
+                session.SetObject(CommonFlagHelper.CommonFlag.SessionFlag.MemberID, memberID);
+                string cacheKey = $"{CommonFlagHelper.CommonFlag.RedisFlag.Session}-{memberID}";
+                this.redisRepository.SetCache(cacheKey, session.Id, memberID.ToString(), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.SeesionDeadline));
             }
             catch (Exception ex)
             {
-                this.logger.LogError(this, "紀錄會員 Session ID發生錯誤", $"Session:{session?.Id} MemberID:{memberID}", ex);
+                this.logger.LogError("紀錄會員 Session ID發生錯誤", $"Session:{session?.Id} MemberID:{memberID}", ex);
             }
         }
 

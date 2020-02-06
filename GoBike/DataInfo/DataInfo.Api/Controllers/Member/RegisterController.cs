@@ -4,8 +4,9 @@ using DataInfo.Core.Applibs;
 using DataInfo.Service.Interface.Member;
 using DataInfo.Service.Models.Response;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using NLog;
+using DataInfo.Core.Extensions;
 
 namespace DataInfo.Api.Controllers.Member
 {
@@ -19,7 +20,7 @@ namespace DataInfo.Api.Controllers.Member
         /// <summary>
         /// logger
         /// </summary>
-        private readonly ILogger<RegisterController> logger;
+        private readonly ILogger logger = LogManager.GetLogger("RegisterController");
 
         /// <summary>
         /// memberService
@@ -29,11 +30,9 @@ namespace DataInfo.Api.Controllers.Member
         /// <summary>
         /// 建構式
         /// </summary>
-        /// <param name="logger">logger</param>
         /// <param name="memberService">memberService</param>
-        public RegisterController(ILogger<RegisterController> logger, IMemberService memberService)
+        public RegisterController(IMemberService memberService)
         {
-            this.logger = logger;
             this.memberService = memberService;
         }
 
@@ -47,9 +46,10 @@ namespace DataInfo.Api.Controllers.Member
         {
             try
             {
-                this.logger.LogInformation(this, "會員註冊", $"Data:{JsonConvert.SerializeObject(postData)}");
+                this.logger.LogInfo("會員請求註冊", $"Data: {JsonConvert.SerializeObject(postData)}", null);
                 if (postData == null)
                 {
+                    this.logger.LogWarn("會員註冊失敗", "Data: 無資料", null);
                     return BadRequest("無會員註冊資料.");
                 }
 
@@ -63,7 +63,7 @@ namespace DataInfo.Api.Controllers.Member
             }
             catch (Exception ex)
             {
-                this.logger.LogError(this, "會員註冊發生錯誤", $"Data:{JsonConvert.SerializeObject(postData)}", ex);
+                this.logger.LogInfo("會員註冊發生錯誤", $"Data: {JsonConvert.SerializeObject(postData)}", ex);
                 return BadRequest("會員註冊發生錯誤.");
             }
         }

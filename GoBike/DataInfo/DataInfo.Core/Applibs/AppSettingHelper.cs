@@ -36,6 +36,11 @@ namespace DataInfo.Core.Applibs
             /// Gets or sets RedisConnection
             /// </summary>
             public string RedisConnection { get; set; }
+
+            /// <summary>
+            /// Gets or sets SQLConnection
+            /// </summary>
+            public string SQLConnection { get; set; }
         }
 
         #endregion 連線設定資料

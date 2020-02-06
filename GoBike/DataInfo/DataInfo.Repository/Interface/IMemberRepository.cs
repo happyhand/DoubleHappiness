@@ -21,13 +21,11 @@ namespace DataInfo.Repository.Interface
         Task<bool> CreateMemberData(MemberData memberData);
 
         /// <summary>
-        /// 取得會員資料
+        /// 取得會員資料 (By Email)
         /// </summary>
         /// <param name="email">email</param>
         /// <returns>MemberData</returns>
-        Task<MemberData> GetMemberData(string email);
-
-        #endregion New
+        Task<MemberData> GetMemberDataByEmail(string email);
 
         /// <summary>
         /// 取得會員資料 (By FBToken)
@@ -49,6 +47,8 @@ namespace DataInfo.Repository.Interface
         /// <param name="memberID">memberID</param>
         /// <returns>MemberData</returns>
         Task<MemberData> GetMemberDataByMemberID(string memberID);
+
+        #endregion New
 
         /// <summary>
         /// 取得會員資料列表

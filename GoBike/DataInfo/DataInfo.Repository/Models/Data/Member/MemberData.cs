@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace DataInfo.Repository.Models.Data.Member
@@ -62,7 +63,8 @@ namespace DataInfo.Repository.Models.Data.Member
         /// <summary>
         /// Gets or sets MemberID
         /// </summary>
-        public long MemberID { get; set; }
+        [Key]
+        public string MemberID { get; set; }
 
         /// <summary>
         /// Gets or sets 手機
