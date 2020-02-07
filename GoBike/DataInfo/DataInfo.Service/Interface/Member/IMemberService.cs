@@ -75,11 +75,12 @@ namespace DataInfo.Service.Interface.Member
         #region 會員資料
 
         /// <summary>
-        /// 會員搜尋
+        /// 搜尋會員
         /// </summary>
         /// <param name="searchKey">searchKey</param>
+        /// <param name="searchMemberID">searchMemberID</param>
         /// <returns>ResponseResultDto</returns>
-        Task<ResponseResultDto> Search(dynamic searchKey);
+        Task<ResponseResultDto> Search(dynamic searchKey, string searchMemberID);
 
         #endregion 會員資料
     }

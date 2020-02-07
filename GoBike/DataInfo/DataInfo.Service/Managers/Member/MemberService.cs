@@ -368,53 +368,52 @@ namespace DataInfo.Service.Managers.Member
         #region 會員資料
 
         /// <summary>
-        /// 會員搜尋
+        /// 搜尋會員
         /// </summary>
         /// <param name="searchKey">searchKey</param>
+        /// <param name="searchMemberID">searchMemberID</param>
         /// <returns>ResponseResultDto</returns>
-        public async Task<ResponseResultDto> Search(dynamic searchKey)
+        public async Task<ResponseResultDto> Search(dynamic searchKey, string searchMemberID)
         {
-            //try
-            //{
-            //    MemberData memberData = null;
-            //    //// 判斷 Search Key
-            //    if (searchKey is string && searchKey.Contains("@"))
-            //    {
-            //        memberData = await this.GetMemberData(searchKey);
-            //        if (memberData != null)
-            //        {
-            //            return new ResponseResultDto()
-            //            {
-            //                Ok = true,
-            //                Data = memberData
-            //            };
-            //        }
-            //    }
-            //    else if (searchKey is long) //// 目前只能先寫死，待思考有沒有其他更好的方式
-            //    {
-            //    }
-
-            //    return new ResponseResultDto()
-            //    {
-            //        Ok = false,
-            //        Data = "會員搜尋參數無效."
-            //    };
-            //}
-            //catch (Exception ex)
-            //{
-            //    this.logger.LogError(this, "會員搜尋發生錯誤", $"SearchKey:{searchKey}", ex);
-            //    return new ResponseResultDto()
-            //    {
-            //        Ok = false,
-            //        Data = "會員搜尋發生錯誤."
-            //    };
-            //}
-
-            return new ResponseResultDto()
+            try
             {
-                Ok = false,
-                Data = "TODO."
-            };
+                MemberData memberData = await this.GetMemberData(searchKey);
+                if (memberData == null)
+                {
+                    return new ResponseResultDto()
+                    {
+                        Ok = false,
+                        Data = "無會員資料."
+                    };
+                }
+
+                if (!string.IsNullOrEmpty(searchMemberID))
+                {
+                    if (memberData.MemberID.Equals(searchMemberID))
+                    {
+                        return new ResponseResultDto()
+                        {
+                            Ok = false,
+                            Data = "無法搜尋會員本人資料."
+                        };
+                    }
+                }
+
+                return new ResponseResultDto()
+                {
+                    Ok = true,
+                    Data = memberData
+                };
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("搜尋會員尋發生錯誤", $"SearchKey: {searchKey}", ex);
+                return new ResponseResultDto()
+                {
+                    Ok = false,
+                    Data = "搜尋會員發生錯誤."
+                };
+            }
         }
 
         #endregion 會員資料

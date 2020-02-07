@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
-using DataInfo.Core.Applibs;
+using DataInfo.Api.Filters;
+using DataInfo.Core.Extensions;
+using DataInfo.Core.Resource;
 using DataInfo.Service.Interface.Member;
 using DataInfo.Service.Models.Response;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +12,7 @@ using NLog;
 namespace DataInfo.Api.Controllers.Member
 {
     /// <summary>
-    /// 會員搜尋
+    /// 搜尋會員
     /// </summary>
     [Route("api/Member/[controller]")]
     [ApiController]
@@ -37,24 +39,25 @@ namespace DataInfo.Api.Controllers.Member
         }
 
         /// <summary>
-        /// 會員搜尋
+        /// 搜尋會員
         /// </summary>
         /// <param name="postData">postData</param>
         /// <returns>IActionResult</returns>
         [HttpPost]
+        [CheckLogin(true)]
         public async Task<IActionResult> Post(MemberSearchPostData postData)
         {
             try
             {
-                //this.logger.LogInformation(this, "會員搜尋", $"Data:{JsonConvert.SerializeObject(postData)}");
-                if (postData == null)
+                this.logger.LogInfo("請求搜尋會員", $"Data: {JsonConvert.SerializeObject(postData)}", null);
+                if (postData == null || string.IsNullOrEmpty(postData.SearchKey))
                 {
-                    return BadRequest("無會員搜尋資料.");
+                    this.logger.LogWarn("搜尋會員失敗", "Data: 無資料", null);
+                    return BadRequest("無搜尋會員資料.");
                 }
 
-                ResponseResultDto responseResult = string.IsNullOrEmpty(postData.Email) ?
-                    await memberService.Search(postData.MemberID).ConfigureAwait(false) :
-                    await memberService.Search(postData.Email).ConfigureAwait(false);
+                string memberID = this.HttpContext.Session.GetObject<string>(CommonFlagHelper.CommonFlag.SessionFlag.MemberID);
+                ResponseResultDto responseResult = await memberService.Search(postData.SearchKey, memberID).ConfigureAwait(false);
                 if (responseResult.Ok)
                 {
                     return Ok(responseResult.Data);
@@ -64,8 +67,8 @@ namespace DataInfo.Api.Controllers.Member
             }
             catch (Exception ex)
             {
-                //this.logger.LogError(this, "會員搜尋發生錯誤", $"Data:{JsonConvert.SerializeObject(postData)}", ex);
-                return BadRequest("會員搜尋發生錯誤.");
+                this.logger.LogError("搜尋會員發生錯誤", $"Data: {JsonConvert.SerializeObject(postData)}", ex);
+                return BadRequest("搜尋會員發生錯誤.");
             }
         }
 
@@ -75,14 +78,9 @@ namespace DataInfo.Api.Controllers.Member
         public class MemberSearchPostData
         {
             /// <summary>
-            /// Gets or sets Email
+            /// Gets or sets SearchKey
             /// </summary>
-            public string Email { get; set; }
-
-            /// <summary>
-            /// Gets or sets MemberID
-            /// </summary>
-            public long MemberID { get; set; }
+            public string SearchKey { get; set; }
         }
     }
 }
