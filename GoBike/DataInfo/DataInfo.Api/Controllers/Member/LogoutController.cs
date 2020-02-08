@@ -9,16 +9,16 @@ using NLog;
 namespace DataInfo.Api.Controllers.Member
 {
     /// <summary>
-    /// 保持在線
+    /// 會員登出
     /// </summary>
     [Route("api/Member/[controller]")]
     [ApiController]
-    public class KeepOnlineController : ApiController
+    public class LogoutController : ApiController
     {
         /// <summary>
         /// logger
         /// </summary>
-        private readonly ILogger logger = LogManager.GetLogger("KeepOnlineController");
+        private readonly ILogger logger = LogManager.GetLogger("LogoutController");
 
         /// <summary>
         /// memberService
@@ -28,14 +28,15 @@ namespace DataInfo.Api.Controllers.Member
         /// <summary>
         /// 建構式
         /// </summary>
+        /// <param name="logger">logger</param>
         /// <param name="memberService">memberService</param>
-        public KeepOnlineController(IMemberService memberService)
+        public LogoutController(IMemberService memberService)
         {
             this.memberService = memberService;
         }
 
         /// <summary>
-        /// 保持在線
+        /// 會員登出
         /// </summary>
         /// <returns>IActionResult</returns>
         [HttpGet]
@@ -45,12 +46,12 @@ namespace DataInfo.Api.Controllers.Member
             string memberID = this.HttpContext.Session.GetObject<string>(CommonFlagHelper.CommonFlag.SessionFlag.MemberID);
             try
             {
-                this.logger.LogInfo("會員請求保持在線", $"MemberID: {memberID}", null);
-                this.memberService.KeepOnline(this.HttpContext.Session, memberID);
+                this.logger.LogInfo("會員請求登出", $"MemberID: {memberID}", null);
+                this.memberService.Logout(this.HttpContext.Session, memberID);
             }
             catch (Exception ex)
             {
-                this.logger.LogInfo("會員請求保持在線發生錯誤", $"MemberID: {memberID}", ex);
+                this.logger.LogInfo("會員請求登出發生錯誤", $"MemberID: {memberID}", ex);
             }
         }
     }

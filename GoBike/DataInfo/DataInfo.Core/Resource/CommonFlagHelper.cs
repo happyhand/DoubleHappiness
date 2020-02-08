@@ -56,6 +56,11 @@ namespace DataInfo.Core.Resource
         public class RedisSetting
         {
             /// <summary>
+            /// Gets or sets LastLogin
+            /// </summary>
+            public string LastLogin { get; set; }
+
+            /// <summary>
             /// Gets or sets Member
             /// </summary>
             public string Member { get; set; }

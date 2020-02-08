@@ -30,7 +30,25 @@ namespace DataInfo.Service.Managers.Member
         {
         }
 
-        #region 註冊\登入
+        #region 註冊 \ 登入 \ 登出 \ 保持在線
+
+        /// <summary>
+        /// 會員保持在線
+        /// </summary>
+        /// <param name="session">session</param>
+        /// <param name="memberID">memberID</param>
+        public void KeepOnline(ISession session, string memberID)
+        {
+            try
+            {
+                string cacheKey = $"{CommonFlagHelper.CommonFlag.RedisFlag.Member}-{CommonFlagHelper.CommonFlag.RedisFlag.LastLogin}-{memberID}";
+                this.redisRepository.UpdateCacheExpire(cacheKey, TimeSpan.FromMinutes(AppSettingHelper.Appsetting.SeesionDeadline));
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("會員保持在線發生錯誤", $"SessionID: {session.Id} MemberID: {memberID}", ex);
+            }
+        }
 
         /// <summary>
         /// 會員登入
@@ -43,9 +61,11 @@ namespace DataInfo.Service.Managers.Member
         {
             try
             {
+                #region 驗證登入資料
+
                 if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
                 {
-                    this.logger.LogWarn("會員登入結果", $"Result: 驗證失敗 Email: {email} Password: {password}", null);
+                    this.logger.LogWarn("會員登入結果", $"Result: 驗證失敗 SessionID: {session.Id} Email: {email} Password: {password}", null);
                     return new ResponseResultDto()
                     {
                         Ok = false,
@@ -53,17 +73,21 @@ namespace DataInfo.Service.Managers.Member
                     };
                 }
 
-                MemberData memberData = await this.GetMemberData(email);
+                #endregion 驗證登入資料
+
+                #region 取得資料並驗證密碼
+
+                MemberData memberData = await this.GetMemberData(email).ConfigureAwait(false);
                 if (memberData == null)
                 {
-                    this.logger.LogWarn("會員登入結果", $"Result: 無會員資料 Email: {email} Password: {password}", null);
+                    this.logger.LogWarn("會員登入結果", $"Result: 無會員資料 SessionID: {session.Id} Email: {email} Password: {password}", null);
                     return new ResponseResultDto() { Ok = false, Data = "無法根據信箱查詢到相關會員." };
                 }
 
                 string decryptAESPassword = Utility.DecryptAES(memberData.Password);
                 if (!decryptAESPassword.Equals(password))
                 {
-                    this.logger.LogWarn("會員登入結果", $"Result: 密碼驗證失敗 Email: {email} Password: {password}", null);
+                    this.logger.LogWarn("會員登入結果", $"Result: 密碼驗證失敗 SessionID: {session.Id} Email: {email} Password: {password}", null);
                     return new ResponseResultDto()
                     {
                         Ok = false,
@@ -71,17 +95,23 @@ namespace DataInfo.Service.Managers.Member
                     };
                 }
 
-                string token = this.CreateLoginToken(email, password, string.Empty, string.Empty);
-                this.RecordSessionID(session, memberData.MemberID);
+                #endregion 取得資料並驗證密碼
+
+                #region 更新最新登入時間
+
+                this.UpdateLastLoginDate(session, memberData);
+
+                #endregion 更新最新登入時間
+
                 return new ResponseResultDto()
                 {
                     Ok = true,
-                    Data = new MemberLoginInfoViewDto { MemberID = memberData.MemberID, Token = token, ServerIP = AppSettingHelper.Appsetting.ServerConfig.Ip, ServerPort = AppSettingHelper.Appsetting.ServerConfig.Port }
+                    Data = new MemberLoginInfoViewDto { MemberID = memberData.MemberID, ServerIP = AppSettingHelper.Appsetting.ServerConfig.Ip, ServerPort = AppSettingHelper.Appsetting.ServerConfig.Port }
                 };
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員登入發生錯誤", $"Email:{email} Password:{password}", ex);
+                this.logger.LogError("會員登入發生錯誤", $"SessionID: {session.Id} Email: {email} Password: {password}", ex);
                 return new ResponseResultDto()
                 {
                     Ok = false,
@@ -91,16 +121,38 @@ namespace DataInfo.Service.Managers.Member
         }
 
         /// <summary>
+        /// 會員登出
+        /// </summary>
+        /// <param name="session">session</param>
+        /// <param name="memberID">memberID</param>
+        public void Logout(ISession session, string memberID)
+        {
+            try
+            {
+                session.Remove(CommonFlagHelper.CommonFlag.SessionFlag.MemberID);
+                string cacheKey = $"{CommonFlagHelper.CommonFlag.RedisFlag.Member}-{CommonFlagHelper.CommonFlag.RedisFlag.LastLogin}-{memberID}";
+                this.redisRepository.DeleteCache(cacheKey);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("會員登出發生錯誤", $"SessionID: {session.Id} MemberID: {memberID}", ex);
+            }
+        }
+
+        /// <summary>
         /// 會員註冊
         /// </summary>
         /// <param name="email">email</param>
         /// <param name="password">password</param>
+        /// <param name="isVerifyPassword">isVerifyPassword</param>
+        /// <param name="fbToken">fbToken</param>
+        /// <param name="googleToken">googleToken</param>
         /// <returns>ResponseResultDto</returns>
         public async Task<ResponseResultDto> Register(string email, string password, bool isVerifyPassword, string fbToken, string googleToken)
         {
             try
             {
-                string verifyMemberRegisterResult = await this.VerifyMemberRegister(email, password, isVerifyPassword);
+                string verifyMemberRegisterResult = await this.VerifyMemberRegister(email, password, isVerifyPassword).ConfigureAwait(false);
                 if (!string.IsNullOrEmpty(verifyMemberRegisterResult))
                 {
                     this.logger.LogWarn("會員註冊結果", $"Result: 驗證失敗({verifyMemberRegisterResult}) Email: {email} Password: {password} IsVerifyPassword: {isVerifyPassword} FbToken: {fbToken} GoogleToken: {googleToken}", null);
@@ -112,7 +164,7 @@ namespace DataInfo.Service.Managers.Member
                 }
 
                 MemberData memberData = this.CreateMemberData(email, password, fbToken, googleToken);
-                bool isSuccess = await this.memberRepository.CreateMemberData(memberData);
+                bool isSuccess = await this.memberRepository.CreateMemberData(memberData).ConfigureAwait(false);
                 this.logger.LogInfo("會員註冊結果", $"Result: {isSuccess} MemberData: {JsonConvert.SerializeObject(memberData)}", null);
                 if (isSuccess)
                 {
@@ -141,135 +193,6 @@ namespace DataInfo.Service.Managers.Member
         }
 
         #region TODO
-
-        /// <summary>
-        /// 刪除會員 Session ID
-        /// </summary>
-        /// <param name="memberID">memberID</param>
-        /// <param name="sessionID">sessionID</param>
-        /// <returns>ResponseResultDto</returns>
-        public async Task<ResponseResultDto> DeleteSessionID(string memberID, string sessionID)
-        {
-            //try
-            //{
-            //    string cacheKey = $"{CommonFlagHelper.CommonFlag.RedisFlag.Session}-{sessionID}-{memberID}";
-            //    bool result = await this.redisRepository.DeleteCache(cacheKey);
-            //    if (result)
-            //    {
-            //        return new ResponseResultDto()
-            //        {
-            //            Ok = true,
-            //            Data = "刪除會員 Session ID 成功."
-            //        };
-            //    }
-
-            //    return new ResponseResultDto()
-            //    {
-            //        Ok = false,
-            //        Data = "刪除會員 Session ID 失敗."
-            //    };
-            //}
-            //catch (Exception ex)
-            //{
-            //    this.logger.LogError($"Delete Session ID Error >>> MemberID:{memberID} SessionID:{sessionID}\n{ex}");
-            //    return new ResponseResultDto()
-            //    {
-            //        Ok = false,
-            //        Data = "刪除會員 Session ID 發生錯誤."
-            //    };
-            //}
-
-            return new ResponseResultDto()
-            {
-                Ok = false,
-                Data = "TODO."
-            };
-        }
-
-        /// <summary>
-        /// 延長會員 Session ID 期限
-        /// </summary>
-        /// <param name="memberID">memberID</param>
-        /// <param name="sessionID">sessionID</param>
-        /// <returns>ResponseResultDto</returns>
-        public async Task<ResponseResultDto> ExtendSessionIDExpire(string memberID, string sessionID)
-        {
-            //try
-            //{
-            //    string cacheKey = $"{CommonFlagHelper.CommonFlag.RedisFlag.Session}-{sessionID}-{memberID}";
-            //    bool result = await this.redisRepository.UpdateCacheExpire(cacheKey, TimeSpan.FromMinutes(AppSettingHelper.Appsetting.SeesionDeadline));
-            //    if (result)
-            //    {
-            //        return new ResponseResultDto()
-            //        {
-            //            Ok = true,
-            //            Data = "延長 Session ID 成功."
-            //        };
-            //    }
-
-            //    return new ResponseResultDto()
-            //    {
-            //        Ok = false,
-            //        Data = "延長 Session ID 失敗."
-            //    };
-            //}
-            //catch (Exception ex)
-            //{
-            //    this.logger.LogError($"Extend Session ID Expire Error >>> MemberID:{memberID} SessionID:{sessionID}\n{ex}");
-            //    return new ResponseResultDto()
-            //    {
-            //        Ok = false,
-            //        Data = "延長 Session ID 發生錯誤."
-            //    };
-            //}
-
-            return new ResponseResultDto()
-            {
-                Ok = false,
-                Data = "TODO."
-            };
-        }
-
-        /// <summary>
-        /// 會員登入 (token)
-        /// </summary>
-        /// <param name="token">token</param>
-        /// <returns>ResponseResultDto</returns>
-        public async Task<ResponseResultDto> Login(string token)
-        {
-            //try
-            //{
-            //    string[] dataArr = token.Split(CommonFlagHelper.CommonFlag.SeparateFlag);
-            //    string data1 = Utility.DecryptAES(dataArr[0]);
-            //    string data2 = Utility.DecryptAES(dataArr[1]);
-            //    if (data1.Equals(CommonFlagHelper.CommonFlag.PlatformFlag.FB))
-            //    {
-            //        string fbToken = Utility.DecryptAES(dataArr[2]);
-            //        return await this.LoginFB(data2, fbToken);
-            //    }
-
-            // if (data1.Equals(CommonFlagHelper.CommonFlag.PlatformFlag.Google)) { string
-            // googleToken = Utility.DecryptAES(dataArr[2]); return await this.LoginGoogle(data2,
-            // googleToken); }
-
-            //    return await this.Login(data1, data2);
-            //}
-            //catch (Exception ex)
-            //{
-            //    this.logger.LogError($"Login Auto Token Error >>> Token:{token}\n{ex}");
-            //    return new ResponseResultDto()
-            //    {
-            //        Ok = false,
-            //        Data = "會員登入發生錯誤."
-            //    };
-            //}
-
-            return new ResponseResultDto()
-            {
-                Ok = false,
-                Data = "TODO."
-            };
-        }
 
         /// <summary>
         /// 會員登入 (FB)
@@ -363,7 +286,7 @@ namespace DataInfo.Service.Managers.Member
 
         #endregion TODO
 
-        #endregion 註冊\登入
+        #endregion 註冊 \ 登入 \ 登出 \ 保持在線
 
         #region 會員資料
 
@@ -377,7 +300,7 @@ namespace DataInfo.Service.Managers.Member
         {
             try
             {
-                MemberData memberData = await this.GetMemberData(searchKey);
+                MemberData memberData = await this.GetMemberData(searchKey).ConfigureAwait(false);
                 if (memberData == null)
                 {
                     return new ResponseResultDto()

@@ -53,16 +53,16 @@ namespace DataInfo.Repository.Managers
         /// </summary>
         /// <param name="cacheKey">cacheKey</param>
         /// <returns>bool</returns>
-        public Task<bool> DeleteCache(string cacheKey)
+        public async Task<bool> DeleteCache(string cacheKey)
         {
             try
             {
-                return this.database.KeyDeleteAsync(cacheKey);
+                return await this.database.KeyDeleteAsync(cacheKey).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("刪除快取資料發生錯誤", $"CacheKey: {cacheKey}", ex);
-                return Task.Run(() => { return false; });
+                return false;
             }
         }
 
@@ -71,16 +71,16 @@ namespace DataInfo.Repository.Managers
         /// </summary>
         /// <param name="cacheKey">cacheKey</param>
         /// <returns>RedisValue</returns>
-        public Task<RedisValue> GetCache(string cacheKey)
+        public async Task<RedisValue> GetCache(string cacheKey)
         {
             try
             {
-                return this.database.StringGetAsync(cacheKey);
+                return await this.database.StringGetAsync(cacheKey).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("讀取快取資料發生錯誤", $"CacheKey: {cacheKey}", ex);
-                return Task.Run(() => { return RedisValue.Null; });
+                return RedisValue.Null;
             }
         }
 
@@ -90,16 +90,16 @@ namespace DataInfo.Repository.Managers
         /// <param name="cacheKey">cacheKey</param>
         /// <param name="hashKey">hashKey</param>
         /// <returns>RedisValue</returns>
-        public Task<RedisValue> GetCache(string cacheKey, string hashKey)
+        public async Task<RedisValue> GetCache(string cacheKey, string hashKey)
         {
             try
             {
-                return this.database.HashGetAsync(cacheKey, hashKey);
+                return await this.database.HashGetAsync(cacheKey, hashKey).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("讀取快取資料發生錯誤", $"CacheKey: {cacheKey} HashKey: {hashKey}", ex);
-                return Task.Run(() => { return RedisValue.Null; });
+                return RedisValue.Null;
             }
         }
 
@@ -109,16 +109,16 @@ namespace DataInfo.Repository.Managers
         /// <param name="cacheKey">cacheKey</param>
         /// <param name="hashKey">hashKey</param>
         /// <returns>RedisValues</returns>
-        public Task<RedisValue[]> GetCache(string cacheKey, string[] hashKeys)
+        public async Task<RedisValue[]> GetCache(string cacheKey, string[] hashKeys)
         {
             try
             {
-                return this.database.HashGetAsync(cacheKey, hashKeys.ToRedisValueArray());
+                return await this.database.HashGetAsync(cacheKey, hashKeys.ToRedisValueArray()).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("讀取快取資料發生錯誤", $"CacheKey: {cacheKey} HashKeys: {JsonConvert.SerializeObject(hashKeys)}", ex);
-                return Task.Run(() => { return new RedisValue[] { }; });
+                return null;
             }
         }
 
@@ -127,16 +127,16 @@ namespace DataInfo.Repository.Managers
         /// </summary>
         /// <param name="cacheKey">cacheKey</param>
         /// <returns>HashEntrys</returns>
-        public Task<HashEntry[]> GetHashAllCache(string cacheKey)
+        public async Task<HashEntry[]> GetHashAllCache(string cacheKey)
         {
             try
             {
-                return this.database.HashGetAllAsync(cacheKey);
+                return await this.database.HashGetAllAsync(cacheKey).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("讀取快取資料發生錯誤", $"CacheKey: {cacheKey}", ex);
-                return Task.Run(() => { return new HashEntry[] { }; });
+                return null;
             }
         }
 
@@ -156,16 +156,12 @@ namespace DataInfo.Repository.Managers
         /// <param name="cacheKey">cacheKey</param>
         /// <param name="dataJSON">dataJSON</param>
         /// <param name="cacheTimes">cacheTimes</param>
-        public void SetCache(string cacheKey, string dataJSON, TimeSpan cacheTimes)
+        public async Task SetCache(string cacheKey, string dataJSON, TimeSpan? cacheTimes)
         {
             try
             {
-                TaskAwaiter<bool> setCacheAwaiter = this.database.StringSetAsync(cacheKey, dataJSON, cacheTimes).GetAwaiter();
-                setCacheAwaiter.OnCompleted(() =>
-                {
-                    bool isSuccess = setCacheAwaiter.GetResult();
-                    this.logger.LogInfo("寫入快取資料結果", $"Result: {isSuccess} CacheKey: {cacheKey} DataJSON: {dataJSON} CacheTimes: {JsonConvert.SerializeObject(cacheTimes)}", null);
-                });
+                bool isSuccess = await this.database.StringSetAsync(cacheKey, dataJSON, cacheTimes).ConfigureAwait(false);
+                this.logger.LogInfo("寫入快取資料結果", $"Result: {isSuccess} CacheKey: {cacheKey} DataJSON: {dataJSON} CacheTimes: {JsonConvert.SerializeObject(cacheTimes)}", null);
             }
             catch (Exception ex)
             {
@@ -180,29 +176,13 @@ namespace DataInfo.Repository.Managers
         /// <param name="hashKey">hashKey</param>
         /// <param name="dataJSON">dataJSON</param>
         /// <param name="cacheTimes">cacheTimes</param>
-        public void SetCache(string cacheKey, string hashKey, string dataJSON, TimeSpan cacheTimes)
+        public async Task SetCache(string cacheKey, string hashKey, string dataJSON, TimeSpan? cacheTimes)
         {
             try
             {
-                TaskAwaiter<bool> getKeyExistsAwaiter = this.database.KeyExistsAsync(cacheKey).GetAwaiter();
-                getKeyExistsAwaiter.OnCompleted(() =>
-                {
-                    bool keyIsExist = getKeyExistsAwaiter.GetResult();
-                    TaskAwaiter<bool> setCacheAwaiter = this.database.HashSetAsync(cacheKey, hashKey, dataJSON).GetAwaiter();
-                    setCacheAwaiter.OnCompleted(() =>
-                    {
-                        bool isSuccess = setCacheAwaiter.GetResult();
-                        if (isSuccess)
-                        {
-                            if (!keyIsExist)
-                            {
-                                this.UpdateCacheExpire(cacheKey, cacheTimes);
-                            }
-                        }
-
-                        this.logger.LogInfo("寫入快取資料結果", $"Result: {isSuccess} CacheKey: {cacheKey} HashKey: {hashKey} DataJSON: {dataJSON} CacheTimes: {JsonConvert.SerializeObject(cacheTimes)}", null);
-                    });
-                });
+                bool isSuccess = await this.database.HashSetAsync(cacheKey, hashKey, dataJSON).ConfigureAwait(false);
+                this.UpdateCacheExpire(cacheKey, cacheTimes);
+                this.logger.LogInfo("寫入快取資料結果", $"Result: {isSuccess} CacheKey: {cacheKey} HashKey: {hashKey} DataJSON: {dataJSON} CacheTimes: {JsonConvert.SerializeObject(cacheTimes)}", null);
             }
             catch (Exception ex)
             {
@@ -216,16 +196,16 @@ namespace DataInfo.Repository.Managers
         /// <param name="cacheKey">cacheKey</param>
         /// <param name="cacheTimes">cacheTimes</param>
         /// <returns>bool</returns>
-        public Task<bool> UpdateCacheExpire(string cacheKey, TimeSpan cacheTimes)
+        public async Task<bool> UpdateCacheExpire(string cacheKey, TimeSpan? cacheTimes)
         {
             try
             {
-                return this.database.KeyExpireAsync(cacheKey, cacheTimes);
+                return await this.database.KeyExpireAsync(cacheKey, cacheTimes).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("更新快取資料到期時間發生錯誤", $"CacheKey: {cacheKey} CacheTimes: {JsonConvert.SerializeObject(cacheTimes)}", ex);
-                return Task.Run(() => { return false; });
+                return false;
             }
         }
     }

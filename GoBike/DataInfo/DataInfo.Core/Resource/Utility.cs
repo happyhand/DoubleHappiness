@@ -113,7 +113,7 @@ namespace DataInfo.Core.Resource
             {
                 client.BaseAddress = new Uri($"http://{domain}/");
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                return await client.GetAsync(apiUrl);
+                return await client.GetAsync(apiUrl).ConfigureAwait(false);
             }
         }
 
@@ -131,7 +131,7 @@ namespace DataInfo.Core.Resource
                 client.BaseAddress = new Uri($"http://{domain}/");
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 StringContent content = new StringContent(postData, Encoding.UTF8, "application/json");
-                return await client.PostAsync(apiUrl, content);
+                return await client.PostAsync(apiUrl, content).ConfigureAwait(false);
             }
         }
 
@@ -162,7 +162,7 @@ namespace DataInfo.Core.Resource
                     }
                 }
                 //// 呼叫 api 並接收回應
-                return await client.PostAsync(apiUrl, multiContent);
+                return await client.PostAsync(apiUrl, multiContent).ConfigureAwait(false);
             }
         }
 

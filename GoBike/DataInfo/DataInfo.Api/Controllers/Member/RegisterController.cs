@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
-using DataInfo.Core.Applibs;
+using DataInfo.Core.Extensions;
 using DataInfo.Service.Interface.Member;
 using DataInfo.Service.Models.Response;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using NLog;
-using DataInfo.Core.Extensions;
 
 namespace DataInfo.Api.Controllers.Member
 {

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -10,8 +9,8 @@ using DataInfo.Core.Resource.Enum;
 using DataInfo.Repository.Interface;
 using DataInfo.Repository.Interface.Sql;
 using DataInfo.Repository.Models.Data.Member;
-using DataInfo.Service.Models.Response;
 using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
 using NLog;
 
 namespace DataInfo.Service.Managers.Member
@@ -58,34 +57,6 @@ namespace DataInfo.Service.Managers.Member
         #region 建立功能
 
         /// <summary>
-        /// 建立登入 Token
-        /// </summary>
-        /// <param name="email">email</param>
-        /// <param name="password">password</param>
-        /// <param name="fbToken">fbToken</param>
-        /// <param name="googleToken">googleToken</param>
-        /// <returns>string</returns>
-        protected string CreateLoginToken(string email, string password, string fbToken, string googleToken)
-        {
-            if (!string.IsNullOrEmpty(email) && !string.IsNullOrEmpty(password))
-            {
-                return $"{Utility.EncryptAES(email)}{CommonFlagHelper.CommonFlag.SeparateFlag}{Utility.EncryptAES(password)}";
-            }
-
-            if (!string.IsNullOrEmpty(fbToken))
-            {
-                return $"{Utility.EncryptAES(CommonFlagHelper.CommonFlag.PlatformFlag.FB)}{CommonFlagHelper.CommonFlag.SeparateFlag}{Utility.EncryptAES(email)}{CommonFlagHelper.CommonFlag.SeparateFlag}{Utility.EncryptAES(fbToken)}";
-            }
-
-            if (!string.IsNullOrEmpty(googleToken))
-            {
-                return $"{Utility.EncryptAES(CommonFlagHelper.CommonFlag.PlatformFlag.Google)}{CommonFlagHelper.CommonFlag.SeparateFlag}{Utility.EncryptAES(email)}{CommonFlagHelper.CommonFlag.SeparateFlag}{Utility.EncryptAES(googleToken)}";
-            }
-
-            return string.Empty;
-        }
-
-        /// <summary>
         /// 建立會員資料
         /// </summary>
         /// <param name="email">email</param>
@@ -95,13 +66,13 @@ namespace DataInfo.Service.Managers.Member
         /// <returns>MemberData</returns>
         protected MemberData CreateMemberData(string email, string password, string fbToken, string googleToken)
         {
-            byte[] dateTimeBytes = BitConverter.GetBytes(DateTime.Now.Ticks);
+            byte[] dateTimeBytes = BitConverter.GetBytes(DateTime.UtcNow.Ticks);
             Array.Resize(ref dateTimeBytes, 16);
             string memberID = new Guid(dateTimeBytes).ToString().Substring(0, 8);
             return new MemberData()
             {
                 MemberID = memberID,
-                RegisterDate = DateTime.Now,
+                RegisterDate = DateTime.UtcNow,
                 RegisterSource = string.IsNullOrEmpty(fbToken) ? string.IsNullOrEmpty(googleToken) ? (int)RegisterSourceType.Normal : (int)RegisterSourceType.Google : (int)RegisterSourceType.FB,
                 AccountName = email,
                 Password = string.IsNullOrEmpty(password) ? string.Empty : Utility.EncryptAES(password),
@@ -191,7 +162,7 @@ namespace DataInfo.Service.Managers.Member
                 }
             }
 
-            MemberData existMemberData = await this.GetMemberData(email);
+            MemberData existMemberData = await this.GetMemberData(email).ConfigureAwait(false);
             if (existMemberData != null)
             {
                 return "此信箱已經被註冊.";
@@ -207,6 +178,7 @@ namespace DataInfo.Service.Managers.Member
         /// <summary>
         /// 取得會員資料
         /// </summary>
+        /// <param name="searchKey">searchKey</param>
         /// <returns>MemberData</returns>
         protected async Task<MemberData> GetMemberData(string searchKey)
         {
@@ -215,11 +187,11 @@ namespace DataInfo.Service.Managers.Member
                 this.logger.LogInfo("取得會員資料", $"SearchKey: {searchKey}", null);
                 if (searchKey.Contains("@"))
                 {
-                    return await this.memberRepository.GetMemberDataByEmail(searchKey);
+                    return await this.memberRepository.GetMemberDataByEmail(searchKey).ConfigureAwait(false);
                 }
                 else if (searchKey.Length == 8) //// 目前只能先寫死，待思考有沒有其他更好的方式
                 {
-                    return await this.memberRepository.GetMemberDataByMemberID(searchKey);
+                    return await this.memberRepository.GetMemberDataByMemberID(searchKey).ConfigureAwait(false);
                 }
 
                 return null;
@@ -232,29 +204,24 @@ namespace DataInfo.Service.Managers.Member
         }
 
         /// <summary>
-        /// 紀錄會員 Session ID
+        /// 更新最新登入時間
         /// </summary>
         /// <param name="session">session</param>
-        /// <param name="memberID">memberID</param>
-        /// <returns></returns>
-        protected void RecordSessionID(ISession session, string memberID)
+        /// <param name="memberData">memberData</param>
+        protected void UpdateLastLoginDate(ISession session, MemberData memberData)
         {
             try
             {
-                if (session == null)
-                {
-                    this.logger.LogWarn("紀錄會員 Session ID失敗", $"Message: Session 為空值 MemberID:{memberID}", null);
-                    return;
-                }
-
-                this.logger.LogInfo("紀錄會員 Session ID", $"Session:{session.Id} MemberID:{memberID}", null);
-                session.SetObject(CommonFlagHelper.CommonFlag.SessionFlag.MemberID, memberID);
-                string cacheKey = $"{CommonFlagHelper.CommonFlag.RedisFlag.Session}-{memberID}";
-                this.redisRepository.SetCache(cacheKey, session.Id, memberID.ToString(), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.SeesionDeadline));
+                this.logger.LogInfo("更新會員最新登入時間", $"MemberID: {memberData.MemberID}", null);
+                session.SetObject(CommonFlagHelper.CommonFlag.SessionFlag.MemberID, memberData.MemberID);
+                memberData.LoginDate = DateTime.UtcNow;
+                string cacheKey = $"{CommonFlagHelper.CommonFlag.RedisFlag.Member}-{CommonFlagHelper.CommonFlag.RedisFlag.LastLogin}-{memberData.MemberID}";
+                this.redisRepository.SetCache(cacheKey, $"{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}", TimeSpan.FromMinutes(AppSettingHelper.Appsetting.SeesionDeadline));
+                this.memberRepository.UpdateMemberData(memberData);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("紀錄會員 Session ID發生錯誤", $"Session:{session?.Id} MemberID:{memberID}", ex);
+                this.logger.LogError("更新會員最新登入時間發生錯誤", $"MemberData: {JsonConvert.SerializeObject(memberData)}", ex);
             }
         }
 

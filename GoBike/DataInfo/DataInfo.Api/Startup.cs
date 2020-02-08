@@ -91,7 +91,7 @@ namespace DataInfo.Api
                 options.Cookie.Name = "Produce Session";
                 options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
                 options.Cookie.SameSite = SameSiteMode.None;
-                options.IdleTimeout = TimeSpan.FromMinutes(5);
+                options.IdleTimeout = TimeSpan.FromMinutes(AppSettingHelper.Appsetting.SeesionDeadline);
             });
         }
 

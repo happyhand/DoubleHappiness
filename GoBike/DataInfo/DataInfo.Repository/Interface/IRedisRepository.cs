@@ -60,7 +60,7 @@ namespace DataInfo.Repository.Interface
         /// <param name="cacheKey">cacheKey</param>
         /// <param name="dataJSON">dataJSON</param>
         /// <param name="cacheTimes">cacheTimes</param>
-        void SetCache(string cacheKey, string dataJSON, TimeSpan cacheTimes);
+        Task SetCache(string cacheKey, string dataJSON, TimeSpan? cacheTimes);
 
         /// <summary>
         /// 寫入快取資料
@@ -69,7 +69,7 @@ namespace DataInfo.Repository.Interface
         /// <param name="hashKey">hashKey</param>
         /// <param name="dataJSON">dataJSON</param>
         /// <param name="cacheTimes">cacheTimes</param>
-        void SetCache(string cacheKey, string hashKey, string dataJSON, TimeSpan cacheTimes);
+        Task SetCache(string cacheKey, string hashKey, string dataJSON, TimeSpan? cacheTimes);
 
         /// <summary>
         /// 更新快取資料到期時間
@@ -77,6 +77,6 @@ namespace DataInfo.Repository.Interface
         /// <param name="cacheKey">cacheKey</param>
         /// <param name="cacheTimes">cacheTimes</param>
         /// <returns>bool</returns>
-        Task<bool> UpdateCacheExpire(string cacheKey, TimeSpan cacheTimes);
+        Task<bool> UpdateCacheExpire(string cacheKey, TimeSpan? cacheTimes);
     }
 }

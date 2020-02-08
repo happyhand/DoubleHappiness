@@ -9,23 +9,14 @@ namespace DataInfo.Service.Interface.Member
     /// </summary>
     public interface IMemberService
     {
-        #region 註冊\登入
+        #region 註冊 \ 登入 \ 登出 \ 保持在線
 
         /// <summary>
-        /// 刪除會員 Session ID
+        /// 會員保持在線
         /// </summary>
+        /// <param name="session">session</param>
         /// <param name="memberID">memberID</param>
-        /// <param name="sessionID">sessionID</param>
-        /// <returns>ResponseResultDto</returns>
-        Task<ResponseResultDto> DeleteSessionID(string memberID, string sessionID);
-
-        /// <summary>
-        /// 延長會員 Session ID 期限
-        /// </summary>
-        /// <param name="memberID">memberID</param>
-        /// <param name="sessionID">sessionID</param>
-        /// <returns>ResponseResultDto</returns>
-        Task<ResponseResultDto> ExtendSessionIDExpire(string memberID, string sessionID);
+        void KeepOnline(ISession session, string memberID);
 
         /// <summary>
         /// 會員登入
@@ -37,11 +28,24 @@ namespace DataInfo.Service.Interface.Member
         Task<ResponseResultDto> Login(ISession session, string email, string password);
 
         /// <summary>
-        /// 會員登入 (token)
+        /// 會員登出
         /// </summary>
-        /// <param name="token">token</param>
+        /// <param name="session">session</param>
+        /// <param name="memberID">memberID</param>
+        void Logout(ISession session, string memberID);
+
+        /// <summary>
+        /// 會員註冊
+        /// </summary>
+        /// <param name="email">email</param>
+        /// <param name="password">password</param>
+        /// <param name="isVerifyPassword">isVerifyPassword</param>
+        /// <param name="fbToken">fbToken</param>
+        /// <param name="googleToken">googleToken</param>
         /// <returns>ResponseResultDto</returns>
-        Task<ResponseResultDto> Login(string token);
+        Task<ResponseResultDto> Register(string email, string password, bool isVerifyPassword, string fbToken, string googleToken);
+
+        #region TODO
 
         /// <summary>
         /// 會員登入 (FB)
@@ -59,18 +63,9 @@ namespace DataInfo.Service.Interface.Member
         /// <returns>ResponseResultDto</returns>
         Task<ResponseResultDto> LoginGoogle(string email, string token);
 
-        /// <summary>
-        /// 會員註冊
-        /// </summary>
-        /// <param name="email">email</param>
-        /// <param name="password">password</param>
-        /// <param name="isVerifyPassword">isVerifyPassword</param>
-        /// <param name="fbToken">fbToken</param>
-        /// <param name="googleToken">googleToken</param>
-        /// <returns>ResponseResultDto</returns>
-        Task<ResponseResultDto> Register(string email, string password, bool isVerifyPassword, string fbToken, string googleToken);
+        #endregion TODO
 
-        #endregion 註冊\登入
+        #endregion 註冊 \ 登入 \ 登出 \ 保持在線
 
         #region 會員資料
 

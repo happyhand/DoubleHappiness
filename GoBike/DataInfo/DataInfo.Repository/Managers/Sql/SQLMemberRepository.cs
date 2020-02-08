@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using DataInfo.Core.Extensions;
 using DataInfo.Repository.Interface.Sql;
@@ -40,8 +41,8 @@ namespace DataInfo.Repository.Managers.Sql
             {
                 using (var maindb = new Maindb(this.serviceProvider.GetRequiredService<DbContextOptions<Maindb>>()))
                 {
-                    await maindb.Member.AddAsync(memberData);
-                    bool isSuccess = await maindb.SaveChangesAsync() > 0;
+                    await maindb.Member.AddAsync(memberData).ConfigureAwait(false);
+                    bool isSuccess = await maindb.SaveChangesAsync().ConfigureAwait(false) > 0;
                     this.logger.LogInfo("建立會員資料", $"Result: {isSuccess} MemberData: {JsonConvert.SerializeObject(memberData)}", null);
                     return true;
                 }
@@ -64,7 +65,7 @@ namespace DataInfo.Repository.Managers.Sql
             {
                 using (var maindb = new Maindb(this.serviceProvider.GetRequiredService<DbContextOptions<Maindb>>()))
                 {
-                    return await maindb.Member.FirstOrDefaultAsync(options => options.AccountName.Equals(email));
+                    return await maindb.Member.FirstOrDefaultAsync(options => options.AccountName.Equals(email)).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -85,13 +86,34 @@ namespace DataInfo.Repository.Managers.Sql
             {
                 using (var maindb = new Maindb(this.serviceProvider.GetRequiredService<DbContextOptions<Maindb>>()))
                 {
-                    return await maindb.Member.FirstOrDefaultAsync(options => options.MemberID.Equals(memberID));
+                    return await maindb.Member.FirstOrDefaultAsync(options => options.MemberID.Equals(memberID)).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
             {
                 this.logger.LogError("取得會員資料發生錯誤(MemberID)", $"MemberID: {memberID}", ex);
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// 更新會員資料
+        /// </summary>
+        /// <param name="memberData">memberData</param>
+        public async Task UpdateMemberData(MemberData memberData)
+        {
+            try
+            {
+                using (var maindb = new Maindb(this.serviceProvider.GetRequiredService<DbContextOptions<Maindb>>()))
+                {
+                    maindb.Update(memberData);
+                    bool isSuccess = await maindb.SaveChangesAsync().ConfigureAwait(false) > 0;
+                    this.logger.LogInfo("更新會員資料", $"Result: {isSuccess} MemberData: {JsonConvert.SerializeObject(memberData)}", null);
+                }
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("更新會員資料發生錯誤", $"MemberData: {JsonConvert.SerializeObject(memberData)}", ex);
             }
         }
     }

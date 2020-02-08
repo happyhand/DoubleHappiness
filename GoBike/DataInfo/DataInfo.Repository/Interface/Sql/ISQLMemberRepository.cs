@@ -31,5 +31,11 @@ namespace DataInfo.Repository.Interface.Sql
         /// <param name="memberID">memberID</param>
         /// <returns>MemberData</returns>
         Task<MemberData> GetMemberDataByMemberID(string memberID);
+
+        /// <summary>
+        /// 更新會員資料
+        /// </summary>
+        /// <param name="memberData">memberData</param>
+        Task UpdateMemberData(MemberData memberData);
     }
 }

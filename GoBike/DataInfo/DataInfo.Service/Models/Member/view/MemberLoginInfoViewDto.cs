@@ -23,10 +23,5 @@ namespace DataInfo.Service.Models.Member.view
         /// Gets or sets ServerPort
         /// </summary>
         public int ServerPort { get; set; }
-
-        /// <summary>
-        /// Gets or sets Token
-        /// </summary>
-        public string Token { get; set; }
     }
 }
