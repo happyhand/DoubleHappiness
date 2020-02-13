@@ -1,5 +1,5 @@
 ﻿using DataInfo.Core.Extensions;
-using DataInfo.Core.Resource;
+using DataInfo.Core.Applibs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System.Threading.Tasks;

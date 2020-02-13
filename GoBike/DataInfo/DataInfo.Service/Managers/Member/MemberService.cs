@@ -1,13 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
 using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
 using DataInfo.Core.Resource;
+using DataInfo.Core.Resource.Enum;
 using DataInfo.Repository.Interface;
 using DataInfo.Repository.Interface.Sql;
 using DataInfo.Repository.Models.Data.Member;
 using DataInfo.Service.Interface.Member;
+using DataInfo.Service.Models.Member.data;
 using DataInfo.Service.Models.Member.view;
 using DataInfo.Service.Models.Response;
 using Microsoft.AspNetCore.Http;
@@ -51,7 +54,7 @@ namespace DataInfo.Service.Managers.Member
         }
 
         /// <summary>
-        /// 會員登入
+        /// 會員登入(一般登入)
         /// </summary>
         /// <param name="session">session</param>
         /// <param name="email">email</param>
@@ -65,7 +68,7 @@ namespace DataInfo.Service.Managers.Member
 
                 if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
                 {
-                    this.logger.LogWarn("會員登入結果", $"Result: 驗證失敗 SessionID: {session.Id} Email: {email} Password: {password}", null);
+                    this.logger.LogWarn("會員登入結果(一般登入)", $"Result: 驗證失敗 SessionID: {session.Id} Email: {email} Password: {password}", null);
                     return new ResponseResultDto()
                     {
                         Ok = false,
@@ -80,14 +83,14 @@ namespace DataInfo.Service.Managers.Member
                 MemberData memberData = await this.GetMemberData(email).ConfigureAwait(false);
                 if (memberData == null)
                 {
-                    this.logger.LogWarn("會員登入結果", $"Result: 無會員資料 SessionID: {session.Id} Email: {email} Password: {password}", null);
+                    this.logger.LogWarn("會員登入結果(一般登入)", $"Result: 無會員資料 SessionID: {session.Id} Email: {email} Password: {password}", null);
                     return new ResponseResultDto() { Ok = false, Data = "無法根據信箱查詢到相關會員." };
                 }
 
                 string decryptAESPassword = Utility.DecryptAES(memberData.Password);
                 if (!decryptAESPassword.Equals(password))
                 {
-                    this.logger.LogWarn("會員登入結果", $"Result: 密碼驗證失敗 SessionID: {session.Id} Email: {email} Password: {password}", null);
+                    this.logger.LogWarn("會員登入結果(一般登入)", $"Result: 密碼驗證失敗 SessionID: {session.Id} Email: {email} Password: {password}", null);
                     return new ResponseResultDto()
                     {
                         Ok = false,
@@ -103,6 +106,7 @@ namespace DataInfo.Service.Managers.Member
 
                 #endregion 更新最新登入時間
 
+                this.logger.LogInfo("會員登入成功(一般登入)", $"SessionID: {session.Id} Email: {email} Password: {password}", null);
                 return new ResponseResultDto()
                 {
                     Ok = true,
@@ -111,7 +115,141 @@ namespace DataInfo.Service.Managers.Member
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員登入發生錯誤", $"SessionID: {session.Id} Email: {email} Password: {password}", ex);
+                this.logger.LogError("會員登入發生錯誤(一般登入)", $"SessionID: {session.Id} Email: {email} Password: {password}", ex);
+                return new ResponseResultDto()
+                {
+                    Ok = false,
+                    Data = "會員登入發生錯誤."
+                };
+            }
+        }
+
+        /// <summary>
+        /// 會員登入(FB登入)
+        /// </summary>
+        /// <param name="session">session</param>
+        /// <param name="email">email</param>
+        /// <param name="token">token</param>
+        /// <returns>ResponseResultDto</returns>
+        public async Task<ResponseResultDto> LoginWithFB(ISession session, string email, string token)
+        {
+            try
+            {
+                #region 驗證登入資料
+
+                if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(token))
+                {
+                    this.logger.LogWarn("會員登入結果(FB登入)", $"Result: 驗證失敗 SessionID: {session.Id} Email: {email} Token: {token}", null);
+                    return new ResponseResultDto()
+                    {
+                        Ok = false,
+                        Data = "信箱或認證碼無效."
+                    };
+                }
+
+                #endregion 驗證登入資料
+
+                #region 檢查資料是否存在，若不存在則自動註冊資料
+
+                MemberData memberData = await this.GetMemberData($"{CommonFlagHelper.CommonFlag.PlatformFlag.FB}_{token}").ConfigureAwait(false);
+                if (memberData == null)
+                {
+                    ResponseResultDto registerResult = await this.Register(email, string.Empty, false, token, string.Empty);
+                    if (registerResult.Ok)
+                    {
+                        return await this.LoginWithFB(session, email, token);
+                    }
+                    else
+                    {
+                        return registerResult;
+                    }
+                }
+
+                #endregion 檢查資料是否存在，若不存在則自動註冊資料
+
+                #region 更新最新登入時間
+
+                this.UpdateLastLoginDate(session, memberData);
+
+                #endregion 更新最新登入時間
+
+                this.logger.LogInfo("會員登入成功(FB登入)", $"SessionID: {session.Id} Email: {email} Token: {token}", null);
+                return new ResponseResultDto()
+                {
+                    Ok = true,
+                    Data = new MemberLoginInfoViewDto { MemberID = memberData.MemberID, ServerIP = AppSettingHelper.Appsetting.ServerConfig.Ip, ServerPort = AppSettingHelper.Appsetting.ServerConfig.Port }
+                };
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("會員登入發生錯誤(FB登入)", $"SessionID: {session.Id} Email: {email} Token: {token}", ex);
+                return new ResponseResultDto()
+                {
+                    Ok = false,
+                    Data = "會員登入發生錯誤."
+                };
+            }
+        }
+
+        /// <summary>
+        /// 會員登入(Google登入)
+        /// </summary>
+        /// <param name="session">session</param>
+        /// <param name="email">email</param>
+        /// <param name="token">token</param>
+        /// <returns>ResponseResultDto</returns>
+        public async Task<ResponseResultDto> LoginWithGoogle(ISession session, string email, string token)
+        {
+            try
+            {
+                #region 驗證登入資料
+
+                if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(token))
+                {
+                    this.logger.LogWarn("會員登入結果(Google登入)", $"Result: 驗證失敗 SessionID: {session.Id} Email: {email} Token: {token}", null);
+                    return new ResponseResultDto()
+                    {
+                        Ok = false,
+                        Data = "信箱或認證碼無效."
+                    };
+                }
+
+                #endregion 驗證登入資料
+
+                #region 檢查資料是否存在，若不存在則自動註冊資料
+
+                MemberData memberData = await this.GetMemberData($"{CommonFlagHelper.CommonFlag.PlatformFlag.Google}_{token}").ConfigureAwait(false);
+                if (memberData == null)
+                {
+                    ResponseResultDto registerResult = await this.Register(email, string.Empty, false, string.Empty, token);
+                    if (registerResult.Ok)
+                    {
+                        return await this.LoginWithGoogle(session, email, token);
+                    }
+                    else
+                    {
+                        return registerResult;
+                    }
+                }
+
+                #endregion 檢查資料是否存在，若不存在則自動註冊資料
+
+                #region 更新最新登入時間
+
+                this.UpdateLastLoginDate(session, memberData);
+
+                #endregion 更新最新登入時間
+
+                this.logger.LogInfo("會員登入成功(Google登入)", $"SessionID: {session.Id} Email: {email} Token: {token}", null);
+                return new ResponseResultDto()
+                {
+                    Ok = true,
+                    Data = new MemberLoginInfoViewDto { MemberID = memberData.MemberID, ServerIP = AppSettingHelper.Appsetting.ServerConfig.Ip, ServerPort = AppSettingHelper.Appsetting.ServerConfig.Port }
+                };
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("會員登入發生錯誤(Google登入)", $"SessionID: {session.Id} Email: {email} Token: {token}", ex);
                 return new ResponseResultDto()
                 {
                     Ok = false,
@@ -192,100 +330,6 @@ namespace DataInfo.Service.Managers.Member
             }
         }
 
-        #region TODO
-
-        /// <summary>
-        /// 會員登入 (FB)
-        /// </summary>
-        /// <param name="email">email</param>
-        /// <param name="token">token</param>
-        /// <returns>ResponseResultDto</returns>
-        public async Task<ResponseResultDto> LoginFB(string email, string token)
-        {
-            //try
-            //{
-            //    string postData = JsonConvert.SerializeObject(new MemberDto() { Email = email, FBToken = token });
-            //    HttpResponseMessage httpResponseMessage = await Utility.ApiPost(AppSettingHelper.Appsetting.ServiceDomain.Service, "api/Member/Login/FB", postData);
-            //    if (httpResponseMessage.IsSuccessStatusCode)
-            //    {
-            //        string memberID = await httpResponseMessage.Content.ReadAsAsync<string>();
-            //        return new ResponseResultDto()
-            //        {
-            //            Ok = true,
-            //            Data = new string[] { memberID, this.CreateLoginToken(email, string.Empty, token, string.Empty) }
-            //        };
-            //    }
-
-            //    return new ResponseResultDto()
-            //    {
-            //        Ok = false,
-            //        Data = await httpResponseMessage.Content.ReadAsAsync<string>()
-            //    };
-            //}
-            //catch (Exception ex)
-            //{
-            //    this.logger.LogError($"Login FB Error >>> FBToken:{token}\n{ex}");
-            //    return new ResponseResultDto()
-            //    {
-            //        Ok = false,
-            //        Data = "會員登入發生錯誤."
-            //    };
-            //}
-
-            return new ResponseResultDto()
-            {
-                Ok = false,
-                Data = "TODO."
-            };
-        }
-
-        /// <summary>
-        /// 會員登入 (Google)
-        /// </summary>
-        /// <param name="email">email</param>
-        /// <param name="token">token</param>
-        /// <returns>ResponseResultDto</returns>
-        public async Task<ResponseResultDto> LoginGoogle(string email, string token)
-        {
-            //try
-            //{
-            //    string postData = JsonConvert.SerializeObject(new MemberDto() { Email = email, GoogleToken = token });
-            //    HttpResponseMessage httpResponseMessage = await Utility.ApiPost(AppSettingHelper.Appsetting.ServiceDomain.Service, "api/Member/Login/Google", postData);
-            //    if (httpResponseMessage.IsSuccessStatusCode)
-            //    {
-            //        string memberID = await httpResponseMessage.Content.ReadAsAsync<string>();
-            //        return new ResponseResultDto()
-            //        {
-            //            Ok = true,
-            //            Data = new string[] { memberID, this.CreateLoginToken(email, string.Empty, string.Empty, token) }
-            //        };
-            //    }
-
-            //    return new ResponseResultDto()
-            //    {
-            //        Ok = false,
-            //        Data = await httpResponseMessage.Content.ReadAsAsync<string>()
-            //    };
-            //}
-            //catch (Exception ex)
-            //{
-            //    this.logger.LogError($"Login Google Error >>> GoogleToken:{token}\n{ex}");
-            //    return new ResponseResultDto()
-            //    {
-            //        Ok = false,
-            //        Data = "會員登入發生錯誤."
-            //    };
-            //}
-
-            return new ResponseResultDto()
-            {
-                Ok = false,
-                Data = "TODO."
-            };
-        }
-
-        #endregion TODO
-
         #endregion 註冊 \ 登入 \ 登出 \ 保持在線
 
         #region 會員資料
@@ -335,6 +379,87 @@ namespace DataInfo.Service.Managers.Member
                 {
                     Ok = false,
                     Data = "搜尋會員發生錯誤."
+                };
+            }
+        }
+
+        /// <summary>
+        /// 會員更新資料
+        /// </summary>
+        /// <param name="memberDto">memberDto</param>
+        /// <returns>ResponseResultDto</returns>
+        public async Task<ResponseResultDto> UpdateInfo(MemberDto memberDto)
+        {
+            try
+            {
+                MemberData memberData = await this.GetMemberData(memberDto.MemberID).ConfigureAwait(false);
+                if (memberData == null)
+                {
+                    return new ResponseResultDto()
+                    {
+                        Ok = false,
+                        Data = "無會員資料."
+                    };
+                }
+
+                if (!string.IsNullOrEmpty(memberDto.Nickname))
+                {
+                    memberData.Nickname = memberDto.Nickname;
+                }
+
+                if (memberDto.Birthday != null)
+                {
+                    memberData.Birthday = memberDto.Birthday.GetValueOrDefault();
+                }
+
+                if (memberDto.BodyHeight > 0)
+                {
+                    memberData.BodyHeight = memberDto.BodyHeight;
+                }
+
+                if (memberDto.BodyWeight > 0)
+                {
+                    memberData.BodyWeight = memberDto.BodyWeight;
+                }
+
+                if (memberDto.Gender != (int)GenderType.None)
+                {
+                    memberData.Gender = memberDto.Gender;
+                }
+
+                if (!string.IsNullOrEmpty(memberDto.FrontCoverUrl))
+                {
+                    memberData.FrontCoverUrl = memberDto.FrontCoverUrl;
+                }
+
+                if (!string.IsNullOrEmpty(memberDto.PhotoUrl))
+                {
+                    memberData.PhotoUrl = memberDto.PhotoUrl;
+                }
+
+                bool isSuccess = await this.memberRepository.UpdateMemberData(memberData);
+                if (!isSuccess)
+                {
+                    return new ResponseResultDto()
+                    {
+                        Ok = false,
+                        Data = "會員更新資料失敗."
+                    };
+                }
+
+                return new ResponseResultDto()
+                {
+                    Ok = true,
+                    Data = memberData
+                };
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("會員更新資料發生錯誤", $"MemberDto: {memberDto}", ex);
+                return new ResponseResultDto()
+                {
+                    Ok = false,
+                    Data = "會員更新資料發生錯誤."
                 };
             }
         }

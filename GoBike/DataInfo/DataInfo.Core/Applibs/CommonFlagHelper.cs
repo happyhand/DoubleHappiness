@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
-namespace DataInfo.Core.Resource
+namespace DataInfo.Core.Applibs
 {
     /// <summary>
     /// 共用標記
@@ -13,6 +11,11 @@ namespace DataInfo.Core.Resource
         /// CommonFlag
         /// </summary>
         public static CommonFlagHelper CommonFlag;
+
+        /// <summary>
+        /// Gets or sets CountryMap
+        /// </summary>
+        public Dictionary<string, string> CountryMap { get; set; }
 
         /// <summary>
         /// Gets or sets PlatformFlag

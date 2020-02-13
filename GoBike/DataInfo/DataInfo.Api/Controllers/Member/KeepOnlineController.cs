@@ -1,7 +1,7 @@
 ﻿using System;
 using DataInfo.Api.Filters;
 using DataInfo.Core.Extensions;
-using DataInfo.Core.Resource;
+using DataInfo.Core.Applibs;
 using DataInfo.Service.Interface.Member;
 using Microsoft.AspNetCore.Mvc;
 using NLog;
@@ -50,7 +50,7 @@ namespace DataInfo.Api.Controllers.Member
             }
             catch (Exception ex)
             {
-                this.logger.LogInfo("會員請求保持在線發生錯誤", $"MemberID: {memberID}", ex);
+                this.logger.LogError("會員請求保持在線發生錯誤", $"MemberID: {memberID}", ex);
             }
         }
     }

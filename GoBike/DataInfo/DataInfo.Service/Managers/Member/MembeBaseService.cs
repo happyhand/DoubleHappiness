@@ -193,6 +193,16 @@ namespace DataInfo.Service.Managers.Member
                 {
                     return await this.memberRepository.GetMemberDataByMemberID(searchKey).ConfigureAwait(false);
                 }
+                else if (searchKey.Contains("FB"))
+                {
+                    searchKey = searchKey.Replace("FB_", string.Empty);
+                    return await this.memberRepository.GetMemberDataByFB(searchKey).ConfigureAwait(false);
+                }
+                else if (searchKey.Contains("Google"))
+                {
+                    searchKey = searchKey.Replace("Google_", string.Empty);
+                    return await this.memberRepository.GetMemberDataByGoogle(searchKey).ConfigureAwait(false);
+                }
 
                 return null;
             }

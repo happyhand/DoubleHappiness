@@ -76,6 +76,48 @@ namespace DataInfo.Repository.Managers.Sql
         }
 
         /// <summary>
+        /// 取得會員資料 (By FB)
+        /// </summary>
+        /// <param name="fbToken">fbToken</param>
+        /// <returns>MemberData</returns>
+        public async Task<MemberData> GetMemberDataByFB(string fbToken)
+        {
+            try
+            {
+                using (var maindb = new Maindb(this.serviceProvider.GetRequiredService<DbContextOptions<Maindb>>()))
+                {
+                    return await maindb.Member.FirstOrDefaultAsync(options => options.FBToken.Equals(fbToken)).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得會員資料發生錯誤(FB)", $"FBToken: {fbToken}", ex);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 取得會員資料 (By Google)
+        /// </summary>
+        /// <param name="googleToken">googleToken</param>
+        /// <returns>MemberData</returns>
+        public async Task<MemberData> GetMemberDataByGoogle(string googleToken)
+        {
+            try
+            {
+                using (var maindb = new Maindb(this.serviceProvider.GetRequiredService<DbContextOptions<Maindb>>()))
+                {
+                    return await maindb.Member.FirstOrDefaultAsync(options => options.GoogleToken.Equals(googleToken)).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得會員資料發生錯誤(Google)", $"GoogleToken: {googleToken}", ex);
+                return null;
+            }
+        }
+
+        /// <summary>
         /// 取得會員資料 (By MemberID)
         /// </summary>
         /// <param name="memberID">memberID</param>
@@ -100,7 +142,8 @@ namespace DataInfo.Repository.Managers.Sql
         /// 更新會員資料
         /// </summary>
         /// <param name="memberData">memberData</param>
-        public async Task UpdateMemberData(MemberData memberData)
+        /// <returns>bool</returns>
+        public async Task<bool> UpdateMemberData(MemberData memberData)
         {
             try
             {
@@ -109,11 +152,13 @@ namespace DataInfo.Repository.Managers.Sql
                     maindb.Update(memberData);
                     bool isSuccess = await maindb.SaveChangesAsync().ConfigureAwait(false) > 0;
                     this.logger.LogInfo("更新會員資料", $"Result: {isSuccess} MemberData: {JsonConvert.SerializeObject(memberData)}", null);
+                    return isSuccess;
                 }
             }
             catch (Exception ex)
             {
                 this.logger.LogError("更新會員資料發生錯誤", $"MemberData: {JsonConvert.SerializeObject(memberData)}", ex);
+                return false;
             }
         }
     }

@@ -29,7 +29,7 @@ namespace DataInfo.Api
         /// <param name="args">args</param>
         public static void Main(string[] args)
         {
-            Logger logger = LogManager.GetLogger("System");
+            ILogger logger = LogManager.GetLogger("System");
             try
             {
                 logger.Debug("init main");

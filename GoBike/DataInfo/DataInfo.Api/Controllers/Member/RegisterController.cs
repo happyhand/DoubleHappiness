@@ -62,7 +62,7 @@ namespace DataInfo.Api.Controllers.Member
             }
             catch (Exception ex)
             {
-                this.logger.LogInfo("會員註冊發生錯誤", $"Data: {JsonConvert.SerializeObject(postData)}", ex);
+                this.logger.LogError("會員註冊發生錯誤", $"Data: {JsonConvert.SerializeObject(postData)}", ex);
                 return BadRequest("會員註冊發生錯誤.");
             }
         }

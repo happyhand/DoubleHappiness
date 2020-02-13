@@ -26,6 +26,20 @@ namespace DataInfo.Repository.Interface.Sql
         Task<MemberData> GetMemberDataByEmail(string email);
 
         /// <summary>
+        /// 取得會員資料 (By FB)
+        /// </summary>
+        /// <param name="fbToken">fbToken</param>
+        /// <returns>MemberData</returns>
+        Task<MemberData> GetMemberDataByFB(string fbToken);
+
+        /// <summary>
+        /// 取得會員資料 (By Google)
+        /// </summary>
+        /// <param name="googleToken">googleToken</param>
+        /// <returns>MemberData</returns>
+        Task<MemberData> GetMemberDataByGoogle(string googleToken);
+
+        /// <summary>
         /// 取得會員資料 (By MemberID)
         /// </summary>
         /// <param name="memberID">memberID</param>
@@ -36,6 +50,7 @@ namespace DataInfo.Repository.Interface.Sql
         /// 更新會員資料
         /// </summary>
         /// <param name="memberData">memberData</param>
-        Task UpdateMemberData(MemberData memberData);
+        /// <returns>bool</returns>
+        Task<bool> UpdateMemberData(MemberData memberData);
     }
 }

@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using DataInfo.Api.Filters;
 using DataInfo.Core.Extensions;
-using DataInfo.Core.Resource;
+using DataInfo.Core.Applibs;
 using DataInfo.Service.Interface.Member;
 using DataInfo.Service.Models.Response;
 using Microsoft.AspNetCore.Mvc;
@@ -31,7 +31,6 @@ namespace DataInfo.Api.Controllers.Member
         /// <summary>
         /// 建構式
         /// </summary>
-        /// <param name="logger">logger</param>
         /// <param name="memberService">memberService</param>
         public SearchController(IMemberService memberService)
         {
