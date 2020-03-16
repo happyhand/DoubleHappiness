@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Threading.Tasks;
 using DataInfo.Api.Filters;
-using DataInfo.Core.Extensions;
 using DataInfo.Core.Applibs;
-using DataInfo.Service.Interface.Member;
+using DataInfo.Core.Extensions;
+using DataInfo.Service.Interfaces.Member;
+using DataInfo.Service.Models.Response;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NLog;
 
@@ -11,8 +14,9 @@ namespace DataInfo.Api.Controllers.Member
     /// <summary>
     /// 保持在線
     /// </summary>
-    [Route("api/Member/[controller]")]
     [ApiController]
+    [Authorize]
+    [Route("api/Member/[controller]")]
     public class KeepOnlineController : ApiController
     {
         /// <summary>
@@ -39,18 +43,23 @@ namespace DataInfo.Api.Controllers.Member
         /// </summary>
         /// <returns>IActionResult</returns>
         [HttpGet]
-        [CheckLogin(true)]
-        public void Get()
+        public async Task<IActionResult> Get()
         {
-            string memberID = this.HttpContext.Session.GetObject<string>(CommonFlagHelper.CommonFlag.SessionFlag.MemberID);
+            string memberID = this.GetMemberID();
             try
             {
-                this.logger.LogInfo("會員請求保持在線", $"MemberID: {memberID}", null);
-                this.memberService.KeepOnline(this.HttpContext.Session, memberID);
+                ResponseResultDto responseResult = await this.memberService.KeepOnline(memberID).ConfigureAwait(false);
+                return Ok(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求保持在線發生錯誤", $"MemberID: {memberID}", ex);
+                return Ok(new ResponseResultDto()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = "保持在線發生錯誤."
+                });
             }
         }
     }

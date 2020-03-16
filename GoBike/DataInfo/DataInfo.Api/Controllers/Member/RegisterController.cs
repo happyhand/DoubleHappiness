@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 using DataInfo.Core.Extensions;
-using DataInfo.Service.Interface.Member;
+using DataInfo.Service.Interfaces.Member;
+using DataInfo.Service.Models.Member.Content;
 using DataInfo.Service.Models.Response;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -12,8 +13,8 @@ namespace DataInfo.Api.Controllers.Member
     /// <summary>
     /// 會員註冊
     /// </summary>
-    [Route("api/Member/[controller]")]
     [ApiController]
+    [Route("api/Member/[controller]")]
     public class RegisterController : ApiController
     {
         /// <summary>
@@ -38,49 +39,38 @@ namespace DataInfo.Api.Controllers.Member
         /// <summary>
         /// 會員註冊
         /// </summary>
-        /// <param name="postData">postData</param>
+        /// <param name="content">content</param>
         /// <returns>IActionResult</returns>
         [HttpPost]
-        public async Task<IActionResult> Post(MemberRegisterPostData postData)
+        public async Task<IActionResult> Post(MemberRegisterContent content)
         {
             try
             {
-                this.logger.LogInfo("會員請求註冊", $"Data: {JsonConvert.SerializeObject(postData)}", null);
-                if (postData == null)
+                if (content == null)
                 {
-                    this.logger.LogWarn("會員註冊失敗", "Data: 無資料", null);
-                    return BadRequest("無會員註冊資料.");
+                    this.logger.LogWarn("會員請求註冊失敗", "Content: 無資料", null);
+                    return Ok(new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.InputError,
+                        Content = "未提供資料內容."
+                    });
                 }
 
-                ResponseResultDto responseResult = await memberService.Register(postData.Email, postData.Password, true, string.Empty, string.Empty).ConfigureAwait(false);
-                if (responseResult.Ok)
-                {
-                    return Ok(responseResult.Data);
-                }
-
-                return BadRequest(responseResult.Data);
+                this.logger.LogInfo("會員請求註冊", $"Content: {JsonConvert.SerializeObject(content)}", null);
+                ResponseResultDto responseResult = await memberService.Register(content.Email, content.Password, content.ConfirmPassword, true, string.Empty, string.Empty).ConfigureAwait(false);
+                return Ok(responseResult);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員註冊發生錯誤", $"Data: {JsonConvert.SerializeObject(postData)}", ex);
-                return BadRequest("會員註冊發生錯誤.");
+                this.logger.LogError("會員請求註冊發生錯誤", $"Content: {JsonConvert.SerializeObject(content)}", ex);
+                return Ok(new ResponseResultDto()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = "註冊發生錯誤."
+                });
             }
-        }
-
-        /// <summary>
-        /// 會員註冊 Post 資料
-        /// </summary>
-        public class MemberRegisterPostData
-        {
-            /// <summary>
-            /// Gets or sets Email
-            /// </summary>
-            public string Email { get; set; }
-
-            /// <summary>
-            /// Gets or sets Password
-            /// </summary>
-            public string Password { get; set; }
         }
     }
 }

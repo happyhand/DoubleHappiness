@@ -1,22 +1,23 @@
-using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using AutoMapper;
 using DataInfo.Core.Applibs;
-using DataInfo.Core.Resource;
-using DataInfo.Repository.Interface;
-using DataInfo.Repository.Interface.Sql;
+using DataInfo.Repository.Interfaces;
 using DataInfo.Repository.Managers;
-using DataInfo.Repository.Managers.Sql;
-using DataInfo.Repository.Models.Sql.Context;
-using DataInfo.Service.Interface.Member;
+using DataInfo.Service.Interfaces.Common;
+using DataInfo.Service.Interfaces.Member;
+using DataInfo.Service.Interfaces.Server;
+using DataInfo.Service.Managers.Common;
 using DataInfo.Service.Managers.Member;
+using DataInfo.Service.Managers.Server;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 namespace DataInfo.Api
@@ -41,10 +42,32 @@ namespace DataInfo.Api
         public IConfiguration Configuration { get; }
 
         /// <summary>
-        /// Config 處理器
+        /// Auth 處理器
         /// </summary>
         /// <param name="services">services</param>
-        private void ConfigurationHandler(IServiceCollection services)
+        private void AuthHandler(IServiceCollection services)
+        {
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme) //// 檢查 HTTP Header 的 Authorization 是否有 JWT Bearer Token
+                    .AddJwtBearer(options =>  //// 設定 JWT Bearer Token 的檢查選項
+                    {
+                        options.RequireHttpsMetadata = false; ////獲取或設置元數據地址或權限是否需要HTTPS。默認值為true。僅在開發環境中應禁用此功能。
+                        options.TokenValidationParameters = new TokenValidationParameters
+                        {
+                            ValidateIssuer = true,
+                            ValidIssuer = AppSettingHelper.Appsetting.Jwt.Iss,
+                            ValidateAudience = true,
+                            ValidAudience = AppSettingHelper.Appsetting.Jwt.Iss,
+                            ValidateLifetime = true,
+                            ValidateIssuerSigningKey = true,
+                            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AppSettingHelper.Appsetting.Jwt.Secret))
+                        };
+                    });
+        }
+
+        /// <summary>
+        /// Config 處理器
+        /// </summary>
+        private void ConfigurationHandler()
         {
             AppSettingHelper.Appsetting = Configuration.Get<AppSettingHelper>();
             CommonFlagHelper.CommonFlag = Configuration.Get<CommonFlagHelper>();
@@ -59,40 +82,18 @@ namespace DataInfo.Api
             #region Service
 
             services.AddSingleton<IMemberService, MemberService>();
+            services.AddSingleton<IRideService, RideService>();
+            services.AddSingleton<IUploadService, UploadService>();
 
             #endregion Service
 
             #region Repository
 
-            services.AddDbContext<Maindb>(options =>
-            {
-                options.UseSqlServer(AppSettingHelper.Appsetting.ConnectionStrings.SQLConnection);
-            });
-
-            services.AddSingleton<ISQLMemberRepository, SQLMemberRepository>();
+            services.AddSingleton<IMemberRepository, MemberRepository>();
+            services.AddSingleton<IRideRepository, RideRepository>();
             services.AddSingleton<IRedisRepository, RedisRepository>();
 
             #endregion Repository
-        }
-
-        /// <summary>
-        /// Session 處理器
-        /// </summary>
-        /// <param name="services">services</param>
-        private void SessionHandler(IServiceCollection services)
-        {
-            services.AddStackExchangeRedisCache(o =>
-            {
-                o.Configuration = AppSettingHelper.Appsetting.ConnectionStrings.RedisConnection;
-            });
-            services.AddSession(options =>
-            {
-                options.Cookie.HttpOnly = true;
-                options.Cookie.Name = "Produce Session";
-                options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-                options.Cookie.SameSite = SameSiteMode.None;
-                options.IdleTimeout = TimeSpan.FromMinutes(AppSettingHelper.Appsetting.SeesionDeadline);
-            });
         }
 
         /// <summary>
@@ -104,6 +105,26 @@ namespace DataInfo.Api
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "GoBike API", Version = "v1", Description = "GoBike 相關 API" });
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Description = "JWT Authorization header using the Bearer scheme.",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Scheme = "bearer",
+                    Type = SecuritySchemeType.Http,
+                    BearerFormat = "JWT"
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+                        },
+                        new List<string>()
+                    }
+                });
                 var basePath = Path.GetDirectoryName(typeof(Program).Assembly.Location);
                 var xmlPath = Path.Combine(basePath, "GoBike.API.Swagger.xml");
                 c.IncludeXmlComments(xmlPath);
@@ -127,7 +148,6 @@ namespace DataInfo.Api
                 app.UseHsts();
             }
 
-            app.UseSession();
             //app.UseHttpsRedirection(); // 強制使用 HTTPS Cors (先註解掉，等有憑證再回來試)
             app.UseRouting();
             app.UseCors("ProductNoPolicy"); // 必須建立在  app.UseMvc 之前
@@ -159,8 +179,8 @@ namespace DataInfo.Api
             services.AddControllers();
             services.AddAutoMapper(typeof(Startup));
 
-            this.ConfigurationHandler(services);
-            this.SessionHandler(services);
+            this.ConfigurationHandler();
+            this.AuthHandler(services);
             this.DependencyInjectionHandler(services);
             this.SwaggerHandler(services);
             services.AddCors(options =>

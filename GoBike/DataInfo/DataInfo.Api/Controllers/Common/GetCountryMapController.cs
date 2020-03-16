@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using NLog;
 
 namespace DataInfo.Api.Controllers.Common

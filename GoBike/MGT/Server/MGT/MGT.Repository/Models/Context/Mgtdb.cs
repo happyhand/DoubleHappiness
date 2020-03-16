@@ -20,5 +20,10 @@ namespace MGT.Repository.Models.Context
         /// 代理商資料表
         /// </summary>
         public DbSet<AgentData> Agent { get; set; }
+
+        /// <summary>
+        /// 會員資料表
+        /// </summary>
+        public DbSet<MemberData> Member { get; set; }
     }
 }

@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
+using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
-using DataInfo.Service.Interface.Member;
+using DataInfo.Service.Interfaces.Member;
+using DataInfo.Service.Models.Member.Content;
 using DataInfo.Service.Models.Response;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using NLog;
@@ -10,7 +13,7 @@ using NLog;
 namespace DataInfo.Api.Controllers.Member
 {
     /// <summary>
-    /// 會員登入功能
+    /// 會員登入
     /// </summary>
     [ApiController]
     public class LoginController : ApiController
@@ -34,124 +37,132 @@ namespace DataInfo.Api.Controllers.Member
             this.memberService = memberService;
         }
 
+        ///// <summary>
+        ///// 會員登入 - FB登入
+        ///// </summary>
+        ///// <param name="postData">postData</param>
+        ///// <returns>IActionResult</returns>
+        //[HttpPost]
+        //[Route("api/Member/[controller]/[action]")]
+        //public async Task<IActionResult> FB(MemberLoginPostData postData)
+        //{
+        //    try
+        //    {
+        //        this.logger.LogInfo("會員請求登入(FB登入)", $"Data: {JsonConvert.SerializeObject(postData)}", null);
+        //        if (postData == null)
+        //        {
+        //            this.logger.LogWarn("會員請求登入失敗(FB登入)", "Data: 無資料", null);
+        //            return BadRequest("無會員登入資料.");
+        //        }
+
+        // ResponseResultDto responseResult = await memberService.LoginWithFB(postData.Email,
+        // postData.Token).ConfigureAwait(false); if (responseResult.Ok) { return
+        // Ok(responseResult.Data); }
+
+        //        return BadRequest(responseResult.Data);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        this.logger.LogError("會員請求登入發生錯誤(FB登入)", $"Data: {JsonConvert.SerializeObject(postData)}", ex);
+        //        return BadRequest("會員登入發生錯誤.");
+        //    }
+        //}
+
+        ///// <summary>
+        ///// 會員登入 - Google登入
+        ///// </summary>
+        ///// <param name="postData">postData</param>
+        ///// <returns>IActionResult</returns>
+        //[HttpPost]
+        //[Route("api/Member/[controller]/[action]")]
+        //public async Task<IActionResult> Google(MemberLoginPostData postData)
+        //{
+        //    try
+        //    {
+        //        this.logger.LogInfo("會員請求登入(Google登入)", $"Data: {JsonConvert.SerializeObject(postData)}", null);
+        //        if (postData == null)
+        //        {
+        //            this.logger.LogWarn("會員請求登入失敗(Google登入)", "Data: 無資料", null);
+        //            return BadRequest("無會員登入資料.");
+        //        }
+
+        // ResponseResultDto responseResult = await memberService.LoginWithGoogle(postData.Email,
+        // postData.Token).ConfigureAwait(false); if (responseResult.Ok) { return
+        // Ok(responseResult.Data); }
+
+        //        return BadRequest(responseResult.Data);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        this.logger.LogError("會員請求登入發生錯誤(Google登入)", $"Data: {JsonConvert.SerializeObject(postData)}", ex);
+        //        return BadRequest("會員登入發生錯誤.");
+        //    }
+        //}
+
         /// <summary>
-        /// 會員登入 - FB登入
+        /// 會員登入 - 重新登入
         /// </summary>
-        /// <param name="postData">postData</param>
         /// <returns>IActionResult</returns>
-        [HttpPost]
-        [Route("api/Member/[controller]/[action]")]
-        public async Task<IActionResult> FB(MemberLoginPostData postData)
+        [HttpGet]
+        [Authorize]
+        [Route("api/Member/[controller]")]
+        public async Task<IActionResult> Get()
         {
+            string memberID = this.GetMemberID();
             try
             {
-                this.logger.LogInfo("會員請求登入(FB登入)", $"Data: {JsonConvert.SerializeObject(postData)}", null);
-                if (postData == null)
-                {
-                    this.logger.LogWarn("會員請求登入失敗(FB登入)", "Data: 無資料", null);
-                    return BadRequest("無會員登入資料.");
-                }
-
-                ResponseResultDto responseResult = await memberService.LoginWithFB(this.HttpContext.Session, postData.Email, postData.Token).ConfigureAwait(false);
-                if (responseResult.Ok)
-                {
-                    return Ok(responseResult.Data);
-                }
-
-                return BadRequest(responseResult.Data);
+                this.logger.LogInfo("會員請求登入(重新登入)", $"MemberID: {memberID}", null);
+                ResponseResultDto responseResult = await memberService.Relogin(memberID).ConfigureAwait(false);
+                return Ok(responseResult);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員請求登入發生錯誤(FB登入)", $"Data: {JsonConvert.SerializeObject(postData)}", ex);
-                return BadRequest("會員登入發生錯誤.");
-            }
-        }
-
-        /// <summary>
-        /// 會員登入 - Google登入
-        /// </summary>
-        /// <param name="postData">postData</param>
-        /// <returns>IActionResult</returns>
-        [HttpPost]
-        [Route("api/Member/[controller]/[action]")]
-        public async Task<IActionResult> Google(MemberLoginPostData postData)
-        {
-            try
-            {
-                this.logger.LogInfo("會員請求登入(Google登入)", $"Data: {JsonConvert.SerializeObject(postData)}", null);
-                if (postData == null)
+                this.logger.LogError("會員請求登入發生錯誤(重新登入)", $"MemberID: {memberID}", ex);
+                return Ok(new ResponseResultDto()
                 {
-                    this.logger.LogWarn("會員請求登入失敗(Google登入)", "Data: 無資料", null);
-                    return BadRequest("無會員登入資料.");
-                }
-
-                ResponseResultDto responseResult = await memberService.LoginWithGoogle(this.HttpContext.Session, postData.Email, postData.Token).ConfigureAwait(false);
-                if (responseResult.Ok)
-                {
-                    return Ok(responseResult.Data);
-                }
-
-                return BadRequest(responseResult.Data);
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("會員請求登入發生錯誤(Google登入)", $"Data: {JsonConvert.SerializeObject(postData)}", ex);
-                return BadRequest("會員登入發生錯誤.");
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = "登入發生錯誤."
+                });
             }
         }
 
         /// <summary>
         /// 會員登入 - 一般登入
         /// </summary>
-        /// <param name="postData">postData</param>
+        /// <param name="content">content</param>
         /// <returns>IActionResult</returns>
         [HttpPost]
         [Route("api/Member/[controller]")]
-        public async Task<IActionResult> Normal(MemberLoginPostData postData)
+        public async Task<IActionResult> Post(MemberLoginContent content)
         {
             try
             {
-                this.logger.LogInfo("會員請求登入(一般登入)", $"Data: {JsonConvert.SerializeObject(postData)}", null);
-                if (postData == null)
+                if (content == null)
                 {
-                    this.logger.LogWarn("會員請求登入失敗(一般登入)", "Data: 無資料", null);
-                    return BadRequest("無會員登入資料.");
+                    this.logger.LogWarn("會員請求登入失敗(一般登入)", "Content: 無資料", null);
+                    return Ok(new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.InputError,
+                        Content = "無登入資料."
+                    });
                 }
 
-                ResponseResultDto responseResult = await memberService.Login(this.HttpContext.Session, postData.Email, postData.Password).ConfigureAwait(false);
-                if (responseResult.Ok)
-                {
-                    return Ok(responseResult.Data);
-                }
-
-                return BadRequest(responseResult.Data);
+                this.logger.LogInfo("會員請求登入(一般登入)", $"Content: {JsonConvert.SerializeObject(content)}", null);
+                ResponseResultDto responseResult = await memberService.Login(content.Email, content.Password).ConfigureAwait(false);
+                return Ok(responseResult);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員請求登入發生錯誤(一般登入)", $"Data: {JsonConvert.SerializeObject(postData)}", ex);
-                return BadRequest("會員登入發生錯誤.");
+                this.logger.LogError("會員請求登入發生錯誤(一般登入)", $"Content: {JsonConvert.SerializeObject(content)}", ex);
+                return Ok(new ResponseResultDto()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = "登入發生錯誤."
+                });
             }
-        }
-
-        /// <summary>
-        /// 會員登入 Post 資料
-        /// </summary>
-        public class MemberLoginPostData
-        {
-            /// <summary>
-            /// Gets or sets Email
-            /// </summary>
-            public string Email { get; set; }
-
-            /// <summary>
-            /// Gets or sets Password
-            /// </summary>
-            public string Password { get; set; }
-
-            /// <summary>
-            /// Gets or sets Token
-            /// </summary>
-            public string Token { get; set; }
         }
     }
 }

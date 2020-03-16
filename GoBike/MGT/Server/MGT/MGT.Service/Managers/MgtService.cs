@@ -52,6 +52,8 @@ namespace MGT.Service.Managers
             this.redisRepository = redisRepository;
         }
 
+        #region 代理商
+
         /// <summary>
         /// 新增代理商資料
         /// </summary>
@@ -134,5 +136,62 @@ namespace MGT.Service.Managers
                 return Tuple.Create<AgentData, string>(null, "取得代理商資料發生錯誤.");
             }
         }
+
+        #endregion 代理商
+
+        #region 會員
+
+        #region test
+
+        /// <summary>
+        /// 新增會員資料
+        /// </summary>
+        public void AddMember()
+        {
+            try
+            {
+                MemberData memberData = new MemberData()
+                {
+                    AccountName = "rd001@gobike.com",
+                    Password = "37D7B1747EE40453269722A0CBFFC751",
+                    RegisterSource = 1,
+                    RegisterDate = new DateTime(2020, 1, 13)
+                };
+
+                this.mgtRepository.AddMember(memberData);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError($"Add Agent Error >>> \n{ex}");
+            }
+        }
+
+        #endregion test
+
+        /// <summary>
+        /// 取得會員資料
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>Tuple(MemberData, string)</returns>
+        public async Task<Tuple<MemberData, string>> GetMemberByMemberID(int memberID)
+        {
+            try
+            {
+                MemberData memberData = await this.mgtRepository.GetMemberByMemberID(memberID);
+                if (memberData == null)
+                {
+                    return Tuple.Create<MemberData, string>(null, "無會員資料");
+                }
+
+                return Tuple.Create(memberData, string.Empty);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError($"Get Member By Member ID Error >>> MemberID:{memberID}\n{ex}");
+                return Tuple.Create<MemberData, string>(null, "取得會員資料發生錯誤.");
+            }
+        }
+
+        #endregion 會員
     }
 }

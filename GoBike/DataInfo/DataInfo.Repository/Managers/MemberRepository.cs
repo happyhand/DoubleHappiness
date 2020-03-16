@@ -1,112 +1,198 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using DataInfo.Repository.Interface;
-using DataInfo.Repository.Models.Data.Member;
-using Microsoft.Extensions.Logging;
+using DataInfo.Core.Extensions;
+using DataInfo.Repository.Interfaces;
+using DataInfo.Repository.Managers.Base;
+using DataInfo.Repository.Models.Member;
+using Newtonsoft.Json;
+using NLog;
+using SqlSugar;
 
 namespace DataInfo.Repository.Managers
 {
     /// <summary>
     /// 會員資料庫
     /// </summary>
-    public class MemberRepository : IMemberRepository
+    public class MemberRepository : MainBase, IMemberRepository
     {
         /// <summary>
         /// logger
         /// </summary>
-        private readonly ILogger<MemberRepository> logger;
-
-        /// <summary>
-        /// 建構式
-        /// </summary>
-        /// <param name="logger">logger</param>
-        public MemberRepository(ILogger<MemberRepository> logger)
-        {
-            this.logger = logger;
-        }
-
-        #region New
+        private readonly ILogger logger = LogManager.GetLogger("MemberRepository");
 
         /// <summary>
         /// 建立會員資料
         /// </summary>
-        /// <param name="memberData">memberData</param>
+        /// <param name="memberModel">memberModel</param>
         /// <returns>bool</returns>
-        public async Task<bool> CreateMemberData(MemberData memberData)
+        public async Task<bool> Create(MemberModel memberModel)
         {
-            return true;
+            try
+            {
+                bool isSuccess = await this.Db.Insertable(memberModel)
+                                              .With(SqlWith.HoldLock)
+                                              .With(SqlWith.UpdLock)
+                                              .ExecuteCommandAsync()
+                                              .ConfigureAwait(false) > 0;
+                this.logger.LogInfo("建立會員資料結果", $"Result: {isSuccess} MemberModel: {JsonConvert.SerializeObject(memberModel)}", null);
+                return isSuccess;
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("建立會員資料發生錯誤", $"MemberModel: {JsonConvert.SerializeObject(memberModel)}", ex);
+                return false;
+            }
         }
 
         /// <summary>
         /// 取得會員資料 (By Email)
         /// </summary>
         /// <param name="email">email</param>
-        /// <returns>MemberData</returns>
-        public async Task<MemberData> GetMemberDataByEmail(string email)
+        /// <returns>MemberModel</returns>
+        public async Task<MemberModel> GetByEmail(string email)
         {
-            return null;
+            try
+            {
+                return await this.Db.Queryable<MemberModel>().Where(data => data.Email.Equals(email))
+                                                             .SingleAsync()
+                                                             .ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得會員資料發生錯誤(Email)", $"Email: {email}", ex);
+                return null;
+            }
         }
 
         /// <summary>
-        /// 取得會員資料 (By FBToken)
+        /// 取得會員資料 (模糊查詢)
         /// </summary>
-        /// <param name="fbToken">fbToken</param>
-        /// <returns>MemberData</returns>
-        public async Task<MemberData> GetMemberDataByFBToken(string fbToken)
+        /// <param name="email">email</param>
+        /// <returns>MemberModels</returns>
+        public async Task<IEnumerable<MemberModel>> GetByFuzzy(string searchKey)
         {
-            return null;
+            try
+            {
+                return await this.Db.Queryable<MemberModel>().Where(data => data.Email.Contains(searchKey) || data.Nickname.Contains(searchKey) || data.MemberID.Contains(searchKey))
+                                                             .ToListAsync()
+                                                             .ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得會員資料發生錯誤(模糊查詢)", $"SearchKey: {searchKey}", ex);
+                return null;
+            }
         }
 
-        /// <summary>
-        /// 取得會員資料 (By GoogleToken)
-        /// </summary>
-        /// <param name="googleToken">googleToken</param>
-        /// <returns>MemberData</returns>
-        public async Task<MemberData> GetMemberDataByGoogleToken(string googleToken)
-        {
-            return null;
-        }
+        ///// <summary>
+        ///// 取得會員資料 (By FB)
+        ///// </summary>
+        ///// <param name="fbToken">fbToken</param>
+        ///// <returns>MemberData</returns>
+        //public async Task<Member> GetMemberDataByFB(string fbToken)
+        //{
+        //    try
+        //    {
+        //        using (var maindb = new Maindb(this.serviceProvider.GetRequiredService<DbContextOptions<Maindb>>()))
+        //        {
+        //            return await maindb.Member.FirstOrDefaultAsync(options => options.FBToken.Equals(fbToken)).ConfigureAwait(false);
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        this.logger.LogError("取得會員資料發生錯誤(FB)", $"FBToken: {fbToken}", ex);
+        //        return null;
+        //    }
+        //}
+
+        ///// <summary>
+        ///// 取得會員資料 (By Google)
+        ///// </summary>
+        ///// <param name="googleToken">googleToken</param>
+        ///// <returns>MemberData</returns>
+        //public async Task<Member> GetMemberDataByGoogle(string googleToken)
+        //{
+        //    try
+        //    {
+        //        using (var maindb = new Maindb(this.serviceProvider.GetRequiredService<DbContextOptions<Maindb>>()))
+        //        {
+        //            return await maindb.Member.FirstOrDefaultAsync(options => options.GoogleToken.Equals(googleToken)).ConfigureAwait(false);
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        this.logger.LogError("取得會員資料發生錯誤(Google)", $"GoogleToken: {googleToken}", ex);
+        //        return null;
+        //    }
+        //}
 
         /// <summary>
         /// 取得會員資料 (By MemberID)
         /// </summary>
         /// <param name="memberID">memberID</param>
-        /// <returns>MemberData</returns>
-        public async Task<MemberData> GetMemberDataByMemberID(string memberID)
+        /// <returns>MemberModel</returns>
+        public async Task<MemberModel> GetByMemberID(string memberID)
         {
-            return null;
-        }
-
-        #endregion New
-
-        /// <summary>
-        /// 取得會員資料列表
-        /// </summary>
-        /// <param name="memberIDs">memberIDs</param>
-        /// <returns>MemberDatas</returns>
-        public async Task<IEnumerable<MemberData>> GetMemberDataList(IEnumerable<string> memberIDs)
-        {
-            return null;
+            try
+            {
+                return await this.Db.Queryable<MemberModel>().Where(data => data.MemberID.Equals(memberID))
+                                                             .SingleAsync()
+                                                             .ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得會員資料發生錯誤(MemberID)", $"MemberID: {memberID}", ex);
+                return null;
+            }
         }
 
         /// <summary>
         /// 更新會員資料
         /// </summary>
-        /// <param name="memberData">memberData</param>
+        /// <param name="memberModel">memberModel</param>
         /// <returns>bool</returns>
-        public async Task<bool> UpdateMemberData(MemberData memberData)
+        public async Task<bool> Update(MemberModel memberModel)
         {
-            return false;
+            try
+            {
+                bool isSuccess = await this.Db.Updateable(memberModel)
+                                              .With(SqlWith.HoldLock)
+                                              .With(SqlWith.UpdLock)
+                                              .ExecuteCommandAsync()
+                                              .ConfigureAwait(false) > 0;
+                this.logger.LogInfo("更新會員資料結果", $"Result: {isSuccess} MemberModel: {JsonConvert.SerializeObject(memberModel)}", null);
+                return isSuccess;
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("更新會員資料發生錯誤", $"MemberModel: {JsonConvert.SerializeObject(memberModel)}", ex);
+                return false;
+            }
         }
 
         /// <summary>
-        /// 驗證會員資料
+        /// 更新多筆會員資料
         /// </summary>
-        /// <param name="memberIDs">memberIDs</param>
+        /// <param name="memberModels">memberModels</param>
         /// <returns>bool</returns>
-        public async Task<bool> VerifyMemberList(IEnumerable<string> memberIDs)
+        public async Task<bool> Update(List<MemberModel> memberModels)
         {
-            return false;
+            try
+            {
+                bool isSuccess = await this.Db.Updateable(memberModels)
+                                              .With(SqlWith.HoldLock)
+                                              .With(SqlWith.UpdLock)
+                                              .ExecuteCommandAsync()
+                                              .ConfigureAwait(false) > 0;
+                this.logger.LogInfo("更新多筆會員資料結果", $"Result: {isSuccess} MemberModels: {JsonConvert.SerializeObject(memberModels)}", null);
+                return isSuccess;
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("更新多筆會員資料發生錯誤", $"MemberModels: {JsonConvert.SerializeObject(memberModels)}", ex);
+                return false;
+            }
         }
     }
 }

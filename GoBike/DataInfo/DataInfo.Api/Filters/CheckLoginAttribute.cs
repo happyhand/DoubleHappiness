@@ -1,8 +1,8 @@
-﻿using DataInfo.Core.Extensions;
+﻿using System.Threading.Tasks;
 using DataInfo.Core.Applibs;
+using DataInfo.Core.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using System.Threading.Tasks;
 
 namespace DataInfo.Api.Filters
 {
@@ -44,7 +44,7 @@ namespace DataInfo.Api.Filters
             BadRequestObjectResult badRequestObjectResult = null;
             if (context != null)
             {
-                string memberID = context.HttpContext.Session.GetObject<string>(CommonFlagHelper.CommonFlag.SessionFlag.MemberID);
+                string memberID = "123456";
                 if (this.loginFlag && string.IsNullOrEmpty(memberID))
                 {
                     badRequestObjectResult = new BadRequestObjectResult("會員尚未登入.");

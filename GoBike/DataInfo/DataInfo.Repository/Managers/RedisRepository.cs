@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
-using DataInfo.Repository.Interface;
+using DataInfo.Repository.Interfaces;
 using Newtonsoft.Json;
 using NLog;
 using StackExchange.Redis;
@@ -148,6 +147,24 @@ namespace DataInfo.Repository.Managers
         public IEnumerable<RedisKey> GetRedisKeys(string cacheKey)
         {
             return this.redisServer.Keys(1, pattern: cacheKey);
+        }
+
+        /// <summary>
+        /// 檢查資料是否存在
+        /// </summary>
+        /// <param name="cacheKey">cacheKey</param>
+        /// <returns>bool</returns>
+        public async Task<bool> IsExist(string cacheKey)
+        {
+            try
+            {
+                return await this.database.KeyExistsAsync(cacheKey).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("檢查資料是否存在發生錯誤", $"CacheKey: {cacheKey}", ex);
+                return false;
+            }
         }
 
         /// <summary>

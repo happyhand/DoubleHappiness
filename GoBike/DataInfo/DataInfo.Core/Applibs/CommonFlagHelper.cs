@@ -28,16 +28,6 @@ namespace DataInfo.Core.Applibs
         public RedisSetting RedisFlag { get; set; }
 
         /// <summary>
-        /// Gets or sets SeparateFlag
-        /// </summary>
-        public string SeparateFlag { get; set; }
-
-        /// <summary>
-        /// Gets or sets SessionFlag
-        /// </summary>
-        public SessionSetting SessionFlag { get; set; }
-
-        /// <summary>
         /// 第三方平台共用標記
         /// </summary>
         public class PlatformSetting
@@ -69,25 +59,9 @@ namespace DataInfo.Core.Applibs
             public string Member { get; set; }
 
             /// <summary>
-            /// Gets or sets Session
-            /// </summary>
-            public string Session { get; set; }
-
-            /// <summary>
             /// Gets or sets VerifierCode
             /// </summary>
             public string VerifierCode { get; set; }
-        }
-
-        /// <summary>
-        /// Session 共用標記
-        /// </summary>
-        public class SessionSetting
-        {
-            /// <summary>
-            /// Gets or sets MemberID
-            /// </summary>
-            public string MemberID { get; set; }
         }
     }
 }

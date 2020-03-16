@@ -20,3 +20,16 @@
 /GoBike/DataInfo/DataInfo.Repository/obj
 /GoBike/DataInfo/DataInfo.Service/bin
 /GoBike/DataInfo/DataInfo.Service/obj
+/mgt.gobike.com
+/api.gobike.com
+/dh.uploadfile.com
+/Log
+/Common/UploadFiles/.vs
+/Common/UploadFiles/UploadFiles.Api/obj
+/Common/UploadFiles/UploadFiles.Api/bin
+/Common/UploadFiles/UploadFiles.Core/obj
+/Common/UploadFiles/UploadFiles.Core/bin
+/Common/UploadFiles/UploadFiles.Service/obj
+/Common/UploadFiles/UploadFiles.Service/bin
+/dh.cdn.com
+/Common/UploadFiles/UploadFiles.Api/.config

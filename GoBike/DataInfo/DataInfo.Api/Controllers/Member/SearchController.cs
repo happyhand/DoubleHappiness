@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
-using DataInfo.Api.Filters;
 using DataInfo.Core.Extensions;
-using DataInfo.Core.Applibs;
-using DataInfo.Service.Interface.Member;
+using DataInfo.Service.Enums;
+using DataInfo.Service.Interfaces.Member;
+using DataInfo.Service.Models.Member.Content;
 using DataInfo.Service.Models.Response;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using NLog;
@@ -15,6 +16,7 @@ namespace DataInfo.Api.Controllers.Member
     /// 搜尋會員
     /// </summary>
     [Route("api/Member/[controller]")]
+    [Authorize]
     [ApiController]
     public class SearchController : ApiController
     {
@@ -38,48 +40,74 @@ namespace DataInfo.Api.Controllers.Member
         }
 
         /// <summary>
-        /// 搜尋會員
+        /// 搜尋會員 - 取得會員本身資料
         /// </summary>
-        /// <param name="postData">postData</param>
         /// <returns>IActionResult</returns>
-        [HttpPost]
-        [CheckLogin(true)]
-        public async Task<IActionResult> Post(MemberSearchPostData postData)
+        [HttpGet]
+        public async Task<IActionResult> Get()
         {
+            string memberID = this.GetMemberID();
             try
             {
-                this.logger.LogInfo("請求搜尋會員", $"Data: {JsonConvert.SerializeObject(postData)}", null);
-                if (postData == null || string.IsNullOrEmpty(postData.SearchKey))
-                {
-                    this.logger.LogWarn("搜尋會員失敗", "Data: 無資料", null);
-                    return BadRequest("無搜尋會員資料.");
-                }
-
-                string memberID = this.HttpContext.Session.GetObject<string>(CommonFlagHelper.CommonFlag.SessionFlag.MemberID);
-                ResponseResultDto responseResult = await memberService.Search(postData.SearchKey, memberID).ConfigureAwait(false);
-                if (responseResult.Ok)
-                {
-                    return Ok(responseResult.Data);
-                }
-
-                return BadRequest(responseResult.Data);
+                ResponseResultDto responseResult = await this.memberService.StrictSearch(memberID).ConfigureAwait(false);
+                return Ok(responseResult);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("搜尋會員發生錯誤", $"Data: {JsonConvert.SerializeObject(postData)}", ex);
-                return BadRequest("搜尋會員發生錯誤.");
+                this.logger.LogError("請求取得會員本身資料發生錯誤", $"MemberID: {memberID}", ex);
+                return Ok(new ResponseResultDto()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = "取得資料發生錯誤."
+                });
             }
         }
 
         /// <summary>
-        /// 會員搜尋 Post 資料
+        /// 搜尋會員 - 搜尋會員資料
         /// </summary>
-        public class MemberSearchPostData
+        /// <param name="content">content</param>
+        /// <returns>IActionResult</returns>
+        [HttpPost]
+        public async Task<IActionResult> Post(MemberSearchContent content)
         {
-            /// <summary>
-            /// Gets or sets SearchKey
-            /// </summary>
-            public string SearchKey { get; set; }
+            string memberID = this.GetMemberID();
+            try
+            {
+                if (content == null)
+                {
+                    this.logger.LogWarn("請求搜尋會員資料失敗", $"Content: 無資料 MemberID: {memberID}", null);
+                    return Ok(new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.InputError,
+                        Content = "未提供搜尋內容."
+                    });
+                }
+
+                ResponseResultDto responseResult;
+                if (content.UseFuzzySearch == (int)SearchType.Fuzzy)
+                {
+                    responseResult = await this.memberService.FuzzySearch(content.SearchKey, memberID).ConfigureAwait(false);
+                }
+                else
+                {
+                    responseResult = await this.memberService.StrictSearch(content.SearchKey, memberID).ConfigureAwait(false);
+                }
+
+                return Ok(responseResult);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("搜尋會員資料發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                return Ok(new ResponseResultDto()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = "取得資料發生錯誤."
+                });
+            }
         }
     }
 }

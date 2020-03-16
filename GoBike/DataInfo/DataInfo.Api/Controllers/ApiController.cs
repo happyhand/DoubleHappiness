@@ -1,4 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using DataInfo.Core.Applibs;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
+using DataInfo.Core.Extensions;
+using NLog;
 
 namespace DataInfo.Api.Controllers
 {
@@ -8,6 +13,32 @@ namespace DataInfo.Api.Controllers
     [ApiController]
     public class ApiController : ControllerBase
     {
+        private readonly ILogger logger = LogManager.GetLogger("ApiController");
+
+        /// <summary>
+        /// 取得 MemberID
+        /// </summary>
+        /// <returns>string</returns>
+        protected string GetMemberID()
+        {
+            try
+            {
+                this.HttpContext.Request.Headers.TryGetValue("Authorization", out StringValues token);
+                if (string.IsNullOrEmpty(token))
+                {
+                    this.logger.LogWarn("取得 MemberID 發生錯誤", $"Result: 無效的 Jwt Token", null);
+                    return string.Empty;
+                }
+
+                return JwtHelper.GetPayloadAppointValue<string>(token, "MemberID");
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得 MemberID 發生錯誤", string.Empty, ex);
+                return string.Empty;
+            }
+        }
+
         /// <summary>
         /// 執行 BadRequest 回覆加密
         /// </summary>

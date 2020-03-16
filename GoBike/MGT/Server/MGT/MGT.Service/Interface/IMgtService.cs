@@ -11,11 +11,13 @@ namespace MGT.Service.Interface
     /// </summary>
     public interface IMgtService
     {
+        #region 代理商
+
         /// <summary>
         /// 新增代理商資料
         /// </summary>
         /// <returns>Tuple(AgentData, string)</returns>
-        void AddAgent(string nickname, string password);
+        void AddAgent(string account, string password);
 
         /// <summary>
         /// 代理商登入
@@ -31,5 +33,27 @@ namespace MGT.Service.Interface
         /// <param name="id">id</param>
         /// <returns>Tuple(AgentData, string)</returns>
         Task<Tuple<AgentData, string>> GetAgent(long id);
+
+        #endregion 代理商
+
+        #region 會員
+
+        #region test
+
+        /// <summary>
+        /// 新增會員資料
+        /// </summary>
+        void AddMember();
+
+        #endregion test
+
+        /// <summary>
+        /// 取得會員資料
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>Tuple(MemberData, string)</returns>
+        Task<Tuple<MemberData, string>> GetMemberByMemberID(int memberID);
+
+        #endregion 會員
     }
 }

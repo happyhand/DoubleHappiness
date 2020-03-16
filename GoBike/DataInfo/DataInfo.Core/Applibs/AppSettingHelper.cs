@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace DataInfo.Core.Applibs
+﻿namespace DataInfo.Core.Applibs
 {
     /// <summary>
     /// APP 設定資料
@@ -13,12 +9,6 @@ namespace DataInfo.Core.Applibs
         /// Appsetting
         /// </summary>
         public static AppSettingHelper Appsetting;
-
-        #region Session 設定資料
-
-        public int SeesionDeadline { get; set; }
-
-        #endregion Session 設定資料
 
         #region 連線設定資料
 
@@ -45,49 +35,92 @@ namespace DataInfo.Core.Applibs
 
         #endregion 連線設定資料
 
-        #region Service Domain 設定資料
+        #region Upload Server 設定資料
 
         /// <summary>
-        /// Gets or sets ServiceDomain
+        /// Gets or sets UploadServer
         /// </summary>
-        public ServiceDomainSetting ServiceDomain { get; set; }
+        public UploadServerSetting UploadServer { get; set; }
 
         /// <summary>
         /// ServiceDomainSetting
         /// </summary>
-        public class ServiceDomainSetting
+        public class UploadServerSetting
         {
             /// <summary>
-            /// Gets or sets SmtpService
+            /// Gets or sets Domain
             /// </summary>
-            public string SmtpService { get; set; }
+            public string Domain { get; set; }
+
+            /// <summary>
+            /// Gets or sets ImageApi
+            /// </summary>
+            public string ImageApi { get; set; }
         }
 
-        #endregion Service Domain 設定資料
+        #endregion Upload Server 設定資料
 
-        #region Server 設定資料
-
-        /// <summary>
-        /// Gets or sets ServerConfig
-        /// </summary>
-        public ServerConfigSetting ServerConfig { get; set; }
+        #region JWT 設定資料
 
         /// <summary>
-        /// ServerConfigSetting
+        /// Gets or sets Jwt
         /// </summary>
-        public class ServerConfigSetting
+        public JwtSetting Jwt { get; set; }
+
+        public class JwtSetting
         {
             /// <summary>
-            /// Gets or sets Ip
+            /// Gets or sets Exp
             /// </summary>
-            public string Ip { get; set; }
+            public int Exp { get; set; }
 
             /// <summary>
-            /// Gets or sets Port
+            /// Gets or sets Iss
             /// </summary>
-            public int Port { get; set; }
+            public string Iss { get; set; }
+
+            /// <summary>
+            /// Gets or sets Secret
+            /// </summary>
+            public string Secret { get; set; }
+
+            /// <summary>
+            /// Gets or sets Sub
+            /// </summary>
+            public string Sub { get; set; }
         }
 
-        #endregion Server 設定資料
+        #endregion JWT 設定資料
+
+        #region AES 加解密設定資料
+
+        /// <summary>
+        /// Gets or sets Aes
+        /// </summary>
+        public AesSetting Aes { get; set; }
+
+        public class AesSetting
+        {
+            /// <summary>
+            /// Gets or sets Iv
+            /// </summary>
+            public string Iv { get; set; }
+
+            /// <summary>
+            /// Gets or sets Key
+            /// </summary>
+            public string Key { get; set; }
+        }
+
+        #endregion AES 加解密設定資料
+
+        #region KeepOnline 設定資料
+
+        /// <summary>
+        /// Gets or sets KeepOnlineTime
+        /// </summary>
+        public int KeepOnlineTime { get; set; }
+
+        #endregion KeepOnline 設定資料
     }
 }

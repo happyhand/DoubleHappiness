@@ -81,7 +81,7 @@ namespace MGT.API
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "GoBike API");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "GoBike MGT");
             });
 
             #endregion Swagger
@@ -176,7 +176,7 @@ namespace MGT.API
         {
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1", Description = "mgtgobike.hopto.org:18595" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "GoBike MGT", Version = "v1", Description = "mgtgobike.hopto.org:18595" });
                 var basePath = Path.GetDirectoryName(typeof(Program).Assembly.Location);
                 var xmlPath = Path.Combine(basePath, "GoBike.MGT.Swagger.xml");
                 c.IncludeXmlComments(xmlPath);
