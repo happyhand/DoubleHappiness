@@ -6,6 +6,8 @@ using DataInfo.Repository.Models.Member;
 using DataInfo.Service.Enums;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Member;
+using DataInfo.Service.Models.Common.Content;
+using DataInfo.Service.Models.Common.Data;
 using DataInfo.Service.Models.Member.Content;
 using DataInfo.Service.Models.Member.View;
 using DataInfo.Service.Models.Response;
@@ -50,16 +52,23 @@ namespace DataInfo.Service.Managers.Member
         private readonly IUploadService uploadService;
 
         /// <summary>
+        /// verifierService
+        /// </summary>
+        private readonly IVerifierService verifierService;
+
+        /// <summary>
         /// 建構式
         /// </summary>
         /// <param name="mapper">mapper</param>
         /// <param name="uploadService">uploadService</param>
+        /// <param name="verifierService">verifierService</param>
         /// <param name="memberRepository">memberRepository</param>
         /// <param name="redisRepository">redisRepository</param>
-        public MemberService(IMapper mapper, IUploadService uploadService, IMemberRepository memberRepository, IRedisRepository redisRepository)
+        public MemberService(IMapper mapper, IUploadService uploadService, IVerifierService verifierService, IMemberRepository memberRepository, IRedisRepository redisRepository)
         {
             this.mapper = mapper;
             this.uploadService = uploadService;
+            this.verifierService = verifierService;
             this.memberRepository = memberRepository;
             this.redisRepository = redisRepository;
         }
@@ -787,6 +796,61 @@ namespace DataInfo.Service.Managers.Member
                     Result = false,
                     ResultCode = (int)ResponseResultType.DenyAccess,
                     Content = "搜尋會員發生錯誤."
+                };
+            }
+        }
+
+        /// <summary>
+        /// 發送會員忘記密碼驗證碼
+        /// </summary>
+        /// <param name="content">content</param>
+        /// <returns>ResponseResultDto</returns>
+        public async Task<ResponseResultDto> SendForgetPasswordVerifierCode(MemberForgetPasswordContent content)
+        {
+            try
+            {
+                #region 驗證忘記密碼資料
+
+                MemberForgetPasswordContentValidator memberForgetPasswordContentValidator = new MemberForgetPasswordContentValidator();
+                ValidationResult validationResult = memberForgetPasswordContentValidator.Validate(content);
+                if (!validationResult.IsValid)
+                {
+                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
+                    this.logger.LogWarn("發送會員忘記密碼驗證碼結果", $"Result: 驗證失敗({errorMessgae}) Content: {JsonConvert.SerializeObject(content)}", null);
+                    return new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.InputError,
+                        Content = errorMessgae
+                    };
+                }
+
+                #endregion 驗證忘記密碼資料
+
+                ResponseResultDto responseResultDto = await verifierService.GenerateVerifierCode(VerifierType.ForgetPassword, new VerifierCodeContent() { Email = content.Email });
+                if (!responseResultDto.Result)
+                {
+                    this.logger.LogWarn("發送會員忘記密碼驗證碼結果", $"Result: 取得驗證碼失敗({responseResultDto.Content}) Content: {JsonConvert.SerializeObject(content)}", null);
+                    return new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.CreateFail,
+                        Content = "無法取得驗證碼."
+                    };
+                }
+
+                string verifierCode = responseResultDto.Content;
+                EmailContext emailContext = EmailContext.GetVerifierCodetEmailContextForForgetPassword(content.Email, verifierCode);
+                return await this.verifierService.SendVerifierCode(emailContext).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("發送會員忘記密碼驗證碼發生錯誤", $"Content: {JsonConvert.SerializeObject(content)}", ex);
+                return new ResponseResultDto()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.DenyAccess,
+                    Content = "發送驗證碼發生錯誤."
                 };
             }
         }

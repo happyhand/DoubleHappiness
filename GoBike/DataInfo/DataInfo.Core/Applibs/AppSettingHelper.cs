@@ -60,6 +60,31 @@
 
         #endregion Upload Server 設定資料
 
+        #region Smtp Server 設定資料
+
+        /// <summary>
+        /// Gets or sets SmtpServer
+        /// </summary>
+        public SmtpServerSetting SmtpServer { get; set; }
+
+        /// <summary>
+        /// ServiceDomainSetting
+        /// </summary>
+        public class SmtpServerSetting
+        {
+            /// <summary>
+            /// Gets or sets Domain
+            /// </summary>
+            public string Domain { get; set; }
+
+            /// <summary>
+            /// Gets or sets SendEmailApi
+            /// </summary>
+            public string SendEmailApi { get; set; }
+        }
+
+        #endregion Smtp Server 設定資料
+
         #region JWT 設定資料
 
         /// <summary>
@@ -122,5 +147,14 @@
         public int KeepOnlineTime { get; set; }
 
         #endregion KeepOnline 設定資料
+
+        #region 驗證碼時間設定資料
+
+        /// <summary>
+        /// Gets or sets VerifierCodeExpirationDate
+        /// </summary>
+        public int VerifierCodeExpirationDate { get; set; }
+
+        #endregion 驗證碼時間設定資料
     }
 }

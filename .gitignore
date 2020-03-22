@@ -33,3 +33,12 @@
 /Common/UploadFiles/UploadFiles.Service/bin
 /dh.cdn.com
 /Common/UploadFiles/UploadFiles.Api/.config
+/dh.smtp.com
+/Common/Smtp/.vs
+/Common/Smtp/Smtp.Api/.config
+/Common/Smtp/Smtp.Api/obj
+/Common/Smtp/Smtp.Api/bin
+/Common/Smtp/Smtp.Core/obj
+/Common/Smtp/Smtp.Core/bin
+/Common/Smtp/Smtp.Service/obj
+/Common/Smtp/Smtp.Service/bin

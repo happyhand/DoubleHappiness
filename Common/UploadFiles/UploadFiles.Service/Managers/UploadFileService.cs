@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Newtonsoft.Json;
 using NLog;
-using UploadFiles.Core.Applibs;
-using UploadFiles.Service.Interface;
-using UploadFiles.Core.Extensions;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using UploadFiles.Core.Applibs;
+using UploadFiles.Core.Extensions;
+using UploadFiles.Service.Interfaces;
 
 namespace UploadFiles.Service.Managers
 {

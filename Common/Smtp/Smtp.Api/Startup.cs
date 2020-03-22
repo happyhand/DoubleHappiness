@@ -4,12 +4,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Smtp.Core.Applibs;
+using Smtp.Service.Interfaces;
+using Smtp.Service.Managers;
 using System.IO;
-using UploadFiles.Core.Applibs;
-using UploadFiles.Service.Interfaces;
-using UploadFiles.Service.Managers;
 
-namespace UploadFiles.Api
+namespace Smtp.Api
 {
     /// <summary>
     /// Startup
@@ -46,7 +46,7 @@ namespace UploadFiles.Api
         {
             #region Service
 
-            services.AddSingleton<IUploadFileService, UploadFileService>();
+            services.AddSingleton<ISmtpService, SmtpService>();
 
             #endregion Service
         }
@@ -59,9 +59,9 @@ namespace UploadFiles.Api
         {
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "UploadFiles API", Version = "v1", Description = "UploadFiles 相關 API" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Smtp API", Version = "v1", Description = "Smtp 相關 API" });
                 var basePath = Path.GetDirectoryName(typeof(Program).Assembly.Location);
-                var xmlPath = Path.Combine(basePath, "UploadFiles.API.Swagger.xml");
+                var xmlPath = Path.Combine(basePath, "Smtp.API.Swagger.xml");
                 c.IncludeXmlComments(xmlPath);
             });
         }
@@ -96,7 +96,7 @@ namespace UploadFiles.Api
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "UploadFiles API");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Smtp API");
             });
 
             #endregion Swagger

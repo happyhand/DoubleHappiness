@@ -1,7 +1,7 @@
 ﻿using NLog;
 using System;
 
-namespace UploadFiles.Core.Extensions
+namespace Smtp.Core.Extensions
 {
     /// <summary>
     /// ILog 擴充方法

@@ -1,8 +1,8 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace UploadFiles.Service.Interface
+namespace UploadFiles.Service.Interfaces
 
 {
     /// <summary>

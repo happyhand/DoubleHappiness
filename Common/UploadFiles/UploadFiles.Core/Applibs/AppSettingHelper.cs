@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace UploadFiles.Core.Applibs
+﻿namespace UploadFiles.Core.Applibs
 {
     /// <summary>
     /// APP 設定資料

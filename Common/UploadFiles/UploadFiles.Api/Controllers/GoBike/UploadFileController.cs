@@ -1,13 +1,11 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using NLog;
+using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using NLog;
-using UploadFiles.Api.Filters;
 using UploadFiles.Core.Extensions;
-using UploadFiles.Service.Interface;
+using UploadFiles.Service.Interfaces;
 
 namespace UploadFiles.Api.Controllers.GoBike
 {

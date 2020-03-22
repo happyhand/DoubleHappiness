@@ -63,6 +63,13 @@ namespace DataInfo.Service.Interfaces.Member
         Task<ResponseResultDto> FuzzySearch(MemberSearchContent content, string searchMemberID);
 
         /// <summary>
+        /// 發送會員忘記密碼驗證碼
+        /// </summary>
+        /// <param name="content">content</param>
+        /// <returns>ResponseResultDto</returns>
+        Task<ResponseResultDto> SendForgetPasswordVerifierCode(MemberForgetPasswordContent content);
+
+        /// <summary>
         /// 搜尋會員(嚴格比對)
         /// </summary>
         /// <param name="content">content</param>

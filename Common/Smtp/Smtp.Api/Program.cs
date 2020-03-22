@@ -3,7 +3,7 @@ using Microsoft.Extensions.Hosting;
 using NLog;
 using System;
 
-namespace UploadFiles.Api
+namespace Smtp.Api
 {
     /// <summary>
     /// Program

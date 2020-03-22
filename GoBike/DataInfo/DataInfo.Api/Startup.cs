@@ -82,6 +82,7 @@ namespace DataInfo.Api
             services.AddSingleton<IMemberService, MemberService>();
             services.AddSingleton<IRideService, RideService>();
             services.AddSingleton<IUploadService, UploadService>();
+            services.AddSingleton<IVerifierService, VerifierService>();
 
             #endregion Service
 
