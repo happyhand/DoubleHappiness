@@ -1,9 +1,9 @@
-﻿using System;
-using DataInfo.Core.Applibs;
+﻿using DataInfo.Core.Applibs;
+using DataInfo.Core.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
-using DataInfo.Core.Extensions;
 using NLog;
+using System;
 
 namespace DataInfo.Api.Controllers
 {

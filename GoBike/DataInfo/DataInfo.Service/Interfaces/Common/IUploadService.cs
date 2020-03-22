@@ -1,8 +1,6 @@
-﻿using System;
+﻿using DataInfo.Service.Models.Response;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
-using DataInfo.Service.Models.Response;
 
 namespace DataInfo.Service.Interfaces.Common
 {

@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using DataInfo.Service.Enums;
 using DataInfo.Service.Models.Member.Content.Interfaces;
+using FluentValidation;
+using System.Collections.Generic;
 
 namespace DataInfo.Service.Models.Member.Content
 {
@@ -57,5 +59,59 @@ namespace DataInfo.Service.Models.Member.Content
         /// Gets or sets Title
         /// </summary>
         public string Title { get; set; }
+    }
+
+    /// <summary>
+    /// 驗證騎乘資訊內容
+    /// </summary>
+    public class RideInfoContentValidator : AbstractValidator<RideInfoContent>
+    {
+        public RideInfoContentValidator()
+        {
+            ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
+            RuleFor(content => content.Time)
+            .NotNull().WithMessage("騎乘時間無效.")
+            .NotEmpty().WithMessage("騎乘時間無效.")
+            .Must(time =>
+            {
+                return long.TryParse(time, out long value) && value > 0;
+            }).WithMessage("騎乘時間無效.");
+
+            RuleFor(content => content.Distance)
+            .NotNull().WithMessage("騎乘距離無效.")
+            .NotEmpty().WithMessage("騎乘距離無效.")
+            .Must(distance =>
+            {
+                return decimal.TryParse(distance, out decimal value) && value > 0;
+            }).WithMessage("騎乘距離無效.");
+
+            RuleFor(content => content.Altitude)
+            .NotNull().WithMessage("爬升高度無效.")
+            .NotEmpty().WithMessage("爬升高度無效.")
+            .Must(altitude =>
+            {
+                return decimal.TryParse(altitude, out decimal value) && value > 0;
+            }).WithMessage("爬升高度無效.");
+
+            RuleFor(content => content.CountyID)
+            .Must(countyID =>
+            {
+                return countyID != (int)CityType.None;
+            }).WithMessage("未設定騎乘市區.");
+
+            RuleFor(content => content.Level)
+            .Must(level =>
+            {
+                return level != (int)RideLevelType.None;
+            }).WithMessage("未設定騎乘等級.");
+
+            RuleFor(content => content.Route)
+            .NotNull().WithMessage("騎乘路徑內容無效.")
+            .NotEmpty().WithMessage("無騎乘路徑內容資料.");
+
+            RuleFor(content => content.Photo)
+            .NotNull().WithMessage("騎乘封面無效.")
+            .NotEmpty().WithMessage("騎乘封面無效.");
+        }
     }
 }

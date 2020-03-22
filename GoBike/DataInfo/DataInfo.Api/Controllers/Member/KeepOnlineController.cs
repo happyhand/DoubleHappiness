@@ -1,13 +1,11 @@
-﻿using System;
-using System.Threading.Tasks;
-using DataInfo.Api.Filters;
-using DataInfo.Core.Applibs;
-using DataInfo.Core.Extensions;
+﻿using DataInfo.Core.Extensions;
 using DataInfo.Service.Interfaces.Member;
 using DataInfo.Service.Models.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NLog;
+using System;
+using System.Threading.Tasks;
 
 namespace DataInfo.Api.Controllers.Member
 {

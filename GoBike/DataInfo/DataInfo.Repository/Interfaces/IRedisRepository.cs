@@ -1,7 +1,7 @@
-﻿using System;
+﻿using StackExchange.Redis;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using StackExchange.Redis;
 
 namespace DataInfo.Repository.Interfaces
 {

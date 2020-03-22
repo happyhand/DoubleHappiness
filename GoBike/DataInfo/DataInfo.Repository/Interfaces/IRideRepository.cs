@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using DataInfo.Repository.Models.Member;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using DataInfo.Repository.Models.Member;
 
 namespace DataInfo.Repository.Interfaces
 {

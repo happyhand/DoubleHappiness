@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using FluentValidation;
 
 namespace DataInfo.Service.Models.Member.Content
 {
@@ -18,5 +16,19 @@ namespace DataInfo.Service.Models.Member.Content
         /// Gets or sets UseFuzzySearch
         /// </summary>
         public int UseFuzzySearch { get; set; }
+    }
+
+    /// <summary>
+    /// 驗證搜尋會員內容
+    /// </summary>
+    public class MemberSearchContentValidator : AbstractValidator<MemberSearchContent>
+    {
+        public MemberSearchContentValidator()
+        {
+            ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
+            RuleFor(content => content.SearchKey)
+            .NotNull().WithMessage("未提供搜尋內容.")
+            .NotEmpty().WithMessage("未提供搜尋內容.");
+        }
     }
 }

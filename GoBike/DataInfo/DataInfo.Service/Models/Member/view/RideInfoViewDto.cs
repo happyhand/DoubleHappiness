@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using DataInfo.Service.Models.Member.Content;
 
 namespace DataInfo.Service.Models.Member.View
 {

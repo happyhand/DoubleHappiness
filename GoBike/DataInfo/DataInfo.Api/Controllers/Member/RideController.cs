@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using DataInfo.Core.Extensions;
+﻿using DataInfo.Core.Extensions;
 using DataInfo.Service.Interfaces.Member;
 using DataInfo.Service.Models.Member.Content;
 using DataInfo.Service.Models.Response;
@@ -8,6 +6,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using NLog;
+using System;
+using System.Threading.Tasks;
 
 namespace DataInfo.Api.Controllers.Member
 {
@@ -63,43 +63,43 @@ namespace DataInfo.Api.Controllers.Member
             }
         }
 
-        /// <summary>
-        /// 會員騎乘 - 更新騎乘資料
-        /// </summary>
-        /// <param name="content">content</param>
-        /// <returns>IActionResult</returns>
-        [HttpPatch]
-        public async Task<IActionResult> Patch(RideUpdateInfoContent content)
-        {
-            string memberID = this.GetMemberID();
-            try
-            {
-                if (content == null)
-                {
-                    this.logger.LogWarn("會員請求更新騎乘資料失敗", $"Content: 無資料 MemberID: {memberID}", null);
-                    return Ok(new ResponseResultDto()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = "未提供資料內容."
-                    });
-                }
+        ///// <summary>
+        ///// 會員騎乘 - 更新騎乘資料 (TODO)
+        ///// </summary>
+        ///// <param name="content">content</param>
+        ///// <returns>IActionResult</returns>
+        //[HttpPatch]
+        //public async Task<IActionResult> Patch(RideUpdateInfoContent content)
+        //{
+        //    string memberID = this.GetMemberID();
+        //    try
+        //    {
+        //        if (content == null)
+        //        {
+        //            this.logger.LogWarn("會員請求更新騎乘資料失敗", $"Content: 無資料 MemberID: {memberID}", null);
+        //            return Ok(new ResponseResultDto()
+        //            {
+        //                Result = false,
+        //                ResultCode = (int)ResponseResultType.InputError,
+        //                Content = "未提供資料內容."
+        //            });
+        //        }
 
-                this.logger.LogInfo("會員請求更新騎乘資料", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResultDto responseResult = await rideService.UpdateRideData(memberID, content).ConfigureAwait(false);
-                return Ok(responseResult);
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("會員更新騎乘資料發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
-                return Ok(new ResponseResultDto()
-                {
-                    Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = "更新資料發生錯誤."
-                });
-            }
-        }
+        //        this.logger.LogInfo("會員請求更新騎乘資料", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+        //        ResponseResultDto responseResult = await rideService.UpdateRideData(memberID, content).ConfigureAwait(false);
+        //        return Ok(responseResult);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        this.logger.LogError("會員更新騎乘資料發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+        //        return Ok(new ResponseResultDto()
+        //        {
+        //            Result = false,
+        //            ResultCode = (int)ResponseResultType.UnknownError,
+        //            Content = "更新資料發生錯誤."
+        //        });
+        //    }
+        //}
 
         /// <summary>
         /// 會員騎乘 - 新增騎乘資料

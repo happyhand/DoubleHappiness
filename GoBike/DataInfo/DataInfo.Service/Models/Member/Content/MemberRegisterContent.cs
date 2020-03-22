@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using FluentValidation;
 
 namespace DataInfo.Service.Models.Member.Content
 {
@@ -23,5 +21,31 @@ namespace DataInfo.Service.Models.Member.Content
         /// Gets or sets Password
         /// </summary>
         public string Password { get; set; }
+    }
+
+    /// <summary>
+    /// 驗證會員註冊內容
+    /// </summary>
+    public class MemberRegisterContentValidator : AbstractValidator<MemberRegisterContent>
+    {
+        public MemberRegisterContentValidator(bool isValidatePassword)
+        {
+            ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
+            RuleFor(content => content.Email)
+            .NotNull().WithMessage("信箱無效.")
+            .NotEmpty().WithMessage("信箱無效.")
+            .EmailAddress().WithMessage("信箱格式錯誤.");
+
+            if (isValidatePassword)
+            {
+                RuleFor(content => content.Password)
+                  .NotNull().WithMessage("密碼無效.")
+                  .NotEmpty().WithMessage("密碼無效.");
+                RuleFor(content => content.ConfirmPassword)
+                  .NotNull().WithMessage("未輸入相同密碼.")
+                  .NotEmpty().WithMessage("未輸入相同密碼.")
+                  .Equal(content => content.Password).WithMessage("未輸入相同密碼.");
+            }
+        }
     }
 }

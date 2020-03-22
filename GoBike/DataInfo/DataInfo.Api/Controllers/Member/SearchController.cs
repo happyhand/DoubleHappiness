@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using DataInfo.Core.Extensions;
+﻿using DataInfo.Core.Extensions;
 using DataInfo.Service.Enums;
 using DataInfo.Service.Interfaces.Member;
 using DataInfo.Service.Models.Member.Content;
@@ -9,6 +7,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using NLog;
+using System;
+using System.Threading.Tasks;
 
 namespace DataInfo.Api.Controllers.Member
 {
@@ -49,7 +49,8 @@ namespace DataInfo.Api.Controllers.Member
             string memberID = this.GetMemberID();
             try
             {
-                ResponseResultDto responseResult = await this.memberService.StrictSearch(memberID).ConfigureAwait(false);
+                MemberSearchContent content = new MemberSearchContent() { SearchKey = memberID };
+                ResponseResultDto responseResult = await this.memberService.StrictSearch(content).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
@@ -89,11 +90,11 @@ namespace DataInfo.Api.Controllers.Member
                 ResponseResultDto responseResult;
                 if (content.UseFuzzySearch == (int)SearchType.Fuzzy)
                 {
-                    responseResult = await this.memberService.FuzzySearch(content.SearchKey, memberID).ConfigureAwait(false);
+                    responseResult = await this.memberService.FuzzySearch(content, memberID).ConfigureAwait(false);
                 }
                 else
                 {
-                    responseResult = await this.memberService.StrictSearch(content.SearchKey, memberID).ConfigureAwait(false);
+                    responseResult = await this.memberService.StrictSearch(content, memberID).ConfigureAwait(false);
                 }
 
                 return Ok(responseResult);

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
 using DataInfo.Repository.Interfaces;
@@ -14,8 +9,13 @@ using DataInfo.Service.Interfaces.Member;
 using DataInfo.Service.Models.Member.Content;
 using DataInfo.Service.Models.Member.View;
 using DataInfo.Service.Models.Response;
+using FluentValidation.Results;
 using Newtonsoft.Json;
 using NLog;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace DataInfo.Service.Managers.Member
 {
@@ -173,23 +173,25 @@ namespace DataInfo.Service.Managers.Member
         /// <summary>
         /// 會員登入(一般登入)
         /// </summary>
-        /// <param name="email">email</param>
-        /// <param name="password">password</param>
+        /// <param name="content">content</param>
         /// <returns>ResponseResultDto</returns>
-        public async Task<ResponseResultDto> Login(string email, string password)
+        public async Task<ResponseResultDto> Login(MemberLoginContent content)
         {
             try
             {
                 #region 驗證登入資料
 
-                if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+                MemberLoginContentValidator memberLoginContentValidator = new MemberLoginContentValidator();
+                ValidationResult validationResult = memberLoginContentValidator.Validate(content);
+                if (!validationResult.IsValid)
                 {
-                    this.logger.LogWarn("會員登入結果(一般登入)", $"Result: 驗證失敗 Email: {email} Password: {password}", null);
+                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
+                    this.logger.LogWarn("會員登入結果(一般登入)", $"Result: 驗證失敗({errorMessgae}) Email: {content.Email} Password: {content.Password}", null);
                     return new ResponseResultDto()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.InputError,
-                        Content = "信箱或密碼無效."
+                        Content = errorMessgae
                     };
                 }
 
@@ -197,10 +199,10 @@ namespace DataInfo.Service.Managers.Member
 
                 #region 取得資料並驗證密碼
 
-                MemberModel memberModel = await this.GetMemberData(email).ConfigureAwait(false);
+                MemberModel memberModel = await this.GetMemberData(content.Email).ConfigureAwait(false);
                 if (memberModel == null)
                 {
-                    this.logger.LogWarn("會員登入結果(一般登入)", $"Result: 無會員資料 Email: {email} Password: {password}", null);
+                    this.logger.LogWarn("會員登入結果(一般登入)", $"Result: 無會員資料 Email: {content.Email} Password: {content.Password}", null);
                     return new ResponseResultDto()
                     {
                         Result = false,
@@ -210,9 +212,9 @@ namespace DataInfo.Service.Managers.Member
                 }
 
                 string decryptAESPassword = Utility.DecryptAES(memberModel.Password);
-                if (!decryptAESPassword.Equals(password))
+                if (!decryptAESPassword.Equals(content.Password))
                 {
-                    this.logger.LogWarn("會員登入結果(一般登入)", $"Result: 密碼驗證失敗 Email: {email} Password: {password}", null);
+                    this.logger.LogWarn("會員登入結果(一般登入)", $"Result: 密碼驗證失敗 Email: {content.Email} Password: {content.Password}", null);
                     return new ResponseResultDto()
                     {
                         Result = false,
@@ -228,7 +230,7 @@ namespace DataInfo.Service.Managers.Member
                 bool firebaseLoginResult = true;
                 if (!firebaseLoginResult)
                 {
-                    this.logger.LogWarn("會員登入結果(一般登入)", $"Result: Firebase 登入失敗 Email: {email} Password: {password}", null);
+                    this.logger.LogWarn("會員登入結果(一般登入)", $"Result: Firebase 登入失敗 Email: {content.Email} Password: {content.Password}", null);
                     return new ResponseResultDto()
                     {
                         Result = false,
@@ -245,7 +247,7 @@ namespace DataInfo.Service.Managers.Member
 
                 #endregion 更新最新登入時間
 
-                this.logger.LogInfo("會員登入成功(一般登入)", $"Email: {email} Password: {password}", null);
+                this.logger.LogInfo("會員登入成功(一般登入)", $"Email: {content.Email} Password: {content.Password}", null);
                 return new ResponseResultDto()
                 {
                     Result = true,
@@ -255,7 +257,7 @@ namespace DataInfo.Service.Managers.Member
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員登入發生錯誤(一般登入)", $"Email: {email} Password: {password}", ex);
+                this.logger.LogError("會員登入發生錯誤(一般登入)", $"Email: {content.Email} Password: {content.Password}", ex);
                 return new ResponseResultDto()
                 {
                     Result = false,
@@ -268,28 +270,28 @@ namespace DataInfo.Service.Managers.Member
         /// <summary>
         /// 會員註冊
         /// </summary>
-        /// <param name="email">email</param>
-        /// <param name="password">password</param>
-        /// <param name="confirmPassword">confirmPassword</param>
+        /// <param name="content">content</param>
         /// <param name="isValidatePassword">isValidatePassword</param>
         /// <param name="fbToken">fbToken</param>
         /// <param name="googleToken">googleToken</param>
         /// <returns>ResponseResultDto</returns>
-        public async Task<ResponseResultDto> Register(string email, string password, string confirmPassword, bool isValidatePassword, string fbToken, string googleToken)
+        public async Task<ResponseResultDto> Register(MemberRegisterContent content, bool isValidatePassword, string fbToken, string googleToken)
         {
             try
             {
                 #region 驗證註冊資料
 
-                string validateRegisterInputInfoResult = this.ValidateRegisterInputInfo(email, password, confirmPassword, isValidatePassword);
-                if (!string.IsNullOrEmpty(validateRegisterInputInfoResult))
+                MemberRegisterContentValidator memberRegisterContentValidator = new MemberRegisterContentValidator(isValidatePassword);
+                ValidationResult validationResult = memberRegisterContentValidator.Validate(content);
+                if (!validationResult.IsValid)
                 {
-                    this.logger.LogWarn("會員註冊結果", $"Result: 驗證失敗({validateRegisterInputInfoResult}) Email: {email} Password: {password} ConfirmPassword: {confirmPassword} IsValidatePassword: {isValidatePassword} FbToken: {fbToken} GoogleToken: {googleToken}", null);
+                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
+                    this.logger.LogWarn("會員註冊結果", $"Result: 驗證失敗({errorMessgae}) Email: {content.Email} Password: {content.Password} ConfirmPassword: {content.ConfirmPassword} IsValidatePassword: {isValidatePassword} FbToken: {fbToken} GoogleToken: {googleToken}", null);
                     return new ResponseResultDto()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.InputError,
-                        Content = validateRegisterInputInfoResult
+                        Content = errorMessgae
                     };
                 }
 
@@ -297,10 +299,10 @@ namespace DataInfo.Service.Managers.Member
 
                 #region 檢查 Email 是否已被註冊
 
-                MemberModel memberModel = await this.GetMemberData(email).ConfigureAwait(false);
+                MemberModel memberModel = await this.GetMemberData(content.Email).ConfigureAwait(false);
                 if (memberModel != null)
                 {
-                    this.logger.LogWarn("會員註冊結果", $"Result: 此信箱已經被註冊 Email: {email} Password: {password} ConfirmPassword: {confirmPassword} IsValidatePassword: {isValidatePassword} FbToken: {fbToken} GoogleToken: {googleToken}", null);
+                    this.logger.LogWarn("會員註冊結果", $"Result: 此信箱已經被註冊 Email: {content.Email} Password: {content.Password} ConfirmPassword: {content.ConfirmPassword} IsValidatePassword: {isValidatePassword} FbToken: {fbToken} GoogleToken: {googleToken}", null);
                     return new ResponseResultDto()
                     {
                         Result = false,
@@ -313,11 +315,11 @@ namespace DataInfo.Service.Managers.Member
 
                 #region 建立 DB 會員資料
 
-                memberModel = this.CreateMemberModel(email, password, fbToken, googleToken);
+                memberModel = this.CreateMemberModel(content.Email, content.Password, fbToken, googleToken);
                 bool dbCreateResult = await this.memberRepository.Create(memberModel).ConfigureAwait(false);
                 if (!dbCreateResult)
                 {
-                    this.logger.LogWarn("會員註冊結果", $"Result: DB 建立資料失敗 Email: {email} Password: {password} ConfirmPassword: {confirmPassword} IsValidatePassword: {isValidatePassword} FbToken: {fbToken} GoogleToken: {googleToken}", null);
+                    this.logger.LogWarn("會員註冊結果", $"Result: DB 建立資料失敗 Email: {content.Email} Password: {content.Password} ConfirmPassword: {content.ConfirmPassword} IsValidatePassword: {isValidatePassword} FbToken: {fbToken} GoogleToken: {googleToken}", null);
                     return new ResponseResultDto()
                     {
                         Result = false,
@@ -333,7 +335,7 @@ namespace DataInfo.Service.Managers.Member
                 bool firebaseCreateResult = true;
                 if (!firebaseCreateResult)
                 {
-                    this.logger.LogWarn("會員註冊結果", $"Result: Firebase 建立資料失敗 Email: {email} Password: {password} ConfirmPassword: {confirmPassword} IsValidatePassword: {isValidatePassword} FbToken: {fbToken} GoogleToken: {googleToken}", null);
+                    this.logger.LogWarn("會員註冊結果", $"Result: Firebase 建立資料失敗 Email: {content.Email} Password: {content.Password} ConfirmPassword: {content.ConfirmPassword} IsValidatePassword: {isValidatePassword} FbToken: {fbToken} GoogleToken: {googleToken}", null);
                     return new ResponseResultDto()
                     {
                         Result = false,
@@ -344,7 +346,7 @@ namespace DataInfo.Service.Managers.Member
 
                 #endregion 建立 Firebase 會員資料 (TODO)
 
-                this.logger.LogInfo("會員註冊成功", $"Email: {email} Password: {password} ConfirmPassword: {confirmPassword} IsValidatePassword: {isValidatePassword} FbToken: {fbToken} GoogleToken: {googleToken}", null);
+                this.logger.LogInfo("會員註冊成功", $"Email: {content.Email} Password: {content.Password} ConfirmPassword: {content.ConfirmPassword} IsValidatePassword: {isValidatePassword} FbToken: {fbToken} GoogleToken: {googleToken}", null);
                 return new ResponseResultDto()
                 {
                     Result = true,
@@ -354,7 +356,7 @@ namespace DataInfo.Service.Managers.Member
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員註冊發生錯誤", $"Email: {email} Password: {password} ConfirmPassword: {confirmPassword} IsValidatePassword: {isValidatePassword} FbToken: {fbToken} GoogleToken: {googleToken}", ex);
+                this.logger.LogError("會員註冊發生錯誤", $"Email: {content.Email} Password: {content.Password} ConfirmPassword: {content.ConfirmPassword} IsValidatePassword: {isValidatePassword} FbToken: {fbToken} GoogleToken: {googleToken}", ex);
                 return new ResponseResultDto()
                 {
                     Result = false,
@@ -727,25 +729,32 @@ namespace DataInfo.Service.Managers.Member
         /// <summary>
         /// 搜尋會員(模糊比對)
         /// </summary>
-        /// <param name="searchKey">searchKey</param>
+        /// <param name="content">content</param>
         /// <param name="searchMemberID">searchMemberID</param>
         /// <returns>ResponseResultDto</returns>
-        public async Task<ResponseResultDto> FuzzySearch(string searchKey, string searchMemberID)
+        public async Task<ResponseResultDto> FuzzySearch(MemberSearchContent content, string searchMemberID)
         {
             try
             {
-                if (string.IsNullOrEmpty(searchKey))
+                #region 驗證搜尋資料
+
+                MemberSearchContentValidator memberSearchContentValidator = new MemberSearchContentValidator();
+                ValidationResult validationResult = memberSearchContentValidator.Validate(content);
+                if (!validationResult.IsValid)
                 {
-                    this.logger.LogWarn("搜尋會員結果(模糊比對)", $"Result: 搜尋失敗，無搜尋關鍵字 SearchKey: {searchKey}  SearchMemberID: {searchMemberID}", null);
+                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
+                    this.logger.LogWarn("搜尋會員結果(模糊比對)", $"Result: 驗證失敗({errorMessgae}) Content: {JsonConvert.SerializeObject(content)} SearchMemberID: {searchMemberID}", null);
                     return new ResponseResultDto()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.InputError,
-                        Content = "未提供搜尋內容."
+                        Content = errorMessgae
                     };
                 }
 
-                IEnumerable<MemberModel> memberModels = await this.memberRepository.GetByFuzzy(searchKey);
+                #endregion 驗證搜尋資料
+
+                IEnumerable<MemberModel> memberModels = await this.memberRepository.GetByFuzzy(content.SearchKey);
                 List<MemberSimpleInfoViewDto> memberSimpleInfoViewDtos = new List<MemberSimpleInfoViewDto>();
                 foreach (MemberModel memberModel in memberModels)
                 {
@@ -772,7 +781,7 @@ namespace DataInfo.Service.Managers.Member
             }
             catch (Exception ex)
             {
-                this.logger.LogError("搜尋會員發生錯誤(模糊比對)", $"SearchKey: {searchKey}  SearchMemberID: {searchMemberID}", ex);
+                this.logger.LogError("搜尋會員發生錯誤(模糊比對)", $"Content: {JsonConvert.SerializeObject(content)} SearchMemberID: {searchMemberID}", ex);
                 return new ResponseResultDto()
                 {
                     Result = false,
@@ -785,33 +794,40 @@ namespace DataInfo.Service.Managers.Member
         /// <summary>
         /// 搜尋會員(嚴格比對)
         /// </summary>
-        /// <param name="searchKey">searchKey</param>
+        /// <param name="content">content</param>
         /// <param name="searchMemberID">searchMemberID</param>
         /// <returns>ResponseResultDto</returns>
-        public async Task<ResponseResultDto> StrictSearch(string searchKey, string searchMemberID = null)
+        public async Task<ResponseResultDto> StrictSearch(MemberSearchContent content, string searchMemberID = null)
         {
             try
             {
-                if (string.IsNullOrEmpty(searchKey))
+                #region 驗證搜尋資料
+
+                MemberSearchContentValidator memberSearchContentValidator = new MemberSearchContentValidator();
+                ValidationResult validationResult = memberSearchContentValidator.Validate(content);
+                if (!validationResult.IsValid)
                 {
-                    this.logger.LogWarn("搜尋會員結果(嚴格比對)", $"Result: 搜尋失敗，無搜尋關鍵字 SearchKey: {searchKey} SearchMemberID: {searchMemberID}", null);
+                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
+                    this.logger.LogWarn("搜尋會員結果(嚴格比對)", $"Result: 驗證失敗({errorMessgae}) Content: {JsonConvert.SerializeObject(content)} SearchMemberID: {searchMemberID}", null);
                     return new ResponseResultDto()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.InputError,
-                        Content = "未提供搜尋內容."
+                        Content = errorMessgae
                     };
                 }
 
-                MemberModel memberModel = await this.GetMemberData(searchKey).ConfigureAwait(false);
+                #endregion 驗證搜尋資料
+
+                MemberModel memberModel = await this.GetMemberData(content.SearchKey).ConfigureAwait(false);
                 if (memberModel == null)
                 {
-                    this.logger.LogWarn("搜尋會員結果(嚴格比對)", $"Result: 搜尋失敗，無會員資料 SearchKey: {searchKey}  SearchMemberID: {searchMemberID}", null);
+                    this.logger.LogWarn("搜尋會員結果(嚴格比對)", $"Result: 搜尋失敗，無會員資料 Content: {JsonConvert.SerializeObject(content)} SearchMemberID: {searchMemberID}", null);
                     return new ResponseResultDto()
                     {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = "無會員資料."
+                        Result = true,
+                        ResultCode = (int)ResponseResultType.Success,
+                        Content = null
                     };
                 }
 
@@ -860,7 +876,7 @@ namespace DataInfo.Service.Managers.Member
             }
             catch (Exception ex)
             {
-                this.logger.LogError("搜尋會員發生錯誤(嚴格比對)", $"SearchKey: {searchKey}  SearchMemberID: {searchMemberID}", ex);
+                this.logger.LogError("搜尋會員發生錯誤(嚴格比對)", $"Content: {JsonConvert.SerializeObject(content)} SearchMemberID: {searchMemberID}", ex);
                 return new ResponseResultDto()
                 {
                     Result = false,
@@ -871,82 +887,5 @@ namespace DataInfo.Service.Managers.Member
         }
 
         #endregion 會員資料
-
-        #region 驗證功能
-
-        /// <summary>
-        /// 驗證密碼格式
-        /// </summary>
-        /// <param name="password">password</param>
-        /// <returns>bool</returns>
-        private bool ValidatePassword(string password)
-        {
-            //// 待確認驗證方式
-            //int passwordCount = password.Length;
-            //if (passwordCount < 8 || passwordCount > 14)
-            //{
-            //    return false;
-            //}
-
-            //int preCharCode = -1;
-            //for (int i = 0; i < passwordCount; i++)
-            //{
-            //    string word = password[i].ToString();
-            //    int charCode = (int)password[i];
-            //    if (!Regex.IsMatch(word, @"[0-9a-zＡ-Ｚ０-９]"))
-            //    {
-            //        return false;
-            //    }
-
-            // if (Math.Abs(charCode - preCharCode) == 1) { return false; }
-
-            //    preCharCode = charCode;
-            //}
-
-            return true;
-        }
-
-        /// <summary>
-        /// 驗證註冊輸入資訊
-        /// </summary>
-        /// <param name="email">email</param>
-        /// <param name="password">password</param>
-        /// <param name="confirmPassword">confirmPassword</param>
-        /// <param name="isValidatePassword">isVerifyPassword</param>
-        /// <returns>string</returns>
-        private string ValidateRegisterInputInfo(string email, string password, string confirmPassword, bool isValidatePassword)
-        {
-            if (string.IsNullOrEmpty(email))
-            {
-                return "信箱無效.";
-            }
-
-            if (!Utility.ValidateEmail(email))
-            {
-                return "信箱格式錯誤.";
-            }
-
-            if (isValidatePassword)
-            {
-                if (string.IsNullOrEmpty(password))
-                {
-                    return "密碼無效.";
-                }
-
-                if (!this.ValidatePassword(password))
-                {
-                    return "密碼格式錯誤.";
-                }
-
-                if (!password.Equals(confirmPassword))
-                {
-                    return "未輸入相同密碼.";
-                }
-            }
-
-            return string.Empty;
-        }
-
-        #endregion 驗證功能
     }
 }

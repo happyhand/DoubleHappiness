@@ -1,8 +1,6 @@
-﻿using System.Threading.Tasks;
-using DataInfo.Core.Applibs;
-using DataInfo.Core.Extensions;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using System.Threading.Tasks;
 
 namespace DataInfo.Api.Filters
 {

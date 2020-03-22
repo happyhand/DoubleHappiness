@@ -1,10 +1,10 @@
-﻿using System;
+﻿using DataInfo.Core.Extensions;
+using DataInfo.Service.Interfaces.Server;
+using NLog;
+using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using DataInfo.Core.Extensions;
-using DataInfo.Service.Interfaces.Server;
-using NLog;
 
 namespace DataInfo.Service.Managers.Server
 {

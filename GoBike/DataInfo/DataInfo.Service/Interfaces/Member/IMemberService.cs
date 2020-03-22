@@ -1,6 +1,6 @@
-﻿using System.Threading.Tasks;
-using DataInfo.Service.Models.Member.Content;
+﻿using DataInfo.Service.Models.Member.Content;
 using DataInfo.Service.Models.Response;
+using System.Threading.Tasks;
 
 namespace DataInfo.Service.Interfaces.Member
 {
@@ -21,22 +21,19 @@ namespace DataInfo.Service.Interfaces.Member
         /// <summary>
         /// 會員登入(一般登入)
         /// </summary>
-        /// <param name="email">email</param>
-        /// <param name="password">password</param>
+        /// <param name="content">content</param>
         /// <returns>ResponseResultDto</returns>
-        Task<ResponseResultDto> Login(string email, string password);
+        Task<ResponseResultDto> Login(MemberLoginContent content);
 
         /// <summary>
         /// 會員註冊
         /// </summary>
-        /// <param name="email">email</param>
-        /// <param name="password">password</param>
-        /// <param name="confirmPassword">confirmPassword</param>
+        /// <param name="content">content</param>
         /// <param name="isValidatePassword">isValidatePassword</param>
         /// <param name="fbToken">fbToken</param>
         /// <param name="googleToken">googleToken</param>
         /// <returns>ResponseResultDto</returns>
-        Task<ResponseResultDto> Register(string email, string password, string confirmPassword, bool isValidatePassword, string fbToken, string googleToken);
+        Task<ResponseResultDto> Register(MemberRegisterContent content, bool isValidatePassword, string fbToken, string googleToken);
 
         /// <summary>
         /// 會員登入(重新登入)
@@ -60,18 +57,18 @@ namespace DataInfo.Service.Interfaces.Member
         /// <summary>
         /// 搜尋會員(模糊比對)
         /// </summary>
-        /// <param name="searchKey">searchKey</param>
+        /// <param name="content">content</param>
         /// <param name="searchMemberID">searchMemberID</param>
         /// <returns>ResponseResultDto</returns>
-        Task<ResponseResultDto> FuzzySearch(string searchKey, string searchMemberID);
+        Task<ResponseResultDto> FuzzySearch(MemberSearchContent content, string searchMemberID);
 
         /// <summary>
         /// 搜尋會員(嚴格比對)
         /// </summary>
-        /// <param name="searchKey">searchKey</param>
+        /// <param name="content">content</param>
         /// <param name="searchMemberID">searchMemberID</param>
         /// <returns>ResponseResultDto</returns>
-        Task<ResponseResultDto> StrictSearch(string searchKey, string searchMemberID = null);
+        Task<ResponseResultDto> StrictSearch(MemberSearchContent content, string searchMemberID = null);
 
         #endregion 會員資料
     }

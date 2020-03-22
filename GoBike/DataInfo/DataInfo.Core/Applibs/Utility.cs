@@ -1,4 +1,7 @@
-﻿using System;
+﻿using DataInfo.Core.Extensions;
+using Microsoft.AspNetCore.Http;
+using NLog;
+using System;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -6,9 +9,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using DataInfo.Core.Extensions;
-using Microsoft.AspNetCore.Http;
-using NLog;
 
 namespace DataInfo.Core.Applibs
 {

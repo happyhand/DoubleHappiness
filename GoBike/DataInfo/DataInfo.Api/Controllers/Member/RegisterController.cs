@@ -1,12 +1,12 @@
-﻿using System;
-using System.Threading.Tasks;
-using DataInfo.Core.Extensions;
+﻿using DataInfo.Core.Extensions;
 using DataInfo.Service.Interfaces.Member;
 using DataInfo.Service.Models.Member.Content;
 using DataInfo.Service.Models.Response;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using NLog;
+using System;
+using System.Threading.Tasks;
 
 namespace DataInfo.Api.Controllers.Member
 {
@@ -58,7 +58,7 @@ namespace DataInfo.Api.Controllers.Member
                 }
 
                 this.logger.LogInfo("會員請求註冊", $"Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResultDto responseResult = await memberService.Register(content.Email, content.Password, content.ConfirmPassword, true, string.Empty, string.Empty).ConfigureAwait(false);
+                ResponseResultDto responseResult = await memberService.Register(content, true, string.Empty, string.Empty).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)

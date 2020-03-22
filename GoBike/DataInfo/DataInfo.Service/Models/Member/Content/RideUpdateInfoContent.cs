@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using DataInfo.Service.Models.Member.Content.Interfaces;
+﻿using DataInfo.Service.Models.Member.Content.Interfaces;
+using System.Collections.Generic;
 
 namespace DataInfo.Service.Models.Member.Content
 {

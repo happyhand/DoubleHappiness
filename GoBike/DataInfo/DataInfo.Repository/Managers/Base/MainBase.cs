@@ -1,5 +1,4 @@
 ﻿using DataInfo.Core.Applibs;
-using DataInfo.Repository.Models.Member;
 using SqlSugar;
 
 namespace DataInfo.Repository.Managers.Base

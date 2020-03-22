@@ -1,5 +1,5 @@
-﻿using System;
-using SqlSugar;
+﻿using SqlSugar;
+using System;
 
 namespace DataInfo.Repository.Models.Member
 {

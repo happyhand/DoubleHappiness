@@ -1,12 +1,12 @@
-﻿using System;
+﻿using DataInfo.Core.Extensions;
+using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
+using NLog;
+using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.IdentityModel.Tokens;
-using NLog;
-using DataInfo.Core.Extensions;
-using Newtonsoft.Json;
 
 namespace DataInfo.Core.Applibs
 {

@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using DataInfo.Core.Applibs;
+﻿using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
 using DataInfo.Repository.Interfaces;
 using Newtonsoft.Json;
 using NLog;
 using StackExchange.Redis;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace DataInfo.Repository.Managers
 {

@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using DataInfo.Core.Extensions;
+﻿using DataInfo.Core.Extensions;
 using DataInfo.Repository.Interfaces;
 using DataInfo.Repository.Managers.Base;
 using DataInfo.Repository.Models.Member;
 using Newtonsoft.Json;
 using NLog;
 using SqlSugar;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DataInfo.Repository.Managers
 {

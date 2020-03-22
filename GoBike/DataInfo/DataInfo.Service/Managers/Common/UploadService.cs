@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
-using DataInfo.Core.Applibs;
+﻿using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Models.Response;
 using Newtonsoft.Json;
 using NLog;
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace DataInfo.Service.Managers.Common
 {

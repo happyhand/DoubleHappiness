@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
 using DataInfo.Repository.Interfaces;
@@ -12,11 +7,15 @@ using DataInfo.Service.Enums;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Member;
 using DataInfo.Service.Models.Member.Content;
-using DataInfo.Service.Models.Member.Content.Interfaces;
 using DataInfo.Service.Models.Member.View;
 using DataInfo.Service.Models.Response;
+using FluentValidation.Results;
 using Newtonsoft.Json;
 using NLog;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace DataInfo.Service.Managers.Member
 {
@@ -139,21 +138,33 @@ namespace DataInfo.Service.Managers.Member
         {
             try
             {
-                #region 驗證資料
+                #region 驗證騎乘資料
 
-                string validateRideInputInfoResult = this.ValidateRideInputInfo(memberID, content);
-                if (!string.IsNullOrEmpty(validateRideInputInfoResult))
+                RideInfoContentValidator rideInfoContentValidator = new RideInfoContentValidator();
+                ValidationResult validationResult = rideInfoContentValidator.Validate(content);
+                if (!validationResult.IsValid)
                 {
-                    this.logger.LogWarn("新增騎乘資料結果", $"Result: 驗證失敗({validateRideInputInfoResult}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
+                    this.logger.LogWarn("新增騎乘資料結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                     return new ResponseResultDto()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.InputError,
-                        Content = validateRideInputInfoResult
+                        Content = errorMessgae
                     };
                 }
 
-                #endregion 驗證資料
+                if (content.ShareContent == null)
+                {
+                    content.ShareContent = new string[][] { };
+                }
+
+                if (string.IsNullOrEmpty(content.Title))
+                {
+                    content.Title = $"{DateTime.UtcNow:yyyy/MM/dd}";
+                }
+
+                #endregion 驗證騎乘資料
 
                 #region 上傳圖片
 
@@ -317,160 +328,68 @@ namespace DataInfo.Service.Managers.Member
             }
         }
 
-        /// <summary>
-        /// 更新騎乘資料
-        /// </summary>
-        /// <param name="memberID">memberID</param>
-        /// <param name="content">content</param>
-        /// <returns>ResponseResultDto</returns>
-        public async Task<ResponseResultDto> UpdateRideData(string memberID, RideUpdateInfoContent content)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(memberID))
-                {
-                    return new ResponseResultDto()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = "會員編號無效."
-                    };
-                }
+        ///// <summary>
+        ///// 更新騎乘資料 (TODO)
+        ///// </summary>
+        ///// <param name="memberID">memberID</param>
+        ///// <param name="content">content</param>
+        ///// <returns>ResponseResultDto</returns>
+        //public async Task<ResponseResultDto> UpdateRideData(string memberID, RideUpdateInfoContent content)
+        //{
+        //    try
+        //    {
+        //        if (string.IsNullOrEmpty(memberID))
+        //        {
+        //            return new ResponseResultDto()
+        //            {
+        //                Result = false,
+        //                ResultCode = (int)ResponseResultType.InputError,
+        //                Content = "會員編號無效."
+        //            };
+        //        }
 
-                if (string.IsNullOrEmpty(content.RideID))
-                {
-                    return new ResponseResultDto()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = "騎乘資料編號無效."
-                    };
-                }
+        // if (string.IsNullOrEmpty(content.RideID)) { return new ResponseResultDto() { Result =
+        // false, ResultCode = (int)ResponseResultType.InputError, Content = "騎乘資料編號無效." }; }
 
-                RideModel rideModel = await this.rideRepository.Get(content.RideID).ConfigureAwait(false);
-                if (rideModel == null)
-                {
-                    this.logger.LogWarn("更新騎乘資料結果", $"Result: 搜尋失敗，無騎乘資料 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                    return new ResponseResultDto()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = "無騎乘資料."
-                    };
-                }
+        // RideModel rideModel = await
+        // this.rideRepository.Get(content.RideID).ConfigureAwait(false); if (rideModel == null) {
+        // this.logger.LogWarn("更新騎乘資料結果", $"Result: 搜尋失敗，無騎乘資料 MemberID: {memberID} Content:
+        // {JsonConvert.SerializeObject(content)}", null); return new ResponseResultDto() { Result =
+        // false, ResultCode = (int)ResponseResultType.InputError, Content = "無騎乘資料." }; }
 
-                string updateInfoHandlerResult = await this.UpdateInfoHandler(content, rideModel).ConfigureAwait(false);
-                if (!string.IsNullOrEmpty(updateInfoHandlerResult))
-                {
-                    this.logger.LogWarn("更新騎乘資料結果", $"Result: 更新失敗({updateInfoHandlerResult}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                    return new ResponseResultDto()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.UpdateFail,
-                        Content = updateInfoHandlerResult
-                    };
-                }
+        // string updateInfoHandlerResult = await this.UpdateInfoHandler(content,
+        // rideModel).ConfigureAwait(false); if (!string.IsNullOrEmpty(updateInfoHandlerResult)) {
+        // this.logger.LogWarn("更新騎乘資料結果", $"Result: 更新失敗({updateInfoHandlerResult}) MemberID:
+        // {memberID} Content: {JsonConvert.SerializeObject(content)}", null); return new
+        // ResponseResultDto() { Result = false, ResultCode = (int)ResponseResultType.UpdateFail,
+        // Content = updateInfoHandlerResult }; }
 
-                bool isSuccess = await this.rideRepository.Update(rideModel).ConfigureAwait(false);
-                this.logger.LogInfo("更新騎乘資料結果", $"Result: {isSuccess} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} RideModel: {JsonConvert.SerializeObject(rideModel)}", null);
-                if (!isSuccess)
-                {
-                    return new ResponseResultDto()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.UpdateFail,
-                        Content = "更新資料失敗."
-                    };
-                }
+        // bool isSuccess = await this.rideRepository.Update(rideModel).ConfigureAwait(false);
+        // this.logger.LogInfo("更新騎乘資料結果", $"Result: {isSuccess} MemberID: {memberID} Content:
+        // {JsonConvert.SerializeObject(content)} RideModel:
+        // {JsonConvert.SerializeObject(rideModel)}", null); if (!isSuccess) { return new
+        // ResponseResultDto() { Result = false, ResultCode = (int)ResponseResultType.UpdateFail,
+        // Content = "更新資料失敗." }; }
 
-                return new ResponseResultDto()
-                {
-                    Result = true,
-                    ResultCode = (int)ResponseResultType.Success,
-                    Content = "更新資料成功."
-                };
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("更新騎乘資料結果發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
-                return new ResponseResultDto()
-                {
-                    Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = "更新資料發生錯誤."
-                };
-            }
-        }
+        //        return new ResponseResultDto()
+        //        {
+        //            Result = true,
+        //            ResultCode = (int)ResponseResultType.Success,
+        //            Content = "更新資料成功."
+        //        };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        this.logger.LogError("更新騎乘資料結果發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+        //        return new ResponseResultDto()
+        //        {
+        //            Result = false,
+        //            ResultCode = (int)ResponseResultType.UnknownError,
+        //            Content = "更新資料發生錯誤."
+        //        };
+        //    }
+        //}
 
         #endregion 騎乘資料
-
-        #region 驗證功能
-
-        /// <summary>
-        /// 驗證騎乘資料
-        /// </summary>
-        /// <param name="memberID">memberID</param>
-        /// <param name="content">content</param>
-        /// <returns>string</returns>
-        private string ValidateRideInputInfo(string memberID, RideInfoContent content)
-        {
-            if (string.IsNullOrEmpty(memberID))
-            {
-                return "會員編號無效.";
-            }
-
-            if (string.IsNullOrEmpty(content.Time) || Convert.ToInt64(content.Time) == 0)
-            {
-                return "騎乘時間無效.";
-            }
-
-            if (string.IsNullOrEmpty(content.Distance) || Convert.ToDecimal(content.Distance) == 0)
-            {
-                return "騎乘距離無效.";
-            }
-
-            if (string.IsNullOrEmpty(content.Altitude) || Convert.ToDecimal(content.Altitude) == 0)
-            {
-                return "爬升高度無效.";
-            }
-
-            if (content.CountyID == (int)CityType.None)
-            {
-                return "未設定騎乘市區.";
-            }
-
-            if (content.Level == (int)RideLevelType.None)
-            {
-                return "未設定騎乘等級.";
-            }
-
-            if (content.Route == null)
-            {
-                return "騎乘路徑內容無效.";
-            }
-            else if (!content.Route.Any())
-            {
-                return "無騎乘路徑內容資料.";
-            }
-
-            if (string.IsNullOrEmpty(content.Photo))
-            {
-                return "騎乘封面無效.";
-            }
-
-            if (content.ShareContent == null)
-            {
-                return "騎乘分享內容無效.";
-            }
-
-            if (string.IsNullOrEmpty(content.Title))
-            {
-                content.Title = $"{DateTime.UtcNow:yyyy/MM/dd}";
-            }
-
-            return string.Empty;
-        }
-
-        #endregion 驗證功能
     }
 }

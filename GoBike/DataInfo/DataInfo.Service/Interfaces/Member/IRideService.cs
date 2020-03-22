@@ -1,6 +1,6 @@
-﻿using System.Threading.Tasks;
-using DataInfo.Service.Models.Member.Content;
+﻿using DataInfo.Service.Models.Member.Content;
 using DataInfo.Service.Models.Response;
+using System.Threading.Tasks;
 
 namespace DataInfo.Service.Interfaces.Member
 {
@@ -30,13 +30,5 @@ namespace DataInfo.Service.Interfaces.Member
         /// <param name="memberID">memberID</param>
         /// <returns>ResponseResultDto</returns>
         Task<ResponseResultDto> GetRideDataListOfMember(string memberID);
-
-        /// <summary>
-        /// 更新騎乘資料
-        /// </summary>
-        /// <param name="memberID">memberID</param>
-        /// <param name="content">content</param>
-        /// <returns>ResponseResultDto</returns>
-        Task<ResponseResultDto> UpdateRideData(string memberID, RideUpdateInfoContent content);
     }
 }

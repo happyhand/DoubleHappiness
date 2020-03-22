@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using DataInfo.Core.Applibs;
-using DataInfo.Core.Extensions;
+﻿using DataInfo.Core.Extensions;
 using DataInfo.Service.Interfaces.Member;
 using DataInfo.Service.Models.Member.Content;
 using DataInfo.Service.Models.Response;
@@ -9,6 +6,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using NLog;
+using System;
+using System.Threading.Tasks;
 
 namespace DataInfo.Api.Controllers.Member
 {
@@ -150,7 +149,7 @@ namespace DataInfo.Api.Controllers.Member
                 }
 
                 this.logger.LogInfo("會員請求登入(一般登入)", $"Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResultDto responseResult = await memberService.Login(content.Email, content.Password).ConfigureAwait(false);
+                ResponseResultDto responseResult = await memberService.Login(content).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)

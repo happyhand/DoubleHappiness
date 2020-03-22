@@ -1,12 +1,12 @@
-﻿using System;
+﻿using DataInfo.Core.Extensions;
+using DataInfo.Service.Interfaces.Server;
+using NLog;
+using System;
+using System.IO;
 using System.Net.WebSockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using DataInfo.Service.Interfaces.Server;
-using DataInfo.Core.Extensions;
-using NLog;
-using System.IO;
-using System.Text;
 
 namespace DataInfo.Service.Managers.Server
 {

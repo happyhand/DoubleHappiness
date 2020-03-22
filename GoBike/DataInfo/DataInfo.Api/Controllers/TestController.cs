@@ -1,8 +1,8 @@
-﻿using System.Threading.Tasks;
-using DataInfo.Core.Extensions;
+﻿using DataInfo.Core.Extensions;
 using DataInfo.Service.Interfaces.Server;
 using Microsoft.AspNetCore.Mvc;
 using NLog;
+using System.Threading.Tasks;
 
 namespace DataInfo.Api.Controllers
 {

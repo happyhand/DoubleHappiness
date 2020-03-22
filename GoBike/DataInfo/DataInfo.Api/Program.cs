@@ -1,7 +1,7 @@
-using System;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using NLog;
+using System;
 
 namespace DataInfo.Api
 {

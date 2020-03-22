@@ -1,15 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
-using AutoMapper;
-using DataInfo.Core.Applibs;
-using DataInfo.Core.Extensions;
-using DataInfo.Repository.Interfaces;
+﻿using AutoMapper;
 using DataInfo.Repository.Models.Member;
-using DataInfo.Service.Enums;
 using DataInfo.Service.Models.Member.Content;
 using DataInfo.Service.Models.Member.View;
 using Newtonsoft.Json;
-using NLog;
 
 namespace DataInfo.AutoMapperProfiles
 {
