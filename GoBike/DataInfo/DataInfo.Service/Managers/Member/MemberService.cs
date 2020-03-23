@@ -17,6 +17,7 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace DataInfo.Service.Managers.Member
@@ -52,23 +53,16 @@ namespace DataInfo.Service.Managers.Member
         private readonly IUploadService uploadService;
 
         /// <summary>
-        /// verifierService
-        /// </summary>
-        private readonly IVerifierService verifierService;
-
-        /// <summary>
         /// 建構式
         /// </summary>
         /// <param name="mapper">mapper</param>
         /// <param name="uploadService">uploadService</param>
-        /// <param name="verifierService">verifierService</param>
         /// <param name="memberRepository">memberRepository</param>
         /// <param name="redisRepository">redisRepository</param>
-        public MemberService(IMapper mapper, IUploadService uploadService, IVerifierService verifierService, IMemberRepository memberRepository, IRedisRepository redisRepository)
+        public MemberService(IMapper mapper, IUploadService uploadService, IMemberRepository memberRepository, IRedisRepository redisRepository)
         {
             this.mapper = mapper;
             this.uploadService = uploadService;
-            this.verifierService = verifierService;
             this.memberRepository = memberRepository;
             this.redisRepository = redisRepository;
         }
@@ -130,8 +124,8 @@ namespace DataInfo.Service.Managers.Member
                 memberModel.LoginDate = DateTime.UtcNow;
                 this.memberRepository.Update(memberModel);
 
-                string cacheKey = $"{CommonFlagHelper.CommonFlag.RedisFlag.Member}-login-{memberModel.MemberID}";
-                this.redisRepository.SetCache(cacheKey, DateTime.UtcNow.ToString(), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.KeepOnlineTime));
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-login-{memberModel.MemberID}";
+                this.redisRepository.SetCache(cacheKey, JsonConvert.SerializeObject(DateTime.UtcNow), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.KeepOnlineTime));
             }
             catch (Exception ex)
             {
@@ -148,7 +142,7 @@ namespace DataInfo.Service.Managers.Member
         {
             try
             {
-                string cacheKey = $"{CommonFlagHelper.CommonFlag.RedisFlag.Member}-login-{memberID}";
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-login-{memberID}";
                 bool result = await this.redisRepository.UpdateCacheExpire(cacheKey, TimeSpan.FromMinutes(AppSettingHelper.Appsetting.KeepOnlineTime)).ConfigureAwait(false);
                 if (result)
                 {
@@ -775,7 +769,7 @@ namespace DataInfo.Service.Managers.Member
 
                     //// TODO 待檢驗其他會員是否同意被檢閱資料
 
-                    string cacheKey = $"{CommonFlagHelper.CommonFlag.RedisFlag.Member}-login-{memberModel.MemberID}";
+                    string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-login-{memberModel.MemberID}";
                     MemberSimpleInfoViewDto memberSimpleInfoViewDto = this.mapper.Map<MemberSimpleInfoViewDto>(memberModel);
                     memberSimpleInfoViewDto.OnlineType = await this.redisRepository.IsExist(cacheKey) ? (int)OnlineStatusType.Online : (int)OnlineStatusType.Offline;
                     memberSimpleInfoViewDtos.Add(memberSimpleInfoViewDto);
@@ -801,6 +795,122 @@ namespace DataInfo.Service.Managers.Member
         }
 
         /// <summary>
+        /// 初始化會員密碼
+        /// </summary>
+        /// <param name="content">content</param>
+        /// <returns>ResponseResultDto</returns>
+        public async Task<ResponseResultDto> InitPassword(MemberForgetPasswordContent content)
+        {
+            try
+            {
+                #region 驗證忘記密碼資料
+
+                MemberForgetPasswordContentValidator memberForgetPasswordContentValidator = new MemberForgetPasswordContentValidator(true);
+                ValidationResult validationResult = memberForgetPasswordContentValidator.Validate(content);
+                if (!validationResult.IsValid)
+                {
+                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
+                    this.logger.LogWarn("初始化會員密碼結果", $"Result: 驗證失敗({errorMessgae}) Content: {JsonConvert.SerializeObject(content)}", null);
+                    return new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.InputError,
+                        Content = errorMessgae
+                    };
+                }
+
+                #endregion 驗證忘記密碼資料
+
+                #region 比對驗證碼
+
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.VerifierCode}-{VerifierType.ForgetPassword}-{content.Email}";
+                string verifierCode = await this.redisRepository.GetCache<string>(cacheKey).ConfigureAwait(false);
+                if (!verifierCode.Equals(content.VerifierCode))
+                {
+                    this.logger.LogWarn("初始化會員密碼結果", $"Result: 驗證碼錯誤, Content: {JsonConvert.SerializeObject(content)} VerifierCode: {verifierCode}", null);
+                    return new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.InputError,
+                        Content = "驗證碼錯誤."
+                    };
+                }
+
+                #endregion 比對驗證碼
+
+                #region 更新使用者密碼
+
+                MemberModel memberModel = await this.memberRepository.GetByEmail(content.Email).ConfigureAwait(false);
+                if (memberModel == null)
+                {
+                    this.logger.LogWarn("初始化會員密碼結果", $"Result: 無會員資料，須查詢 DB 比對 Content: {JsonConvert.SerializeObject(content)}", null);
+                    return new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.UnknownError,
+                        Content = "無會員資料."
+                    };
+                }
+
+                string password = Guid.NewGuid().ToString().Substring(0, 8);
+                memberModel.Password = Utility.EncryptAES(password);
+                bool updateResult = await this.memberRepository.Update(memberModel).ConfigureAwait(false);
+                if (!updateResult)
+                {
+                    return new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.UpdateFail,
+                        Content = "更新資料失敗."
+                    };
+                }
+
+                #endregion 更新使用者密碼
+
+                #region 發送郵件
+
+                EmailContext emailContext = EmailContext.GetResetPasswordEmailContext(content.Email, password);
+                string postData = JsonConvert.SerializeObject(emailContext);
+                HttpResponseMessage httpResponseMessage = await Utility.ApiPost(AppSettingHelper.Appsetting.SmtpServer.Domain, AppSettingHelper.Appsetting.SmtpServer.SendEmailApi, postData).ConfigureAwait(false);
+                if (!httpResponseMessage.IsSuccessStatusCode)
+                {
+                    this.logger.LogWarn("初始化會員密碼結果", $"Result: 發送郵件失敗({httpResponseMessage.Content}) EmailContext: {JsonConvert.SerializeObject(emailContext)}", null);
+                    return new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.DenyAccess,
+                        Content = "發送郵件失敗."
+                    };
+                }
+
+                #endregion 發送郵件
+
+                #region 刪除 Redis 驗證碼
+
+                this.redisRepository.DeleteCache(cacheKey);
+
+                #endregion 刪除 Redis 驗證碼
+
+                return new ResponseResultDto()
+                {
+                    Result = true,
+                    ResultCode = (int)ResponseResultType.Success,
+                    Content = "初始化密碼成功."
+                };
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("發送會員忘記密碼驗證碼發生錯誤", $"Content: {JsonConvert.SerializeObject(content)}", ex);
+                return new ResponseResultDto()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.DenyAccess,
+                    Content = "發送驗證碼發生錯誤."
+                };
+            }
+        }
+
+        /// <summary>
         /// 發送會員忘記密碼驗證碼
         /// </summary>
         /// <param name="content">content</param>
@@ -811,7 +921,7 @@ namespace DataInfo.Service.Managers.Member
             {
                 #region 驗證忘記密碼資料
 
-                MemberForgetPasswordContentValidator memberForgetPasswordContentValidator = new MemberForgetPasswordContentValidator();
+                MemberForgetPasswordContentValidator memberForgetPasswordContentValidator = new MemberForgetPasswordContentValidator(false);
                 ValidationResult validationResult = memberForgetPasswordContentValidator.Validate(content);
                 if (!validationResult.IsValid)
                 {
@@ -827,21 +937,38 @@ namespace DataInfo.Service.Managers.Member
 
                 #endregion 驗證忘記密碼資料
 
-                ResponseResultDto responseResultDto = await verifierService.GenerateVerifierCode(VerifierType.ForgetPassword, new VerifierCodeContent() { Email = content.Email });
-                if (!responseResultDto.Result)
+                #region 產生驗證碼
+
+                string verifierCode = Guid.NewGuid().ToString().Substring(0, 6);
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.VerifierCode}-{VerifierType.ForgetPassword}-{content.Email}";
+                this.redisRepository.SetCache(cacheKey, JsonConvert.SerializeObject(verifierCode), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.VerifierCodeExpirationDate));
+
+                #endregion 產生驗證碼
+
+                #region 發送郵件
+
+                EmailContext emailContext = EmailContext.GetVerifierCodetEmailContextForForgetPassword(content.Email, verifierCode);
+                string postData = JsonConvert.SerializeObject(emailContext);
+                HttpResponseMessage httpResponseMessage = await Utility.ApiPost(AppSettingHelper.Appsetting.SmtpServer.Domain, AppSettingHelper.Appsetting.SmtpServer.SendEmailApi, postData).ConfigureAwait(false);
+                if (!httpResponseMessage.IsSuccessStatusCode)
                 {
-                    this.logger.LogWarn("發送會員忘記密碼驗證碼結果", $"Result: 取得驗證碼失敗({responseResultDto.Content}) Content: {JsonConvert.SerializeObject(content)}", null);
+                    this.logger.LogWarn("發送會員忘記密碼驗證碼結果", $"Result: 發送郵件失敗({httpResponseMessage.Content}) EmailContext: {JsonConvert.SerializeObject(emailContext)}", null);
                     return new ResponseResultDto()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.CreateFail,
-                        Content = "無法取得驗證碼."
+                        ResultCode = (int)ResponseResultType.DenyAccess,
+                        Content = "發送郵件失敗."
                     };
                 }
 
-                string verifierCode = responseResultDto.Content;
-                EmailContext emailContext = EmailContext.GetVerifierCodetEmailContextForForgetPassword(content.Email, verifierCode);
-                return await this.verifierService.SendVerifierCode(emailContext).ConfigureAwait(false);
+                return new ResponseResultDto()
+                {
+                    Result = true,
+                    ResultCode = (int)ResponseResultType.Success,
+                    Content = "已發送驗證碼."
+                };
+
+                #endregion 發送郵件
             }
             catch (Exception ex)
             {
@@ -895,7 +1022,7 @@ namespace DataInfo.Service.Managers.Member
                     };
                 }
 
-                string cacheKey = $"{CommonFlagHelper.CommonFlag.RedisFlag.Member}-login-{memberModel.MemberID}";
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-login-{memberModel.MemberID}";
                 Task<bool> onlineResult = this.redisRepository.IsExist(cacheKey);
 
                 #region 取得會員本身資料

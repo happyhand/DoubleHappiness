@@ -11,6 +11,11 @@ namespace DataInfo.Service.Models.Member.Content
         /// Gets or sets Email
         /// </summary>
         public string Email { get; set; }
+
+        /// <summary>
+        /// Gets or sets VerifierCode
+        /// </summary>
+        public string VerifierCode { get; set; }
     }
 
     /// <summary>
@@ -18,13 +23,20 @@ namespace DataInfo.Service.Models.Member.Content
     /// </summary>
     public class MemberForgetPasswordContentValidator : AbstractValidator<MemberForgetPasswordContent>
     {
-        public MemberForgetPasswordContentValidator()
+        public MemberForgetPasswordContentValidator(bool isValidateVerifierCode)
         {
             ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
             RuleFor(content => content.Email)
             .NotNull().WithMessage("信箱無效.")
             .NotEmpty().WithMessage("信箱無效.")
             .EmailAddress().WithMessage("信箱格式錯誤.");
+
+            if (isValidateVerifierCode)
+            {
+                RuleFor(content => content.VerifierCode)
+                .NotNull().WithMessage("驗證碼無效.")
+                .NotEmpty().WithMessage("驗證碼無效.");
+            }
         }
     }
 }

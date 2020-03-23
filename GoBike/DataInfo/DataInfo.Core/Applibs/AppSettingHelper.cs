@@ -1,4 +1,6 @@
-﻿namespace DataInfo.Core.Applibs
+﻿using System.Collections.Generic;
+
+namespace DataInfo.Core.Applibs
 {
     /// <summary>
     /// APP 設定資料
@@ -10,30 +12,14 @@
         /// </summary>
         public static AppSettingHelper Appsetting;
 
-        #region 連線設定資料
+        #region 縣市對照表
 
         /// <summary>
-        /// Gets or sets ConnectionStrings
+        /// Gets or sets CountryMap
         /// </summary>
-        public ConnectionStringsSetting ConnectionStrings { get; set; }
+        public Dictionary<string, string> CountryMap { get; set; }
 
-        /// <summary>
-        /// ConnectionStringsSetting
-        /// </summary>
-        public class ConnectionStringsSetting
-        {
-            /// <summary>
-            /// Gets or sets RedisConnection
-            /// </summary>
-            public string RedisConnection { get; set; }
-
-            /// <summary>
-            /// Gets or sets SQLConnection
-            /// </summary>
-            public string SQLConnection { get; set; }
-        }
-
-        #endregion 連線設定資料
+        #endregion 縣市對照表
 
         #region Upload Server 設定資料
 
@@ -92,6 +78,9 @@
         /// </summary>
         public JwtSetting Jwt { get; set; }
 
+        /// <summary>
+        /// JwtSetting
+        /// </summary>
         public class JwtSetting
         {
             /// <summary>
@@ -124,6 +113,9 @@
         /// </summary>
         public AesSetting Aes { get; set; }
 
+        /// <summary>
+        /// AesSetting
+        /// </summary>
         public class AesSetting
         {
             /// <summary>
@@ -156,5 +148,107 @@
         public int VerifierCodeExpirationDate { get; set; }
 
         #endregion 驗證碼時間設定資料
+
+        #region 第三方平台設定資料
+
+        /// <summary>
+        /// Gets or sets Platform
+        /// </summary>
+        public PlatformSetting Platform { get; set; }
+
+        /// <summary>
+        /// PlatformFlag
+        /// </summary>
+        public class PlatformFlag
+        {
+            /// <summary>
+            /// Gets or sets FB
+            /// </summary>
+            public string FB { get; set; }
+
+            /// <summary>
+            /// Gets or sets Google
+            /// </summary>
+            public string Google { get; set; }
+        }
+
+        /// <summary>
+        /// PlatformSetting
+        /// </summary>
+        public class PlatformSetting
+        {
+            /// <summary>
+            /// Gets or sets Flag
+            /// </summary>
+            public PlatformFlag Flag { get; set; }
+        }
+
+        #endregion 第三方平台設定資料
+
+        #region Redis 設定資料
+
+        /// <summary>
+        /// Gets or sets Redis
+        /// </summary>
+        public RedisSetting Redis { get; set; }
+
+        /// <summary>
+        /// RedisSetting
+        /// </summary>
+        public class RedisFlag
+        {
+            /// <summary>
+            /// Gets or sets Member
+            /// </summary>
+            public string Member { get; set; }
+
+            /// <summary>
+            /// Gets or sets VerifierCode
+            /// </summary>
+            public string VerifierCode { get; set; }
+        }
+
+        /// <summary>
+        /// RedisSetting
+        /// </summary>
+        public class RedisSetting
+        {
+            /// <summary>
+            /// Gets or sets ConnectionStrings
+            /// </summary>
+            public string ConnectionStrings { get; set; }
+
+            /// <summary>
+            /// Gets or sets DB
+            /// </summary>
+            public int DB { get; set; }
+
+            /// <summary>
+            /// Gets or sets Flag
+            /// </summary>
+            public RedisFlag Flag { get; set; }
+        }
+
+        #endregion Redis 設定資料
+
+        #region Sql 設定資料
+
+        /// <summary>
+        /// Gets or sets Sql
+        /// </summary>
+        public SqlSetting Sql { get; set; }
+
+        /// <summary>
+        /// SqlSetting
+        /// </summary>
+        public class SqlSetting
+        {
+            /// <summary>
+            /// Gets or sets ConnectionStrings
+            /// </summary>
+            public string ConnectionStrings { get; set; }
+        }
+
+        #endregion Sql 設定資料
     }
 }

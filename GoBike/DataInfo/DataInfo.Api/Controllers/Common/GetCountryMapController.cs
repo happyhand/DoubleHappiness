@@ -27,7 +27,7 @@ namespace DataInfo.Api.Controllers.Common
         {
             try
             {
-                return Ok(CommonFlagHelper.CommonFlag.CountryMap);
+                return Ok(AppSettingHelper.Appsetting.CountryMap);
             }
             catch (Exception ex)
             {

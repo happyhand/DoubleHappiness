@@ -43,8 +43,8 @@ namespace DataInfo.Api.Controllers.Member
         /// </summary>
         /// <param name="content">content</param>
         /// <returns>IActionResult</returns>
-        [HttpPost]
-        public async Task<IActionResult> Post(MemberEditInfoContent content)
+        [HttpPatch]
+        public async Task<IActionResult> Patch(MemberEditInfoContent content)
         {
             string memberID = this.GetMemberID();
             try

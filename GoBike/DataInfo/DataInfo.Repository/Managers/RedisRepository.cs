@@ -34,16 +34,15 @@ namespace DataInfo.Repository.Managers
         /// <summary>
         /// 建構式
         /// </summary>
-        /// <param name="logger">logger</param>
         public RedisRepository()
         {
             Lazy<ConnectionMultiplexer> lazyConnection = new Lazy<ConnectionMultiplexer>(() =>
             {
-                return ConnectionMultiplexer.Connect(AppSettingHelper.Appsetting.ConnectionStrings.RedisConnection);
+                return ConnectionMultiplexer.Connect(AppSettingHelper.Appsetting.Redis.ConnectionStrings);
             });
 
             ConnectionMultiplexer connectionMultiplexer = lazyConnection.Value;
-            this.database = connectionMultiplexer.GetDatabase(1);
+            this.database = connectionMultiplexer.GetDatabase(AppSettingHelper.Appsetting.Redis.DB);
             this.redisServer = connectionMultiplexer.GetServer(connectionMultiplexer.GetEndPoints().First());
         }
 
@@ -69,17 +68,20 @@ namespace DataInfo.Repository.Managers
         /// 讀取快取資料
         /// </summary>
         /// <param name="cacheKey">cacheKey</param>
-        /// <returns>RedisValue</returns>
-        public async Task<RedisValue> GetCache(string cacheKey)
+        /// <returns>T</returns>
+        public async Task<T> GetCache<T>(string cacheKey)
         {
             try
             {
-                return await this.database.StringGetAsync(cacheKey).ConfigureAwait(false);
+                string dataJson = await this.database.StringGetAsync(cacheKey).ConfigureAwait(false);
+                this.logger.LogInfo("讀取快取資料", $"dataJson: {dataJson}", null);
+
+                return JsonConvert.DeserializeObject<T>(dataJson);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("讀取快取資料發生錯誤", $"CacheKey: {cacheKey}", ex);
-                return RedisValue.Null;
+                return default;
             }
         }
 
@@ -88,54 +90,18 @@ namespace DataInfo.Repository.Managers
         /// </summary>
         /// <param name="cacheKey">cacheKey</param>
         /// <param name="hashKey">hashKey</param>
-        /// <returns>RedisValue</returns>
-        public async Task<RedisValue> GetCache(string cacheKey, string hashKey)
+        /// <returns>T</returns>
+        public async Task<T> GetCache<T>(string cacheKey, string hashKey)
         {
             try
             {
-                return await this.database.HashGetAsync(cacheKey, hashKey).ConfigureAwait(false);
+                string dataJson = await this.database.HashGetAsync(cacheKey, hashKey).ConfigureAwait(false);
+                return JsonConvert.DeserializeObject<T>(dataJson);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("讀取快取資料發生錯誤", $"CacheKey: {cacheKey} HashKey: {hashKey}", ex);
-                return RedisValue.Null;
-            }
-        }
-
-        /// <summary>
-        /// 讀取快取資料
-        /// </summary>
-        /// <param name="cacheKey">cacheKey</param>
-        /// <param name="hashKey">hashKey</param>
-        /// <returns>RedisValues</returns>
-        public async Task<RedisValue[]> GetCache(string cacheKey, string[] hashKeys)
-        {
-            try
-            {
-                return await this.database.HashGetAsync(cacheKey, hashKeys.ToRedisValueArray()).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("讀取快取資料發生錯誤", $"CacheKey: {cacheKey} HashKeys: {JsonConvert.SerializeObject(hashKeys)}", ex);
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// 讀取快取資料
-        /// </summary>
-        /// <param name="cacheKey">cacheKey</param>
-        /// <returns>HashEntrys</returns>
-        public async Task<HashEntry[]> GetHashAllCache(string cacheKey)
-        {
-            try
-            {
-                return await this.database.HashGetAllAsync(cacheKey).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("讀取快取資料發生錯誤", $"CacheKey: {cacheKey}", ex);
-                return null;
+                return default;
             }
         }
 
@@ -144,9 +110,10 @@ namespace DataInfo.Repository.Managers
         /// </summary>
         /// <param name="cacheKey">cacheKey</param>
         /// <returns>RedisKeys</returns>
-        public IEnumerable<RedisKey> GetRedisKeys(string cacheKey)
+        public IEnumerable<string> GetRedisKeys(string cacheKey)
         {
-            return this.redisServer.Keys(1, pattern: cacheKey);
+            return this.redisServer.Keys(AppSettingHelper.Appsetting.Redis.DB, pattern: cacheKey)
+                                   .Select(key => key.ToString());
         }
 
         /// <summary>

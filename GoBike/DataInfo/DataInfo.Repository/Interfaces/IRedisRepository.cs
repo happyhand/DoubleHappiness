@@ -21,38 +21,23 @@ namespace DataInfo.Repository.Interfaces
         /// 讀取快取資料
         /// </summary>
         /// <param name="cacheKey">cacheKey</param>
-        /// <returns>RedisValue</returns>
-        Task<RedisValue> GetCache(string cacheKey);
+        /// <returns>T</returns>
+        Task<T> GetCache<T>(string cacheKey);
 
         /// <summary>
         /// 讀取快取資料
         /// </summary>
         /// <param name="cacheKey">cacheKey</param>
         /// <param name="hashKey">hashKey</param>
-        /// <returns>RedisValue</returns>
-        Task<RedisValue> GetCache(string cacheKey, string hashKey);
-
-        /// <summary>
-        /// 讀取快取資料
-        /// </summary>
-        /// <param name="cacheKey">cacheKey</param>
-        /// <param name="hashKey">hashKey</param>
-        /// <returns>RedisValues</returns>
-        Task<RedisValue[]> GetCache(string cacheKey, string[] hashKeys);
-
-        /// <summary>
-        /// 讀取快取資料
-        /// </summary>
-        /// <param name="cacheKey">cacheKey</param>
-        /// <returns>HashEntrys</returns>
-        Task<HashEntry[]> GetHashAllCache(string cacheKey);
+        /// <returns>T</returns>
+        Task<T> GetCache<T>(string cacheKey, string hashKey);
 
         /// <summary>
         /// 取得 RedisKeys
         /// </summary>
         /// <param name="cacheKey">cacheKey</param>
         /// <returns>RedisKeys</returns>
-        IEnumerable<RedisKey> GetRedisKeys(string cacheKey);
+        IEnumerable<string> GetRedisKeys(string cacheKey);
 
         /// <summary>
         /// 檢查資料是否存在

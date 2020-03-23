@@ -14,7 +14,7 @@ namespace DataInfo.Api.Controllers.Member
     /// 會員忘記密碼
     /// </summary>
     [ApiController]
-    [Route("api/Member/[controller]/[action]")]
+    [Route("api/Member/[controller]")]
     public class ForgetPasswordController : ApiController
     {
         /// <summary>
@@ -37,12 +37,49 @@ namespace DataInfo.Api.Controllers.Member
         }
 
         /// <summary>
+        /// 會員忘記密碼 - 初始化密碼
+        /// </summary>
+        /// <param name="content">content</param>
+        /// <returns>IActionResult</returns>
+        [HttpPatch]
+        public async Task<IActionResult> Patch(MemberForgetPasswordContent content)
+        {
+            try
+            {
+                if (content == null)
+                {
+                    this.logger.LogWarn("會員請求初始化密碼失敗", "Content: 無資料", null);
+                    return Ok(new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.InputError,
+                        Content = "未提供資料內容."
+                    });
+                }
+
+                this.logger.LogInfo("會員請求初始化密碼", $"Content: {JsonConvert.SerializeObject(content)}", null);
+                ResponseResultDto responseResult = await this.memberService.InitPassword(content).ConfigureAwait(false);
+                return Ok(responseResult);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("會員請求初始化密碼發生錯誤", $"Content: {JsonConvert.SerializeObject(content)}", ex);
+                return Ok(new ResponseResultDto()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = "初始化密碼發生錯誤."
+                });
+            }
+        }
+
+        /// <summary>
         /// 會員忘記密碼 - 發送驗證碼
         /// </summary>
         /// <param name="content">content</param>
         /// <returns>IActionResult</returns>
         [HttpPost]
-        public async Task<IActionResult> VerifierCode(MemberForgetPasswordContent content)
+        public async Task<IActionResult> Post(MemberForgetPasswordContent content)
         {
             try
             {

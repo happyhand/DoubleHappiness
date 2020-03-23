@@ -20,7 +20,7 @@ namespace DataInfo.Repository.Managers.Base
         {
             Db = new SqlSugarClient(new ConnectionConfig()
             {
-                ConnectionString = AppSettingHelper.Appsetting.ConnectionStrings.SQLConnection,
+                ConnectionString = AppSettingHelper.Appsetting.Sql.ConnectionStrings,
                 DbType = DbType.SqlServer,
                 InitKeyType = InitKeyType.Attribute,
                 IsAutoCloseConnection = true,
