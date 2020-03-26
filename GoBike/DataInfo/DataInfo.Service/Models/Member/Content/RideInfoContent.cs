@@ -1,5 +1,4 @@
 ﻿using DataInfo.Service.Enums;
-using DataInfo.Service.Models.Member.Content.Interfaces;
 using FluentValidation;
 using System.Collections.Generic;
 
@@ -8,7 +7,7 @@ namespace DataInfo.Service.Models.Member.Content
     /// <summary>
     /// 騎乘資訊內容
     /// </summary>
-    public class RideInfoContent : IRideInfoContent
+    public class RideInfoContent
     {
         /// <summary>
         /// Gets or sets Altitude

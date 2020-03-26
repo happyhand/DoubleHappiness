@@ -36,6 +36,11 @@
         DenyAccess = 905,
 
         /// <summary>
+        /// 已存在
+        /// </summary>
+        Missed = 906,
+
+        /// <summary>
         /// 成功
         /// </summary>
         Success = 1000

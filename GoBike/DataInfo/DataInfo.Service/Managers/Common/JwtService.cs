@@ -1,36 +1,43 @@
-﻿using DataInfo.Core.Extensions;
+﻿using DataInfo.Core.Applibs;
+using DataInfo.Core.Extensions;
+using DataInfo.Service.Interfaces.Common;
+using DataInfo.Service.Models.Common.Data;
+using DataInfo.Service.Models.Response;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
 
-namespace DataInfo.Core.Applibs
+namespace DataInfo.Service.Managers.Common
 {
     /// <summary>
-    /// Jwt 處理器
+    /// JWT 服務
     /// </summary>
-    public class JwtHelper
+    public class JwtService : IJwtService
     {
-        /// <summary>
-        /// logger
-        /// </summary>
-        private static readonly ILogger logger = LogManager.GetLogger("JwtHelper");
-
         /// <summary>
         /// payloadKey
         /// </summary>
         private static readonly string payloadKey = "Payload";
 
         /// <summary>
+        /// logger
+        /// </summary>
+        protected readonly ILogger logger = LogManager.GetLogger("JwtService");
+
+        /// <summary>
         /// 生產 Token
         /// </summary>
-        /// <param name="payloadMap">payloadMap</param>
+        /// <param name="jwtClaimsDto">jwtClaimsDto</param>
         /// <returns>string</returns>
-        public static string GenerateToken(Dictionary<string, dynamic> payloadMap)
+        public string GenerateToken(JwtClaimsDto jwtClaimsDto)
         {
             var issuer = AppSettingHelper.Appsetting.Jwt.Iss;
             var signKey = AppSettingHelper.Appsetting.Jwt.Secret;
@@ -61,7 +68,7 @@ namespace DataInfo.Core.Applibs
 
                 #region 新增自定義 Claim
 
-                new Claim(payloadKey, JsonConvert.SerializeObject(payloadMap))
+                new Claim(payloadKey, JsonConvert.SerializeObject(jwtClaimsDto))
 
                 #endregion 新增自定義 Claim
             };
@@ -97,26 +104,21 @@ namespace DataInfo.Core.Applibs
         /// <summary>
         /// 取得 Payload 指定欄位
         /// </summary>
-        /// <param name="token">token</param>
+        /// <param name="user">user</param>
         /// <param name="key">key</param>
-        /// <returns>string</returns>
-        public static T GetPayloadAppointValue<T>(string token, string key)
+        /// <returns>dynamic</returns>
+        public dynamic GetPayloadAppointValue(ClaimsPrincipal user, string key)
         {
             try
             {
-                string payload = $"{token.Split(new char[] { '.' })[1]}";
-                byte[] byteArray = Convert.FromBase64String(payload);
-                string dataJson = Encoding.UTF8.GetString(byteArray);
-                dynamic data = JsonConvert.DeserializeObject<dynamic>(dataJson);
-                //// 需先將 data[payloadKey] 轉換成 string，不然會報錯
-                Dictionary<string, dynamic> payloadMap = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(Convert.ToString(data[payloadKey]));
-                payloadMap.TryGetValue(key, out dynamic value);
-                return value;
+                string claimJson = user.Claims.Where(data => data.Type.Equals("Payload")).FirstOrDefault().Value;
+                JwtClaimsDto jwtClaimsDto = JsonConvert.DeserializeObject<JwtClaimsDto>(claimJson);
+                return jwtClaimsDto.GetType().GetProperty(key).GetValue(jwtClaimsDto);
             }
             catch (Exception ex)
             {
-                logger.LogError("取得 Payload 指定欄位發生錯誤", $"Token: {token} Key: {key}", ex);
-                return default;
+                this.logger.LogError("取得 Payload 指定欄位發生錯誤", $"Key: {key}", ex);
+                return null;
             }
         }
     }

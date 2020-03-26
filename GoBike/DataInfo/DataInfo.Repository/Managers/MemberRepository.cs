@@ -1,4 +1,5 @@
-﻿using DataInfo.Core.Extensions;
+﻿using DataInfo.Core.Applibs;
+using DataInfo.Core.Extensions;
 using DataInfo.Repository.Interfaces;
 using DataInfo.Repository.Managers.Base;
 using DataInfo.Repository.Models.Member;
@@ -42,6 +43,55 @@ namespace DataInfo.Repository.Managers
             {
                 this.logger.LogError("建立會員資料發生錯誤", $"MemberModel: {JsonConvert.SerializeObject(memberModel)}", ex);
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// 取得會員資料
+        /// </summary>
+        /// <param name="searchKey">searchKey</param>
+        /// <param name="isFuzzy">isFuzzy</param>
+        /// <returns>MemberModels</returns>
+        public async Task<IEnumerable<MemberModel>> Get(string searchKey, bool isFuzzy)
+        {
+            try
+            {
+                if (isFuzzy)
+                {
+                    return await this.Db.Queryable<MemberModel>()
+                        .Where(data => data.Email.Contains(searchKey) || data.Nickname.Contains(searchKey) || data.MemberID.Contains(searchKey))
+                        .ToListAsync()
+                        .ConfigureAwait(false);
+                }
+                else
+                {
+                    MemberModel memberModel = null;
+                    if (Utility.ValidateEmail(searchKey))
+                    {
+                        memberModel = await this.Db.Queryable<MemberModel>().Where(data => data.Email.Equals(searchKey))
+                                                           .SingleAsync()
+                                                           .ConfigureAwait(false);
+                    }
+                    else if (searchKey.Contains(AppSettingHelper.Appsetting.MemberIDFlag))
+                    {
+                        memberModel = await this.Db.Queryable<MemberModel>().Where(data => data.MemberID.Equals(searchKey))
+                                                          .SingleAsync()
+                                                          .ConfigureAwait(false);
+                    }
+
+                    List<MemberModel> list = new List<MemberModel>();
+                    if (memberModel != null)
+                    {
+                        list.Add(memberModel);
+                    };
+
+                    return list;
+                }
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得會員資料發生錯誤", $"SearchKey: {searchKey} IsFuzzy: {isFuzzy}", ex);
+                return null;
             }
         }
 

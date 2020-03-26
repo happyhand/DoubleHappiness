@@ -1,4 +1,5 @@
 ﻿using DataInfo.Core.Extensions;
+using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Member;
 using DataInfo.Service.Models.Response;
 using Microsoft.AspNetCore.Authorization;
@@ -30,8 +31,9 @@ namespace DataInfo.Api.Controllers.Member
         /// <summary>
         /// 建構式
         /// </summary>
+        /// <param name="jwtService">jwtService</param>
         /// <param name="memberService">memberService</param>
-        public KeepOnlineController(IMemberService memberService)
+        public KeepOnlineController(IJwtService jwtService, IMemberService memberService) : base(jwtService)
         {
             this.memberService = memberService;
         }

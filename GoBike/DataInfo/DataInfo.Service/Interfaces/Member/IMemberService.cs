@@ -55,6 +55,14 @@ namespace DataInfo.Service.Interfaces.Member
         Task<ResponseResultDto> EditInfo(string memberID, MemberEditInfoContent content);
 
         /// <summary>
+        /// 會員修改密碼
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
+        /// <returns>ResponseResultDto</returns>
+        Task<ResponseResultDto> EditPassword(string memberID, MemberEditPasswordContent content);
+
+        /// <summary>
         /// 搜尋會員(模糊比對)
         /// </summary>
         /// <param name="content">content</param>

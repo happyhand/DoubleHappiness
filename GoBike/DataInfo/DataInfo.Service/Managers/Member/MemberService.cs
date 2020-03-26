@@ -6,7 +6,6 @@ using DataInfo.Repository.Models.Member;
 using DataInfo.Service.Enums;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Member;
-using DataInfo.Service.Models.Common.Content;
 using DataInfo.Service.Models.Common.Data;
 using DataInfo.Service.Models.Member.Content;
 using DataInfo.Service.Models.Member.View;
@@ -27,6 +26,11 @@ namespace DataInfo.Service.Managers.Member
     /// </summary>
     public class MemberService : IMemberService
     {
+        /// <summary>
+        /// jwtService
+        /// </summary>
+        private readonly IJwtService jwtService;
+
         /// <summary>
         /// logger
         /// </summary>
@@ -56,12 +60,14 @@ namespace DataInfo.Service.Managers.Member
         /// 建構式
         /// </summary>
         /// <param name="mapper">mapper</param>
+        /// <param name="jwtService">jwtService</param>
         /// <param name="uploadService">uploadService</param>
         /// <param name="memberRepository">memberRepository</param>
         /// <param name="redisRepository">redisRepository</param>
-        public MemberService(IMapper mapper, IUploadService uploadService, IMemberRepository memberRepository, IRedisRepository redisRepository)
+        public MemberService(IMapper mapper, IJwtService jwtService, IUploadService uploadService, IMemberRepository memberRepository, IRedisRepository redisRepository)
         {
             this.mapper = mapper;
+            this.jwtService = jwtService;
             this.uploadService = uploadService;
             this.memberRepository = memberRepository;
             this.redisRepository = redisRepository;
@@ -81,7 +87,7 @@ namespace DataInfo.Service.Managers.Member
         {
             byte[] dateTimeBytes = BitConverter.GetBytes(DateTime.UtcNow.Ticks);
             Array.Resize(ref dateTimeBytes, 16);
-            string memberID = new Guid(dateTimeBytes).ToString().Substring(0, 8);
+            string memberID = $"{AppSettingHelper.Appsetting.MemberIDFlag}{new Guid(dateTimeBytes).ToString().Substring(0, 8)}";
             return new MemberModel()
             {
                 MemberID = memberID,
@@ -101,15 +107,15 @@ namespace DataInfo.Service.Managers.Member
         /// <returns>string</returns>
         private string GenerateJwtToken(MemberModel memberModel)
         {
-            Dictionary<string, dynamic> payloadMap = new Dictionary<string, dynamic>() {
-                    {"MemberID",memberModel.MemberID },
-                    {"Email",memberModel.Email },
-                    {"Nickname",memberModel.Nickname },
-                    {"Avatar",memberModel.Avatar },
-                    {"FrontCover",memberModel.FrontCover },
-                };
-
-            return JwtHelper.GenerateToken(payloadMap);
+            JwtClaimsDto jwtClaimsDto = new JwtClaimsDto()
+            {
+                MemberID = memberModel.MemberID,
+                Email = memberModel.Email,
+                Nickname = memberModel.Nickname,
+                Avatar = memberModel.Avatar,
+                FrontCover = memberModel.FrontCover,
+            };
+            return this.jwtService.GenerateToken(jwtClaimsDto);
         }
 
         /// <summary>
@@ -387,7 +393,7 @@ namespace DataInfo.Service.Managers.Member
                     return new ResponseResultDto()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.UnknownError,
+                        ResultCode = (int)ResponseResultType.Missed,
                         Content = "無會員資料，無法重新登入."
                     };
                 }
@@ -572,7 +578,7 @@ namespace DataInfo.Service.Managers.Member
                 {
                     return await this.memberRepository.GetByEmail(searchKey);
                 }
-                else if (searchKey.Length == 8) //// 目前只能先寫死，待思考有沒有其他更好的方式
+                else if (searchKey.Contains(AppSettingHelper.Appsetting.MemberIDFlag))
                 {
                     return await this.memberRepository.GetByMemberID(searchKey);
                 }
@@ -682,7 +688,7 @@ namespace DataInfo.Service.Managers.Member
                     return new ResponseResultDto()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
+                        ResultCode = (int)ResponseResultType.Missed,
                         Content = "無會員資料."
                     };
                 }
@@ -725,6 +731,89 @@ namespace DataInfo.Service.Managers.Member
                     Result = false,
                     ResultCode = (int)ResponseResultType.DenyAccess,
                     Content = "編輯資訊發生錯誤."
+                };
+            }
+        }
+
+        /// <summary>
+        /// 會員修改密碼
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
+        /// <returns>ResponseResultDto</returns>
+        public async Task<ResponseResultDto> EditPassword(string memberID, MemberEditPasswordContent content)
+        {
+            try
+            {
+                #region 驗證資料
+
+                MemberEditPasswordContentValidator memberEditPasswordContentValidator = new MemberEditPasswordContentValidator();
+                ValidationResult validationResult = memberEditPasswordContentValidator.Validate(content);
+                if (!validationResult.IsValid)
+                {
+                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
+                    this.logger.LogWarn("會員修改密碼結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    return new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.InputError,
+                        Content = errorMessgae
+                    };
+                }
+
+                #endregion 驗證資料
+
+                IEnumerable<MemberModel> memberModels = await this.memberRepository.Get(memberID, false).ConfigureAwait(false);
+                if (memberModels == null || !memberModels.Any())
+                {
+                    this.logger.LogFatal("會員修改密碼結果", $"Result: 無會員資料, 須查詢 DB 比對或 JWT 錯誤 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    return new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.Missed,
+                        Content = "無會員資料."
+                    };
+                }
+
+                MemberModel memberModel = memberModels.FirstOrDefault();
+                if (!Utility.DecryptAES(memberModel.Password).Equals(content.CurrentPassword))
+                {
+                    this.logger.LogWarn("會員修改密碼結果", $"Result: 密碼錯誤 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    return new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.InputError,
+                        Content = "密碼錯誤."
+                    };
+                }
+
+                memberModel.Password = Utility.EncryptAES(content.ConfirmPassword);
+                bool updateResult = await this.memberRepository.Update(memberModel).ConfigureAwait(false);
+                if (!updateResult)
+                {
+                    return new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.UpdateFail,
+                        Content = "更新資料失敗."
+                    };
+                }
+
+                return new ResponseResultDto()
+                {
+                    Result = true,
+                    ResultCode = (int)ResponseResultType.Success,
+                    Content = "修改密碼成功."
+                };
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("會員請求修改密碼發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                return new ResponseResultDto()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = "修改密碼發生錯誤."
                 };
             }
         }
@@ -847,7 +936,7 @@ namespace DataInfo.Service.Managers.Member
                     return new ResponseResultDto()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.UnknownError,
+                        ResultCode = (int)ResponseResultType.Missed,
                         Content = "無會員資料."
                     };
                 }

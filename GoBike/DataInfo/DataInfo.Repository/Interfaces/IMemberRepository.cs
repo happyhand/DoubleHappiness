@@ -17,6 +17,14 @@ namespace DataInfo.Repository.Interfaces
         Task<bool> Create(MemberModel memberModel);
 
         /// <summary>
+        /// 取得會員資料
+        /// </summary>
+        /// <param name="searchKey">searchKey</param>
+        /// <param name="isFuzzy">isFuzzy</param>
+        /// <returns>MemberModels</returns>
+        Task<IEnumerable<MemberModel>> Get(string searchKey, bool isFuzzy);
+
+        /// <summary>
         /// 取得會員資料 (By Email)
         /// </summary>
         /// <param name="email">email</param>

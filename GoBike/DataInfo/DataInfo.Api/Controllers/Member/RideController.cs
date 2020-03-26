@@ -1,4 +1,5 @@
 ﻿using DataInfo.Core.Extensions;
+using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Member;
 using DataInfo.Service.Models.Member.Content;
 using DataInfo.Service.Models.Response;
@@ -32,8 +33,9 @@ namespace DataInfo.Api.Controllers.Member
         /// <summary>
         /// 建構式
         /// </summary>
+        /// <param name="jwtService">jwtService</param>
         /// <param name="rideService">rideService</param>
-        public RideController(IRideService rideService)
+        public RideController(IJwtService jwtService, IRideService rideService) : base(jwtService)
         {
             this.rideService = rideService;
         }

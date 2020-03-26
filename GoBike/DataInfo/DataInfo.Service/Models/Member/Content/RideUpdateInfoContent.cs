@@ -1,12 +1,11 @@
-﻿using DataInfo.Service.Models.Member.Content.Interfaces;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace DataInfo.Service.Models.Member.Content
 {
     /// <summary>
     /// 更新騎乘資訊內容
     /// </summary>
-    public class RideUpdateInfoContent : IRideInfoContent
+    public class RideUpdateInfoContent
     {
         /// <summary>
         /// Gets or sets CountyID

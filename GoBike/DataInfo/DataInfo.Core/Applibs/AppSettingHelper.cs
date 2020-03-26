@@ -12,6 +12,15 @@ namespace DataInfo.Core.Applibs
         /// </summary>
         public static AppSettingHelper Appsetting;
 
+        #region MemberID Flag
+
+        /// <summary>
+        /// Gets or sets MemberIDFlag
+        /// </summary>
+        public string MemberIDFlag { get; set; }
+
+        #endregion MemberID Flag
+
         #region 縣市對照表
 
         /// <summary>

@@ -1,5 +1,5 @@
-﻿using DataInfo.Core.Applibs;
-using DataInfo.Core.Extensions;
+﻿using DataInfo.Core.Extensions;
+using DataInfo.Service.Interfaces.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using NLog;
@@ -13,7 +13,24 @@ namespace DataInfo.Api.Controllers
     [ApiController]
     public class ApiController : ControllerBase
     {
+        /// <summary>
+        /// jwtService
+        /// </summary>
+        private readonly IJwtService jwtService;
+
+        /// <summary>
+        /// logger
+        /// </summary>
         private readonly ILogger logger = LogManager.GetLogger("ApiController");
+
+        /// <summary>
+        /// 建構式
+        /// </summary>
+        /// <param name="jwtService">jwtService</param>
+        public ApiController(IJwtService jwtService)
+        {
+            this.jwtService = jwtService;
+        }
 
         /// <summary>
         /// 取得 MemberID
@@ -30,7 +47,7 @@ namespace DataInfo.Api.Controllers
                     return string.Empty;
                 }
 
-                return JwtHelper.GetPayloadAppointValue<string>(token, "MemberID");
+                return this.jwtService.GetPayloadAppointValue(User, "MemberID");
             }
             catch (Exception ex)
             {

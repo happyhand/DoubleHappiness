@@ -78,6 +78,7 @@ namespace DataInfo.Api
         {
             #region Service
 
+            services.AddSingleton<IJwtService, JwtService>();
             services.AddSingleton<IMemberService, MemberService>();
             services.AddSingleton<IRideService, RideService>();
             services.AddSingleton<IUploadService, UploadService>();

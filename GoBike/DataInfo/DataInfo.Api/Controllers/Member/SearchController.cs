@@ -1,5 +1,6 @@
 ﻿using DataInfo.Core.Extensions;
 using DataInfo.Service.Enums;
+using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Member;
 using DataInfo.Service.Models.Member.Content;
 using DataInfo.Service.Models.Response;
@@ -33,8 +34,9 @@ namespace DataInfo.Api.Controllers.Member
         /// <summary>
         /// 建構式
         /// </summary>
+        /// <param name="jwtService">jwtService</param>
         /// <param name="memberService">memberService</param>
-        public SearchController(IMemberService memberService)
+        public SearchController(IJwtService jwtService, IMemberService memberService) : base(jwtService)
         {
             this.memberService = memberService;
         }
