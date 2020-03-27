@@ -33,6 +33,24 @@ namespace DataInfo.Api.Controllers
         }
 
         /// <summary>
+        /// 取得 Email
+        /// </summary>
+        /// <returns>string</returns>
+        protected string GetEmail()
+        {
+            try
+            {
+                return this.jwtService.GetPayloadAppointValue(User, "Email");
+            }
+            catch (Exception ex)
+            {
+                this.HttpContext.Request.Headers.TryGetValue("Authorization", out StringValues token);
+                this.logger.LogError("取得 Email 發生錯誤", $"Token: {token}", ex);
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
         /// 取得 MemberID
         /// </summary>
         /// <returns>string</returns>
@@ -40,18 +58,12 @@ namespace DataInfo.Api.Controllers
         {
             try
             {
-                this.HttpContext.Request.Headers.TryGetValue("Authorization", out StringValues token);
-                if (string.IsNullOrEmpty(token))
-                {
-                    this.logger.LogWarn("取得 MemberID 發生錯誤", $"Result: 無效的 Jwt Token", null);
-                    return string.Empty;
-                }
-
                 return this.jwtService.GetPayloadAppointValue(User, "MemberID");
             }
             catch (Exception ex)
             {
-                this.logger.LogError("取得 MemberID 發生錯誤", string.Empty, ex);
+                this.HttpContext.Request.Headers.TryGetValue("Authorization", out StringValues token);
+                this.logger.LogError("取得 MemberID 發生錯誤", $"Token: {token}", ex);
                 return string.Empty;
             }
         }

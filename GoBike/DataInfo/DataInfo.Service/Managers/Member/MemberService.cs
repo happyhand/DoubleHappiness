@@ -188,7 +188,7 @@ namespace DataInfo.Service.Managers.Member
         {
             try
             {
-                #region 驗證登入資料
+                #region 驗證資料
 
                 MemberLoginContentValidator memberLoginContentValidator = new MemberLoginContentValidator();
                 ValidationResult validationResult = memberLoginContentValidator.Validate(content);
@@ -204,7 +204,7 @@ namespace DataInfo.Service.Managers.Member
                     };
                 }
 
-                #endregion 驗證登入資料
+                #endregion 驗證資料
 
                 #region 取得資料並驗證密碼
 
@@ -288,7 +288,7 @@ namespace DataInfo.Service.Managers.Member
         {
             try
             {
-                #region 驗證註冊資料
+                #region 驗證資料
 
                 MemberRegisterContentValidator memberRegisterContentValidator = new MemberRegisterContentValidator(isValidatePassword);
                 ValidationResult validationResult = memberRegisterContentValidator.Validate(content);
@@ -304,7 +304,7 @@ namespace DataInfo.Service.Managers.Member
                     };
                 }
 
-                #endregion 驗證註冊資料
+                #endregion 驗證資料
 
                 #region 檢查 Email 是否已被註冊
 
@@ -828,7 +828,7 @@ namespace DataInfo.Service.Managers.Member
         {
             try
             {
-                #region 驗證搜尋資料
+                #region 驗證資料
 
                 MemberSearchContentValidator memberSearchContentValidator = new MemberSearchContentValidator();
                 ValidationResult validationResult = memberSearchContentValidator.Validate(content);
@@ -844,7 +844,7 @@ namespace DataInfo.Service.Managers.Member
                     };
                 }
 
-                #endregion 驗證搜尋資料
+                #endregion 驗證資料
 
                 IEnumerable<MemberModel> memberModels = await this.memberRepository.GetByFuzzy(content.SearchKey);
                 List<MemberSimpleInfoViewDto> memberSimpleInfoViewDtos = new List<MemberSimpleInfoViewDto>();
@@ -892,7 +892,7 @@ namespace DataInfo.Service.Managers.Member
         {
             try
             {
-                #region 驗證忘記密碼資料
+                #region 驗證資料
 
                 MemberForgetPasswordContentValidator memberForgetPasswordContentValidator = new MemberForgetPasswordContentValidator(true);
                 ValidationResult validationResult = memberForgetPasswordContentValidator.Validate(content);
@@ -908,7 +908,7 @@ namespace DataInfo.Service.Managers.Member
                     };
                 }
 
-                #endregion 驗證忘記密碼資料
+                #endregion 驗證資料
 
                 #region 比對驗證碼
 
@@ -1008,7 +1008,7 @@ namespace DataInfo.Service.Managers.Member
         {
             try
             {
-                #region 驗證忘記密碼資料
+                #region 驗證資料
 
                 MemberForgetPasswordContentValidator memberForgetPasswordContentValidator = new MemberForgetPasswordContentValidator(false);
                 ValidationResult validationResult = memberForgetPasswordContentValidator.Validate(content);
@@ -1024,7 +1024,7 @@ namespace DataInfo.Service.Managers.Member
                     };
                 }
 
-                #endregion 驗證忘記密碼資料
+                #endregion 驗證資料
 
                 #region 產生驗證碼
 
@@ -1072,6 +1072,79 @@ namespace DataInfo.Service.Managers.Member
         }
 
         /// <summary>
+        /// 發送會員手機綁定驗證碼
+        /// </summary>
+        /// <param name="email">email</param>
+        /// <param name="content">content</param>
+        /// <returns>ResponseResultDto</returns>
+        public async Task<ResponseResultDto> SendMobileBindVerifierCode(string email, MemberMobileBindContent content)
+        {
+            try
+            {
+                #region 驗證資料
+
+                MemberMobileBindContentValidator memberMobileBindContentValidator = new MemberMobileBindContentValidator(false);
+                ValidationResult validationResult = memberMobileBindContentValidator.Validate(content);
+                if (!validationResult.IsValid)
+                {
+                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
+                    this.logger.LogWarn("發送會員手機綁定驗證碼結果", $"Result: 驗證失敗({errorMessgae}) Email: {email} Content: {JsonConvert.SerializeObject(content)}", null);
+                    return new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.InputError,
+                        Content = errorMessgae
+                    };
+                }
+
+                #endregion 驗證資料
+
+                #region 產生驗證碼
+
+                string verifierCode = Guid.NewGuid().ToString().Substring(0, 6);
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.VerifierCode}-{VerifierType.MobileBind}-{content.Mobile}";
+                this.redisRepository.SetCache(cacheKey, JsonConvert.SerializeObject(verifierCode), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.VerifierCodeExpirationDate));
+
+                #endregion 產生驗證碼
+
+                #region 發送郵件
+
+                EmailContext emailContext = EmailContext.GetVerifierCodetEmailContextForMobileBind(email, verifierCode);
+                string postData = JsonConvert.SerializeObject(emailContext);
+                HttpResponseMessage httpResponseMessage = await Utility.ApiPost(AppSettingHelper.Appsetting.SmtpServer.Domain, AppSettingHelper.Appsetting.SmtpServer.SendEmailApi, postData).ConfigureAwait(false);
+                if (!httpResponseMessage.IsSuccessStatusCode)
+                {
+                    this.logger.LogWarn("發送會員手機綁定驗證碼結果", $"Result: 發送郵件失敗({httpResponseMessage.Content}) EmailContext: {JsonConvert.SerializeObject(emailContext)}", null);
+                    return new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.DenyAccess,
+                        Content = "發送郵件失敗."
+                    };
+                }
+
+                return new ResponseResultDto()
+                {
+                    Result = true,
+                    ResultCode = (int)ResponseResultType.Success,
+                    Content = "已發送驗證碼."
+                };
+
+                #endregion 發送郵件
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("發送會員手機綁定驗證碼發生錯誤", $"Email: {email} Content: {JsonConvert.SerializeObject(content)}", ex);
+                return new ResponseResultDto()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = "發送驗證碼發生錯誤."
+                };
+            }
+        }
+
+        /// <summary>
         /// 搜尋會員(嚴格比對)
         /// </summary>
         /// <param name="content">content</param>
@@ -1081,7 +1154,7 @@ namespace DataInfo.Service.Managers.Member
         {
             try
             {
-                #region 驗證搜尋資料
+                #region 驗證資料
 
                 MemberSearchContentValidator memberSearchContentValidator = new MemberSearchContentValidator();
                 ValidationResult validationResult = memberSearchContentValidator.Validate(content);
@@ -1097,7 +1170,7 @@ namespace DataInfo.Service.Managers.Member
                     };
                 }
 
-                #endregion 驗證搜尋資料
+                #endregion 驗證資料
 
                 MemberModel memberModel = await this.GetMemberData(content.SearchKey).ConfigureAwait(false);
                 if (memberModel == null)

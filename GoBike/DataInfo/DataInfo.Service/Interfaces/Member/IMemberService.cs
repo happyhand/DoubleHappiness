@@ -85,6 +85,14 @@ namespace DataInfo.Service.Interfaces.Member
         Task<ResponseResultDto> SendForgetPasswordVerifierCode(MemberForgetPasswordContent content);
 
         /// <summary>
+        /// 發送會員手機綁定驗證碼
+        /// </summary>
+        /// <param name="email">email</param>
+        /// <param name="content">content</param>
+        /// <returns>ResponseResultDto</returns>
+        Task<ResponseResultDto> SendMobileBindVerifierCode(string email, MemberMobileBindContent content);
+
+        /// <summary>
         /// 搜尋會員(嚴格比對)
         /// </summary>
         /// <param name="content">content</param>

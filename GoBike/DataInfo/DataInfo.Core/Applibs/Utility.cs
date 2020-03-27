@@ -192,6 +192,18 @@ namespace DataInfo.Core.Applibs
                 RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250));
         }
 
+        /// <summary>
+        /// Mobile 格式驗證
+        /// </summary>
+        /// <param name="mobile">mobile</param>
+        /// <returns>bool</returns>
+        public static bool ValidateMobile(string mobile)
+        {
+            return Regex.IsMatch(mobile,
+                @"^09\d{8}$",
+                RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250));
+        }
+
         #endregion 驗證功能
     }
 }

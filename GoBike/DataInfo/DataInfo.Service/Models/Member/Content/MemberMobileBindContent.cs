@@ -1,16 +1,17 @@
-﻿using FluentValidation;
+﻿using DataInfo.Core.Applibs;
+using FluentValidation;
 
 namespace DataInfo.Service.Models.Member.Content
 {
     /// <summary>
-    /// 會員忘記密碼內容
+    /// 會員手機綁定內容
     /// </summary>
-    public class MemberForgetPasswordContent
+    public class MemberMobileBindContent
     {
         /// <summary>
-        /// Gets or sets Email
+        /// Gets or sets Mobile
         /// </summary>
-        public string Email { get; set; }
+        public string Mobile { get; set; }
 
         /// <summary>
         /// Gets or sets VerifierCode
@@ -19,21 +20,21 @@ namespace DataInfo.Service.Models.Member.Content
     }
 
     /// <summary>
-    /// 驗證會員忘記密碼內容
+    /// 驗證會員手機綁定內容
     /// </summary>
-    public class MemberForgetPasswordContentValidator : AbstractValidator<MemberForgetPasswordContent>
+    public class MemberMobileBindContentValidator : AbstractValidator<MemberMobileBindContent>
     {
         /// <summary>
         /// 建構式
         /// </summary>
         /// <param name="isValidateVerifierCode">isValidateVerifierCode</param>
-        public MemberForgetPasswordContentValidator(bool isValidateVerifierCode)
+        public MemberMobileBindContentValidator(bool isValidateVerifierCode)
         {
             ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
-            RuleFor(content => content.Email)
-            .NotNull().WithMessage("信箱無效.")
-            .NotEmpty().WithMessage("信箱無效.")
-            .EmailAddress().WithMessage("信箱格式錯誤.");
+            RuleFor(content => content.Mobile)
+            .NotNull().WithMessage("手機號碼無效.")
+            .NotEmpty().WithMessage("手機號碼無效.")
+            .Must(mobile => { return Utility.ValidateMobile(mobile); }).WithMessage("手機號碼格式錯誤.");
 
             if (isValidateVerifierCode)
             {
