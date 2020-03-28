@@ -69,6 +69,24 @@ namespace DataInfo.Api.Controllers
         }
 
         /// <summary>
+        /// 取得 Mobile
+        /// </summary>
+        /// <returns>string</returns>
+        protected string GetMobile()
+        {
+            try
+            {
+                return this.jwtService.GetPayloadAppointValue(User, "Mobile");
+            }
+            catch (Exception ex)
+            {
+                this.HttpContext.Request.Headers.TryGetValue("Authorization", out StringValues token);
+                this.logger.LogError("取得 Mobile 發生錯誤", $"Token: {token}", ex);
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
         /// 執行 BadRequest 回覆加密
         /// </summary>
         /// <param name="error">error</param>

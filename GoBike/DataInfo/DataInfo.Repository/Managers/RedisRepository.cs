@@ -76,7 +76,7 @@ namespace DataInfo.Repository.Managers
                 string dataJson = await this.database.StringGetAsync(cacheKey).ConfigureAwait(false);
                 this.logger.LogInfo("讀取快取資料", $"dataJson: {dataJson}", null);
 
-                return JsonConvert.DeserializeObject<T>(dataJson);
+                return string.IsNullOrEmpty(dataJson) ? default : JsonConvert.DeserializeObject<T>(dataJson);
             }
             catch (Exception ex)
             {

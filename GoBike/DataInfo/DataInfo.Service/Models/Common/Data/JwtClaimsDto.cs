@@ -26,6 +26,11 @@
         public string MemberID { get; set; }
 
         /// <summary>
+        /// Gets or sets Mobile
+        /// </summary>
+        public string Mobile { get; set; }
+
+        /// <summary>
         /// Gets or sets Nickname
         /// </summary>
         public string Nickname { get; set; }

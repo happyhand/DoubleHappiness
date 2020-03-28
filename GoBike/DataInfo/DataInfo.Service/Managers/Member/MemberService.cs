@@ -114,6 +114,7 @@ namespace DataInfo.Service.Managers.Member
                 Nickname = memberModel.Nickname,
                 Avatar = memberModel.Avatar,
                 FrontCover = memberModel.FrontCover,
+                Mobile = memberModel.Mobile
             };
             return this.jwtService.GenerateToken(jwtClaimsDto);
         }
@@ -764,7 +765,7 @@ namespace DataInfo.Service.Managers.Member
                 #endregion 驗證資料
 
                 IEnumerable<MemberModel> memberModels = await this.memberRepository.Get(memberID, false).ConfigureAwait(false);
-                if (memberModels == null || !memberModels.Any())
+                if (memberModels == null)
                 {
                     this.logger.LogFatal("會員修改密碼結果", $"Result: 無會員資料, 須查詢 DB 比對或 JWT 錯誤 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                     return new ResponseResultDto()
@@ -914,7 +915,7 @@ namespace DataInfo.Service.Managers.Member
 
                 string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.VerifierCode}-{VerifierType.ForgetPassword}-{content.Email}";
                 string verifierCode = await this.redisRepository.GetCache<string>(cacheKey).ConfigureAwait(false);
-                if (!verifierCode.Equals(content.VerifierCode))
+                if (!content.VerifierCode.Equals(verifierCode))
                 {
                     this.logger.LogWarn("初始化會員密碼結果", $"Result: 驗證碼錯誤, Content: {JsonConvert.SerializeObject(content)} VerifierCode: {verifierCode}", null);
                     return new ResponseResultDto()
@@ -993,8 +994,123 @@ namespace DataInfo.Service.Managers.Member
                 return new ResponseResultDto()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.DenyAccess,
+                    ResultCode = (int)ResponseResultType.UnknownError,
                     Content = "發送驗證碼發生錯誤."
+                };
+            }
+        }
+
+        /// <summary>
+        /// 會員手機綁定
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
+        /// <returns>ResponseResultDto</returns>
+        public async Task<ResponseResultDto> MobileBind(string memberID, MemberMobileBindContent content)
+        {
+            try
+            {
+                #region 驗證資料
+
+                MemberMobileBindContentValidator memberMobileBindContentValidator = new MemberMobileBindContentValidator(true);
+                ValidationResult validationResult = memberMobileBindContentValidator.Validate(content);
+                if (!validationResult.IsValid)
+                {
+                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
+                    this.logger.LogWarn("會員手機綁定結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    return new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.InputError,
+                        Content = errorMessgae
+                    };
+                }
+
+                #endregion 驗證資料
+
+                #region 比對驗證碼
+
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.VerifierCode}-{VerifierType.MobileBind}-{content.Mobile}";
+                string verifierCode = await this.redisRepository.GetCache<string>(cacheKey).ConfigureAwait(false);
+                if (!content.VerifierCode.Equals(verifierCode))
+                {
+                    this.logger.LogWarn("會員手機綁定結果", $"Result: 驗證碼錯誤, MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} VerifierCode: {verifierCode}", null);
+                    return new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.InputError,
+                        Content = "驗證碼錯誤."
+                    };
+                }
+
+                #endregion 比對驗證碼
+
+                #region 檢查手機是否已被綁定
+
+                IEnumerable<MemberModel> memberModels = await this.memberRepository.Get(content.Mobile, false).ConfigureAwait(false);
+                if (memberModels != null)
+                {
+                    this.logger.LogWarn("會員手機綁定結果", $"Result: 該手機已被綁定, MemberID: {memberID} BindMemberID:{memberModels.FirstOrDefault().MemberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    return new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.DenyAccess,
+                        Content = "該手機已被綁定."
+                    };
+                }
+
+                #endregion 檢查手機是否已被綁定
+
+                #region 綁定使用者手機
+
+                memberModels = await this.memberRepository.Get(memberID, false).ConfigureAwait(false);
+                if (memberModels == null)
+                {
+                    this.logger.LogWarn("會員手機綁定結果", $"Result: 無會員資料，須查詢 DB 比對 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    return new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.Missed,
+                        Content = "無會員資料."
+                    };
+                }
+
+                MemberModel memberModel = memberModels.FirstOrDefault();
+                memberModel.Mobile = content.Mobile;
+                bool updateResult = await this.memberRepository.Update(memberModel).ConfigureAwait(false);
+                if (!updateResult)
+                {
+                    return new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.UpdateFail,
+                        Content = "更新資料失敗."
+                    };
+                }
+
+                #endregion 綁定使用者手機
+
+                #region 刪除 Redis 驗證碼
+
+                this.redisRepository.DeleteCache(cacheKey);
+
+                #endregion 刪除 Redis 驗證碼
+
+                return new ResponseResultDto()
+                {
+                    Result = true,
+                    ResultCode = (int)ResponseResultType.Success,
+                    Content = "手機綁定成功."
+                };
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("會員手機綁定發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                return new ResponseResultDto()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = "手機綁定發生錯誤."
                 };
             }
         }
@@ -1098,6 +1214,22 @@ namespace DataInfo.Service.Managers.Member
                 }
 
                 #endregion 驗證資料
+
+                #region 檢查手機是否已被綁定
+
+                IEnumerable<MemberModel> memberModels = await this.memberRepository.Get(content.Mobile, false).ConfigureAwait(false);
+                if (memberModels != null)
+                {
+                    this.logger.LogWarn("發送會員手機綁定驗證碼結果", $"Result: 該手機已被綁定, Email: {email} BindMemberID:{memberModels.FirstOrDefault().MemberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    return new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.DenyAccess,
+                        Content = "該手機已被綁定."
+                    };
+                }
+
+                #endregion 檢查手機是否已被綁定
 
                 #region 產生驗證碼
 

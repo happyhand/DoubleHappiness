@@ -68,24 +68,24 @@ namespace DataInfo.Repository.Managers
                     MemberModel memberModel = null;
                     if (Utility.ValidateEmail(searchKey))
                     {
-                        memberModel = await this.Db.Queryable<MemberModel>().Where(data => data.Email.Equals(searchKey))
+                        memberModel = await this.Db.Queryable<MemberModel>().Where(data => searchKey.Equals(data.Email))
                                                            .SingleAsync()
                                                            .ConfigureAwait(false);
                     }
                     else if (searchKey.Contains(AppSettingHelper.Appsetting.MemberIDFlag))
                     {
-                        memberModel = await this.Db.Queryable<MemberModel>().Where(data => data.MemberID.Equals(searchKey))
+                        memberModel = await this.Db.Queryable<MemberModel>().Where(data => searchKey.Equals(data.MemberID))
                                                           .SingleAsync()
                                                           .ConfigureAwait(false);
                     }
-
-                    List<MemberModel> list = new List<MemberModel>();
-                    if (memberModel != null)
+                    else if (Utility.ValidateMobile(searchKey))
                     {
-                        list.Add(memberModel);
-                    };
+                        memberModel = await this.Db.Queryable<MemberModel>().Where(data => searchKey.Equals(data.Mobile))
+                                                         .SingleAsync()
+                                                         .ConfigureAwait(false);
+                    }
 
-                    return list;
+                    return memberModel != null ? new List<MemberModel>() { memberModel } : null;
                 }
             }
             catch (Exception ex)
