@@ -1,5 +1,5 @@
 ﻿using DataInfo.Core.Extensions;
-using DataInfo.Service.Enums;
+using DataInfo.Core.Enums;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Member;
 using DataInfo.Service.Models.Member.Content;

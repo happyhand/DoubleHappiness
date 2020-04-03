@@ -1,4 +1,4 @@
-﻿using DataInfo.Service.Enums;
+﻿using DataInfo.Core.Enums;
 using FluentValidation;
 using System.Collections.Generic;
 

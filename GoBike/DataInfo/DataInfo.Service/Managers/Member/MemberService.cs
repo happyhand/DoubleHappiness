@@ -3,7 +3,7 @@ using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
 using DataInfo.Repository.Interfaces;
 using DataInfo.Repository.Models.Member;
-using DataInfo.Service.Enums;
+using DataInfo.Core.Enums;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Member;
 using DataInfo.Service.Models.Common.Data;

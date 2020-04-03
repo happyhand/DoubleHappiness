@@ -1,4 +1,4 @@
-﻿namespace DataInfo.Service.Enums
+﻿namespace DataInfo.Core.Enums
 {
     /// <summary>
     /// 市區類別資料

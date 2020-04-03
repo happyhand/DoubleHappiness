@@ -1,4 +1,4 @@
-﻿namespace DataInfo.Service.Enums
+﻿namespace DataInfo.Core.Enums
 {
     /// <summary>
     /// 性別類別資料
@@ -35,6 +35,27 @@
         /// 封面
         /// </summary>
         FrontCover = 2
+    }
+
+    /// <summary>
+    /// 會員互動類別資料
+    /// </summary>
+    public enum InteractiveType
+    {
+        /// <summary>
+        /// 未設定
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// 好友
+        /// </summary>
+        Friend = 1,
+
+        /// <summary>
+        /// 黑名單
+        /// </summary>
+        Black = 2
     }
 
     /// <summary>
