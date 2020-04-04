@@ -4,8 +4,10 @@ using DataInfo.Repository.Interfaces;
 using DataInfo.Repository.Managers;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Member;
+using DataInfo.Service.Interfaces.Server;
 using DataInfo.Service.Managers.Common;
 using DataInfo.Service.Managers.Member;
+using DataInfo.Service.Managers.Server;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -82,6 +84,7 @@ namespace DataInfo.Api
             services.AddSingleton<IMemberService, MemberService>();
             services.AddSingleton<IRideService, RideService>();
             services.AddSingleton<IUploadService, UploadService>();
+            services.AddSingleton<IServerService, ServerService>();
 
             #endregion Service
 

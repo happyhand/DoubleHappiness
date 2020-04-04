@@ -1,7 +1,13 @@
-﻿using DataInfo.Core.Extensions;
+﻿using DataInfo.Core.Applibs;
+using DataInfo.Core.Extensions;
 using DataInfo.Service.Interfaces.Server;
+using DataInfo.Service.Models.Member.Content;
+using DataInfo.Service.Models.Response;
+using DataInfo.Service.Models.Server;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using NLog;
+using System;
 using System.Threading.Tasks;
 
 namespace DataInfo.Api.Controllers
@@ -14,20 +20,42 @@ namespace DataInfo.Api.Controllers
     public class TestController : ControllerBase
     {
         private readonly ILogger logger = LogManager.GetLogger("TestController");
-        private readonly IWebSocketService webSocketService;
+        private readonly IServerService serverService;
 
-        public TestController(IWebSocketService webSocketService)
+        public TestController(IServerService serverService)
         {
-            this.webSocketService = webSocketService;
+            this.serverService = serverService;
         }
 
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            this.logger.LogInfo("測試連線 Start", "1", null);
-            await this.webSocketService.Connect();
-            this.logger.LogInfo("測試連線 Start", "2", null);
-            return Ok("123");
+            try
+            {
+                this.logger.LogInfo("測試連線 Start", "1", null);
+                CommandData<MemberRegisterContent> result = await this.serverService.DoAction<MemberRegisterContent>(1001, AppSettingHelper.Appsetting.CommandServer.CommandType.Test, new MemberRegisterContent()
+                {
+                    Email = "Test@gmail.com",
+                    Password = "123456",
+                    ConfirmPassword = "123456"
+                }).ConfigureAwait(false);
+                this.logger.LogInfo("測試連線 Start", $"Result: {JsonConvert.SerializeObject(result)}", null);
+                this.logger.LogInfo("測試連線 Start", $"getContent: {JsonConvert.SerializeObject(result.Data)}", null);
+
+                ResponseResultDto responseResult = new ResponseResultDto()
+                {
+                    Result = true,
+                    ResultCode = (int)ResponseResultType.Success,
+                    Content = result.Data
+                };
+
+                return Ok(responseResult);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("測試連線 Start", "Error", ex);
+                return BadRequest("Error");
+            }
         }
 
         //private readonly IHostingEnvironment hostingEnvironment;
