@@ -53,7 +53,7 @@ namespace DataInfo.Api.Controllers.Member
             {
                 if (content == null)
                 {
-                    this.logger.LogWarn("請求會員編輯資訊失敗", $"Content: 無資料 MemberID: {memberID}", null);
+                    this.logger.LogWarn("會員請求編輯資訊失敗", $"Content: 無資料 MemberID: {memberID}", null);
                     return Ok(new ResponseResultDto()
                     {
                         Result = false,
@@ -62,13 +62,13 @@ namespace DataInfo.Api.Controllers.Member
                     });
                 }
 
-                this.logger.LogInfo("請求會員編輯資訊", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                this.logger.LogInfo("會員請求編輯資訊", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                 ResponseResultDto responseResult = await this.memberService.EditInfo(memberID, content).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員編輯資訊發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                this.logger.LogError("會員請求編輯資訊發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
                 return Ok(new ResponseResultDto()
                 {
                     Result = false,

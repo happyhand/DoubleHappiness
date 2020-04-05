@@ -17,12 +17,27 @@ namespace DataInfo.Repository.Interfaces
         Task<bool> Create(InteractiveModel interactiveModel);
 
         /// <summary>
-        /// 取得互動資料
+        /// 取得會員的互動資料列表
         /// </summary>
         /// <param name="memberID">memberID</param>
         /// <param name="isCreator">isCreator</param>
-        /// <returns>InteractiveModel</returns>
-        Task<InteractiveModel> Get(string memberID, bool isCreator);
+        /// <returns>InteractiveModel list</returns>
+        Task<List<InteractiveModel>> Get(string memberID, bool isCreator);
+
+        /// <summary>
+        /// 取得指定的互動資料列表
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="targetID">targetID</param>
+        /// <returns>InteractiveModel list</returns>
+        Task<InteractiveModel> Get(string memberID, string targetID);
+
+        /// <summary>
+        /// 取得被加入好友資料列表
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>InteractiveModel list</returns>
+        Task<List<InteractiveModel>> GetBeFriendList(string memberID);
 
         /// <summary>
         /// 取得黑名單資料列表

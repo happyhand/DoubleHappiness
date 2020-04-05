@@ -46,28 +46,70 @@ namespace DataInfo.Repository.Managers
         }
 
         /// <summary>
-        /// 取得互動資料
+        /// 取得會員的互動資料列表
         /// </summary>
         /// <param name="memberID">memberID</param>
         /// <param name="isCreator">isCreator</param>
-        /// <returns>InteractiveModel</returns>
-        public async Task<InteractiveModel> Get(string memberID, bool isCreator)
+        /// <returns>InteractiveModel list</returns>
+        public async Task<List<InteractiveModel>> Get(string memberID, bool isCreator)
         {
             try
             {
                 if (isCreator)
                 {
-                    return await this.Db.Queryable<InteractiveModel>().Where(data => data.CreatorID.Equals(memberID)).SingleAsync();
+                    return await this.Db.Queryable<InteractiveModel>().Where(data => data.CreatorID.Equals(memberID)).ToListAsync();
                 }
                 else
                 {
-                    return await this.Db.Queryable<InteractiveModel>().Where(data => data.TargetID.Equals(memberID)).SingleAsync();
+                    return await this.Db.Queryable<InteractiveModel>().Where(data => data.TargetID.Equals(memberID)).ToListAsync();
                 }
             }
             catch (Exception ex)
             {
-                this.logger.LogError("取得互動資料發生錯誤", $"MemberID: {memberID} IsCreator: {isCreator}", ex);
+                this.logger.LogError("取得會員的互動資料列表發生錯誤", $"MemberID: {memberID} IsCreator: {isCreator}", ex);
+                return new List<InteractiveModel>();
+            }
+        }
+
+        /// <summary>
+        /// 取得指定的互動資料列表
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="targetID">targetID</param>
+        /// <returns>InteractiveModel list</returns>
+        public async Task<InteractiveModel> Get(string memberID, string targetID)
+        {
+            try
+            {
+                return await this.Db.Queryable<InteractiveModel>().Where(data => data.CreatorID.Equals(memberID))
+                                                                  .Where(data => data.TargetID.Equals(targetID))
+                                                                  .SingleAsync();
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得指定的互動資料列表發生錯誤", $"MemberID: {memberID} TargetID: {targetID}", ex);
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// 取得被加入好友資料列表
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>InteractiveModel list</returns>
+        public async Task<List<InteractiveModel>> GetBeFriendList(string memberID)
+        {
+            try
+            {
+                return await this.Db.Queryable<InteractiveModel>()
+                    .Where(data => data.TargetID.Equals(memberID))
+                    .Where(data => data.Status.Equals(InteractiveType.Friend))
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得被加入好友資料列表發生錯誤", $"MemberID: {memberID}", ex);
+                return new List<InteractiveModel>();
             }
         }
 
@@ -88,7 +130,7 @@ namespace DataInfo.Repository.Managers
             catch (Exception ex)
             {
                 this.logger.LogError("取得黑名單資料列表發生錯誤", $"MemberID: {memberID}", ex);
-                return null;
+                return new List<InteractiveModel>();
             }
         }
 
@@ -109,7 +151,7 @@ namespace DataInfo.Repository.Managers
             catch (Exception ex)
             {
                 this.logger.LogError("取得好友資料列表發生錯誤", $"MemberID: {memberID}", ex);
-                return null;
+                return new List<InteractiveModel>();
             }
         }
 

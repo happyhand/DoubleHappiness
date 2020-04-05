@@ -39,7 +39,7 @@ namespace DataInfo.Api.Controllers.Member
         }
 
         /// <summary>
-        /// 會員忘記密碼 - 初始化密碼
+        /// 會員忘記密碼 - 重置密碼
         /// </summary>
         /// <param name="content">content</param>
         /// <returns>IActionResult</returns>
@@ -50,7 +50,7 @@ namespace DataInfo.Api.Controllers.Member
             {
                 if (content == null)
                 {
-                    this.logger.LogWarn("會員請求初始化密碼失敗", "Content: 無資料", null);
+                    this.logger.LogWarn("會員請求重置密碼失敗", "Content: 無資料", null);
                     return Ok(new ResponseResultDto()
                     {
                         Result = false,
@@ -59,18 +59,18 @@ namespace DataInfo.Api.Controllers.Member
                     });
                 }
 
-                this.logger.LogInfo("會員請求初始化密碼", $"Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResultDto responseResult = await this.memberService.InitPassword(content).ConfigureAwait(false);
+                this.logger.LogInfo("會員請求重置密碼", $"Content: {JsonConvert.SerializeObject(content)}", null);
+                ResponseResultDto responseResult = await this.memberService.ResetPassword(content).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員請求初始化密碼發生錯誤", $"Content: {JsonConvert.SerializeObject(content)}", ex);
+                this.logger.LogError("會員請求重置密碼發生錯誤", $"Content: {JsonConvert.SerializeObject(content)}", ex);
                 return Ok(new ResponseResultDto()
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = "初始化密碼發生錯誤."
+                    Content = "重置密碼發生錯誤."
                 });
             }
         }

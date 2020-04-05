@@ -25,25 +25,11 @@ namespace DataInfo.Repository.Interfaces
         Task<IEnumerable<MemberModel>> Get(string searchKey, bool isFuzzy);
 
         /// <summary>
-        /// 取得會員資料 (By Email)
+        /// 取得會員資料列表
         /// </summary>
-        /// <param name="email">email</param>
-        /// <returns>MemberModel</returns>
-        Task<MemberModel> GetByEmail(string email);
-
-        /// <summary>
-        /// 取得會員資料 (模糊查詢)
-        /// </summary>
-        /// <param name="email">email</param>
+        /// <param name="memberIDs">memberIDs</param>
         /// <returns>MemberModels</returns>
-        Task<IEnumerable<MemberModel>> GetByFuzzy(string searchKey);
-
-        /// <summary>
-        /// 取得會員資料 (By MemberID)
-        /// </summary>
-        /// <param name="memberID">memberID</param>
-        /// <returns>MemberModel</returns>
-        Task<MemberModel> GetByMemberID(string memberID);
+        Task<IEnumerable<MemberModel>> Get(IEnumerable<string> memberIDs);
 
         /// <summary>
         /// 更新會員資料

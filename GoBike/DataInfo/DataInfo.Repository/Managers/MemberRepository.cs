@@ -8,6 +8,7 @@ using NLog;
 using SqlSugar;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace DataInfo.Repository.Managers
@@ -85,115 +86,40 @@ namespace DataInfo.Repository.Managers
                                                          .ConfigureAwait(false);
                     }
 
-                    return memberModel != null ? new List<MemberModel>() { memberModel } : null;
+                    List<MemberModel> list = new List<MemberModel>();
+                    if (memberModel != null)
+                    {
+                        list.Add(memberModel);
+                    }
+
+                    return list;
                 }
             }
             catch (Exception ex)
             {
                 this.logger.LogError("取得會員資料發生錯誤", $"SearchKey: {searchKey} IsFuzzy: {isFuzzy}", ex);
-                return null;
+                return new List<MemberModel>();
             }
         }
 
         /// <summary>
-        /// 取得會員資料 (By Email)
+        /// 取得會員資料列表
         /// </summary>
-        /// <param name="email">email</param>
-        /// <returns>MemberModel</returns>
-        public async Task<MemberModel> GetByEmail(string email)
-        {
-            try
-            {
-                return await this.Db.Queryable<MemberModel>().Where(data => data.Email.Equals(email))
-                                                             .SingleAsync()
-                                                             .ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("取得會員資料發生錯誤(Email)", $"Email: {email}", ex);
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// 取得會員資料 (模糊查詢)
-        /// </summary>
-        /// <param name="email">email</param>
+        /// <param name="memberIDs">memberIDs</param>
         /// <returns>MemberModels</returns>
-        public async Task<IEnumerable<MemberModel>> GetByFuzzy(string searchKey)
+        public async Task<IEnumerable<MemberModel>> Get(IEnumerable<string> memberIDs)
         {
             try
             {
-                return await this.Db.Queryable<MemberModel>().Where(data => data.Email.Contains(searchKey) || data.Nickname.Contains(searchKey) || data.MemberID.Contains(searchKey))
-                                                             .ToListAsync()
-                                                             .ConfigureAwait(false);
+                return await this.Db.Queryable<MemberModel>()
+                    .Where(data => memberIDs.Contains(data.MemberID))
+                    .ToListAsync()
+                    .ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("取得會員資料發生錯誤(模糊查詢)", $"SearchKey: {searchKey}", ex);
-                return null;
-            }
-        }
-
-        ///// <summary>
-        ///// 取得會員資料 (By FB)
-        ///// </summary>
-        ///// <param name="fbToken">fbToken</param>
-        ///// <returns>MemberData</returns>
-        //public async Task<Member> GetMemberDataByFB(string fbToken)
-        //{
-        //    try
-        //    {
-        //        using (var maindb = new Maindb(this.serviceProvider.GetRequiredService<DbContextOptions<Maindb>>()))
-        //        {
-        //            return await maindb.Member.FirstOrDefaultAsync(options => options.FBToken.Equals(fbToken)).ConfigureAwait(false);
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        this.logger.LogError("取得會員資料發生錯誤(FB)", $"FBToken: {fbToken}", ex);
-        //        return null;
-        //    }
-        //}
-
-        ///// <summary>
-        ///// 取得會員資料 (By Google)
-        ///// </summary>
-        ///// <param name="googleToken">googleToken</param>
-        ///// <returns>MemberData</returns>
-        //public async Task<Member> GetMemberDataByGoogle(string googleToken)
-        //{
-        //    try
-        //    {
-        //        using (var maindb = new Maindb(this.serviceProvider.GetRequiredService<DbContextOptions<Maindb>>()))
-        //        {
-        //            return await maindb.Member.FirstOrDefaultAsync(options => options.GoogleToken.Equals(googleToken)).ConfigureAwait(false);
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        this.logger.LogError("取得會員資料發生錯誤(Google)", $"GoogleToken: {googleToken}", ex);
-        //        return null;
-        //    }
-        //}
-
-        /// <summary>
-        /// 取得會員資料 (By MemberID)
-        /// </summary>
-        /// <param name="memberID">memberID</param>
-        /// <returns>MemberModel</returns>
-        public async Task<MemberModel> GetByMemberID(string memberID)
-        {
-            try
-            {
-                return await this.Db.Queryable<MemberModel>().Where(data => data.MemberID.Equals(memberID))
-                                                             .SingleAsync()
-                                                             .ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("取得會員資料發生錯誤(MemberID)", $"MemberID: {memberID}", ex);
-                return null;
+                this.logger.LogError("取得會員資料列表發生錯誤", $"MemberIDs: {JsonConvert.SerializeObject(memberIDs)}", ex);
+                return new List<MemberModel>();
             }
         }
 

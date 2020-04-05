@@ -1,0 +1,28 @@
+﻿using DataInfo.Service.Models.Member.Content;
+using DataInfo.Service.Models.Response;
+using System.Threading.Tasks;
+
+namespace DataInfo.Service.Interfaces.Member
+{
+    /// <summary>
+    /// 互動服務
+    /// </summary>
+    public interface IInteractiveService
+    {
+        /// <summary>
+        /// 取得好友列表
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>ResponseResultDto</returns>
+        Task<ResponseResultDto> GetFriendList(string memberID);
+
+        /// <summary>
+        /// 更新互動資料
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
+        /// <param name="status">status</param>
+        /// <returns>ResponseResultDto</returns>
+        Task<ResponseResultDto> UpdateInteractive(string memberID, InteractiveContent content, int status);
+    }
+}

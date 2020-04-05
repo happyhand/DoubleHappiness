@@ -71,19 +71,19 @@ namespace DataInfo.Service.Interfaces.Member
         Task<ResponseResultDto> FuzzySearch(MemberSearchContent content, string searchMemberID);
 
         /// <summary>
-        /// 初始化會員密碼
-        /// </summary>
-        /// <param name="content">content</param>
-        /// <returns>ResponseResultDto</returns>
-        Task<ResponseResultDto> InitPassword(MemberForgetPasswordContent content);
-
-        /// <summary>
         /// 會員手機綁定
         /// </summary>
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
         /// <returns>ResponseResultDto</returns>
         Task<ResponseResultDto> MobileBind(string memberID, MemberMobileBindContent content);
+
+        /// <summary>
+        /// 重置會員密碼
+        /// </summary>
+        /// <param name="content">content</param>
+        /// <returns>ResponseResultDto</returns>
+        Task<ResponseResultDto> ResetPassword(MemberForgetPasswordContent content);
 
         /// <summary>
         /// 發送會員忘記密碼驗證碼

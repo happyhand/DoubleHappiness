@@ -87,7 +87,7 @@ namespace DataInfo.Service.Managers.Member
         {
             byte[] dateTimeBytes = BitConverter.GetBytes(DateTime.UtcNow.Ticks);
             Array.Resize(ref dateTimeBytes, 16);
-            string memberID = $"{AppSettingHelper.Appsetting.MemberIDFlag}{new Guid(dateTimeBytes).ToString().Substring(0, 8)}";
+            string memberID = $"{AppSettingHelper.Appsetting.MemberIDFlag}-{new Guid(dateTimeBytes).ToString().Substring(0, 8)}";
             return new MemberModel()
             {
                 MemberID = memberID,
@@ -131,7 +131,7 @@ namespace DataInfo.Service.Managers.Member
                 memberModel.LoginDate = DateTime.UtcNow;
                 this.memberRepository.Update(memberModel);
 
-                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-login-{memberModel.MemberID}";
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{AppSettingHelper.Appsetting.Redis.Flag.LastLogin}-{memberModel.MemberID}";
                 this.redisRepository.SetCache(cacheKey, JsonConvert.SerializeObject(DateTime.UtcNow), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.KeepOnlineTime));
             }
             catch (Exception ex)
@@ -149,7 +149,7 @@ namespace DataInfo.Service.Managers.Member
         {
             try
             {
-                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-login-{memberID}";
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{AppSettingHelper.Appsetting.Redis.Flag.LastLogin}-{memberID}";
                 bool result = await this.redisRepository.UpdateCacheExpire(cacheKey, TimeSpan.FromMinutes(AppSettingHelper.Appsetting.KeepOnlineTime)).ConfigureAwait(false);
                 if (result)
                 {
@@ -209,7 +209,7 @@ namespace DataInfo.Service.Managers.Member
 
                 #region 取得資料並驗證密碼
 
-                MemberModel memberModel = await this.GetMemberData(content.Email).ConfigureAwait(false);
+                MemberModel memberModel = (await this.memberRepository.Get(content.Email, false).ConfigureAwait(false)).FirstOrDefault();
                 if (memberModel == null)
                 {
                     this.logger.LogWarn("會員登入結果(一般登入)", $"Result: 無會員資料 Email: {content.Email} Password: {content.Password}", null);
@@ -309,7 +309,7 @@ namespace DataInfo.Service.Managers.Member
 
                 #region 檢查 Email 是否已被註冊
 
-                MemberModel memberModel = await this.GetMemberData(content.Email).ConfigureAwait(false);
+                MemberModel memberModel = (await this.memberRepository.Get(content.Email, false).ConfigureAwait(false)).FirstOrDefault();
                 if (memberModel != null)
                 {
                     this.logger.LogWarn("會員註冊結果", $"Result: 此信箱已經被註冊 Email: {content.Email} Password: {content.Password} ConfirmPassword: {content.ConfirmPassword} IsValidatePassword: {isValidatePassword} FbToken: {fbToken} GoogleToken: {googleToken}", null);
@@ -387,7 +387,7 @@ namespace DataInfo.Service.Managers.Member
             {
                 #region 取得資料
 
-                MemberModel memberModel = await this.GetMemberData(memberID).ConfigureAwait(false);
+                MemberModel memberModel = (await this.memberRepository.Get(memberID, false).ConfigureAwait(false)).FirstOrDefault();
                 if (memberModel == null)
                 {
                     this.logger.LogError("會員登入結果(重新登入)", $"Result: 無會員資料，須查詢 DB 比對 MemberID: {memberID}", null);
@@ -567,43 +567,6 @@ namespace DataInfo.Service.Managers.Member
         #region 會員資料
 
         /// <summary>
-        /// 取得會員資料
-        /// </summary>
-        /// <param name="searchKey">searchKey</param>
-        /// <returns>MemberModel</returns>
-        private async Task<MemberModel> GetMemberData(string searchKey)
-        {
-            try
-            {
-                if (searchKey.Contains("@"))
-                {
-                    return await this.memberRepository.GetByEmail(searchKey);
-                }
-                else if (searchKey.Contains(AppSettingHelper.Appsetting.MemberIDFlag))
-                {
-                    return await this.memberRepository.GetByMemberID(searchKey);
-                }
-                //else if (searchKey.Contains("FB"))
-                //{
-                //    searchKey = searchKey.Replace("FB_", string.Empty);
-                //    return this.memberRepository.GetMemberDataByFB(searchKey);
-                //}
-                //else if (searchKey.Contains("Google"))
-                //{
-                //    searchKey = searchKey.Replace("Google_", string.Empty);
-                //    return this.memberRepository.GetMemberDataByGoogle(searchKey);
-                //}
-
-                return null;
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("取得會員資料發生錯誤", $"SearchKey: {searchKey}", ex);
-                return null;
-            }
-        }
-
-        /// <summary>
         /// 會員資料更新處理
         /// </summary>
         /// <param name="content">content</param>
@@ -682,7 +645,7 @@ namespace DataInfo.Service.Managers.Member
         {
             try
             {
-                MemberModel memberModel = await this.GetMemberData(memberID).ConfigureAwait(false);
+                MemberModel memberModel = (await this.memberRepository.Get(memberID, false).ConfigureAwait(false)).FirstOrDefault();
                 if (memberModel == null)
                 {
                     this.logger.LogWarn("會員編輯資訊結果", $"Result: 搜尋失敗，無會員資料 MemberID: {memberID}", null);
@@ -764,8 +727,8 @@ namespace DataInfo.Service.Managers.Member
 
                 #endregion 驗證資料
 
-                IEnumerable<MemberModel> memberModels = await this.memberRepository.Get(memberID, false).ConfigureAwait(false);
-                if (memberModels == null)
+                MemberModel memberModel = (await this.memberRepository.Get(memberID, false).ConfigureAwait(false)).FirstOrDefault();
+                if (memberModel == null)
                 {
                     this.logger.LogFatal("會員修改密碼結果", $"Result: 無會員資料, 須查詢 DB 比對或 JWT 錯誤 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                     return new ResponseResultDto()
@@ -776,7 +739,6 @@ namespace DataInfo.Service.Managers.Member
                     };
                 }
 
-                MemberModel memberModel = memberModels.FirstOrDefault();
                 if (!Utility.DecryptAES(memberModel.Password).Equals(content.CurrentPassword))
                 {
                     this.logger.LogWarn("會員修改密碼結果", $"Result: 密碼錯誤 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
@@ -847,7 +809,7 @@ namespace DataInfo.Service.Managers.Member
 
                 #endregion 驗證資料
 
-                IEnumerable<MemberModel> memberModels = await this.memberRepository.GetByFuzzy(content.SearchKey);
+                IEnumerable<MemberModel> memberModels = await this.memberRepository.Get(content.SearchKey, true);
                 List<MemberSimpleInfoViewDto> memberSimpleInfoViewDtos = new List<MemberSimpleInfoViewDto>();
                 foreach (MemberModel memberModel in memberModels)
                 {
@@ -859,9 +821,9 @@ namespace DataInfo.Service.Managers.Member
 
                     //// TODO 待檢驗其他會員是否同意被檢閱資料
 
-                    string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-login-{memberModel.MemberID}";
+                    string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{AppSettingHelper.Appsetting.Redis.Flag.LastLogin}-{memberModel.MemberID}";
                     MemberSimpleInfoViewDto memberSimpleInfoViewDto = this.mapper.Map<MemberSimpleInfoViewDto>(memberModel);
-                    memberSimpleInfoViewDto.OnlineType = await this.redisRepository.IsExist(cacheKey) ? (int)OnlineStatusType.Online : (int)OnlineStatusType.Offline;
+                    memberSimpleInfoViewDto.OnlineType = await this.redisRepository.IsExist(cacheKey).ConfigureAwait(false) ? (int)OnlineStatusType.Online : (int)OnlineStatusType.Offline;
                     memberSimpleInfoViewDtos.Add(memberSimpleInfoViewDto);
                 }
 
@@ -880,122 +842,6 @@ namespace DataInfo.Service.Managers.Member
                     Result = false,
                     ResultCode = (int)ResponseResultType.DenyAccess,
                     Content = "搜尋會員發生錯誤."
-                };
-            }
-        }
-
-        /// <summary>
-        /// 初始化會員密碼
-        /// </summary>
-        /// <param name="content">content</param>
-        /// <returns>ResponseResultDto</returns>
-        public async Task<ResponseResultDto> InitPassword(MemberForgetPasswordContent content)
-        {
-            try
-            {
-                #region 驗證資料
-
-                MemberForgetPasswordContentValidator memberForgetPasswordContentValidator = new MemberForgetPasswordContentValidator(true);
-                ValidationResult validationResult = memberForgetPasswordContentValidator.Validate(content);
-                if (!validationResult.IsValid)
-                {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("初始化會員密碼結果", $"Result: 驗證失敗({errorMessgae}) Content: {JsonConvert.SerializeObject(content)}", null);
-                    return new ResponseResultDto()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = errorMessgae
-                    };
-                }
-
-                #endregion 驗證資料
-
-                #region 比對驗證碼
-
-                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.VerifierCode}-{VerifierType.ForgetPassword}-{content.Email}";
-                string verifierCode = await this.redisRepository.GetCache<string>(cacheKey).ConfigureAwait(false);
-                if (!content.VerifierCode.Equals(verifierCode))
-                {
-                    this.logger.LogWarn("初始化會員密碼結果", $"Result: 驗證碼錯誤, Content: {JsonConvert.SerializeObject(content)} VerifierCode: {verifierCode}", null);
-                    return new ResponseResultDto()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = "驗證碼錯誤."
-                    };
-                }
-
-                #endregion 比對驗證碼
-
-                #region 更新使用者密碼
-
-                MemberModel memberModel = await this.memberRepository.GetByEmail(content.Email).ConfigureAwait(false);
-                if (memberModel == null)
-                {
-                    this.logger.LogWarn("初始化會員密碼結果", $"Result: 無會員資料，須查詢 DB 比對 Content: {JsonConvert.SerializeObject(content)}", null);
-                    return new ResponseResultDto()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.Missed,
-                        Content = "無會員資料."
-                    };
-                }
-
-                string password = Guid.NewGuid().ToString().Substring(0, 8);
-                memberModel.Password = Utility.EncryptAES(password);
-                bool updateResult = await this.memberRepository.Update(memberModel).ConfigureAwait(false);
-                if (!updateResult)
-                {
-                    return new ResponseResultDto()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.UpdateFail,
-                        Content = "更新資料失敗."
-                    };
-                }
-
-                #endregion 更新使用者密碼
-
-                #region 發送郵件
-
-                EmailContext emailContext = EmailContext.GetResetPasswordEmailContext(content.Email, password);
-                string postData = JsonConvert.SerializeObject(emailContext);
-                HttpResponseMessage httpResponseMessage = await Utility.ApiPost(AppSettingHelper.Appsetting.SmtpServer.Domain, AppSettingHelper.Appsetting.SmtpServer.SendEmailApi, postData).ConfigureAwait(false);
-                if (!httpResponseMessage.IsSuccessStatusCode)
-                {
-                    this.logger.LogWarn("初始化會員密碼結果", $"Result: 發送郵件失敗({httpResponseMessage.Content}) EmailContext: {JsonConvert.SerializeObject(emailContext)}", null);
-                    return new ResponseResultDto()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = "發送郵件失敗."
-                    };
-                }
-
-                #endregion 發送郵件
-
-                #region 刪除 Redis 驗證碼
-
-                this.redisRepository.DeleteCache(cacheKey);
-
-                #endregion 刪除 Redis 驗證碼
-
-                return new ResponseResultDto()
-                {
-                    Result = true,
-                    ResultCode = (int)ResponseResultType.Success,
-                    Content = "初始化密碼成功."
-                };
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("發送會員忘記密碼驗證碼發生錯誤", $"Content: {JsonConvert.SerializeObject(content)}", ex);
-                return new ResponseResultDto()
-                {
-                    Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = "發送驗證碼發生錯誤."
                 };
             }
         }
@@ -1047,10 +893,10 @@ namespace DataInfo.Service.Managers.Member
 
                 #region 檢查手機是否已被綁定
 
-                IEnumerable<MemberModel> memberModels = await this.memberRepository.Get(content.Mobile, false).ConfigureAwait(false);
-                if (memberModels != null)
+                MemberModel memberModel = (await this.memberRepository.Get(content.Mobile, false).ConfigureAwait(false)).FirstOrDefault();
+                if (memberModel != null)
                 {
-                    this.logger.LogWarn("會員手機綁定結果", $"Result: 該手機已被綁定, MemberID: {memberID} BindMemberID:{memberModels.FirstOrDefault().MemberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    this.logger.LogWarn("會員手機綁定結果", $"Result: 該手機已被綁定, MemberID: {memberID} BindMemberID:{memberModel.MemberID} Content: {JsonConvert.SerializeObject(content)}", null);
                     return new ResponseResultDto()
                     {
                         Result = false,
@@ -1063,8 +909,8 @@ namespace DataInfo.Service.Managers.Member
 
                 #region 綁定使用者手機
 
-                memberModels = await this.memberRepository.Get(memberID, false).ConfigureAwait(false);
-                if (memberModels == null)
+                memberModel = (await this.memberRepository.Get(memberID, false).ConfigureAwait(false)).FirstOrDefault();
+                if (memberModel == null)
                 {
                     this.logger.LogWarn("會員手機綁定結果", $"Result: 無會員資料，須查詢 DB 比對 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                     return new ResponseResultDto()
@@ -1075,7 +921,6 @@ namespace DataInfo.Service.Managers.Member
                     };
                 }
 
-                MemberModel memberModel = memberModels.FirstOrDefault();
                 memberModel.Mobile = content.Mobile;
                 bool updateResult = await this.memberRepository.Update(memberModel).ConfigureAwait(false);
                 if (!updateResult)
@@ -1111,6 +956,122 @@ namespace DataInfo.Service.Managers.Member
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
                     Content = "手機綁定發生錯誤."
+                };
+            }
+        }
+
+        /// <summary>
+        /// 重置會員密碼
+        /// </summary>
+        /// <param name="content">content</param>
+        /// <returns>ResponseResultDto</returns>
+        public async Task<ResponseResultDto> ResetPassword(MemberForgetPasswordContent content)
+        {
+            try
+            {
+                #region 驗證資料
+
+                MemberForgetPasswordContentValidator memberForgetPasswordContentValidator = new MemberForgetPasswordContentValidator(true);
+                ValidationResult validationResult = memberForgetPasswordContentValidator.Validate(content);
+                if (!validationResult.IsValid)
+                {
+                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
+                    this.logger.LogWarn("重置會員密碼結果", $"Result: 驗證失敗({errorMessgae}) Content: {JsonConvert.SerializeObject(content)}", null);
+                    return new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.InputError,
+                        Content = errorMessgae
+                    };
+                }
+
+                #endregion 驗證資料
+
+                #region 比對驗證碼
+
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.VerifierCode}-{VerifierType.ForgetPassword}-{content.Email}";
+                string verifierCode = await this.redisRepository.GetCache<string>(cacheKey).ConfigureAwait(false);
+                if (!content.VerifierCode.Equals(verifierCode))
+                {
+                    this.logger.LogWarn("重置會員密碼結果", $"Result: 驗證碼錯誤, Content: {JsonConvert.SerializeObject(content)} VerifierCode: {verifierCode}", null);
+                    return new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.InputError,
+                        Content = "驗證碼錯誤."
+                    };
+                }
+
+                #endregion 比對驗證碼
+
+                #region 更新使用者密碼
+
+                MemberModel memberModel = (await this.memberRepository.Get(content.Email, false).ConfigureAwait(false)).FirstOrDefault();
+                if (memberModel == null)
+                {
+                    this.logger.LogWarn("重置會員密碼結果", $"Result: 無會員資料，須查詢 DB 比對 Content: {JsonConvert.SerializeObject(content)}", null);
+                    return new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.Missed,
+                        Content = "無會員資料."
+                    };
+                }
+
+                string password = Guid.NewGuid().ToString().Substring(0, 8);
+                memberModel.Password = Utility.EncryptAES(password);
+                bool updateResult = await this.memberRepository.Update(memberModel).ConfigureAwait(false);
+                if (!updateResult)
+                {
+                    return new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.UpdateFail,
+                        Content = "更新資料失敗."
+                    };
+                }
+
+                #endregion 更新使用者密碼
+
+                #region 發送郵件
+
+                EmailContext emailContext = EmailContext.GetResetPasswordEmailContext(content.Email, password);
+                string postData = JsonConvert.SerializeObject(emailContext);
+                HttpResponseMessage httpResponseMessage = await Utility.ApiPost(AppSettingHelper.Appsetting.SmtpServer.Domain, AppSettingHelper.Appsetting.SmtpServer.SendEmailApi, postData).ConfigureAwait(false);
+                if (!httpResponseMessage.IsSuccessStatusCode)
+                {
+                    this.logger.LogWarn("重置會員密碼結果", $"Result: 發送郵件失敗({httpResponseMessage.Content}) EmailContext: {JsonConvert.SerializeObject(emailContext)}", null);
+                    return new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.DenyAccess,
+                        Content = "發送郵件失敗."
+                    };
+                }
+
+                #endregion 發送郵件
+
+                #region 刪除 Redis 驗證碼
+
+                this.redisRepository.DeleteCache(cacheKey);
+
+                #endregion 刪除 Redis 驗證碼
+
+                return new ResponseResultDto()
+                {
+                    Result = true,
+                    ResultCode = (int)ResponseResultType.Success,
+                    Content = "重置密碼成功."
+                };
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("會員請求重置密碼發生錯誤", $"Content: {JsonConvert.SerializeObject(content)}", ex);
+                return new ResponseResultDto()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = "重置密碼發生錯誤."
                 };
             }
         }
@@ -1217,10 +1178,10 @@ namespace DataInfo.Service.Managers.Member
 
                 #region 檢查手機是否已被綁定
 
-                IEnumerable<MemberModel> memberModels = await this.memberRepository.Get(content.Mobile, false).ConfigureAwait(false);
-                if (memberModels != null)
+                MemberModel memberModel = (await this.memberRepository.Get(content.Mobile, false).ConfigureAwait(false)).FirstOrDefault();
+                if (memberModel != null)
                 {
-                    this.logger.LogWarn("發送會員手機綁定驗證碼結果", $"Result: 該手機已被綁定, Email: {email} BindMemberID:{memberModels.FirstOrDefault().MemberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    this.logger.LogWarn("發送會員手機綁定驗證碼結果", $"Result: 該手機已被綁定, Email: {email} BindMemberID:{memberModel.MemberID} Content: {JsonConvert.SerializeObject(content)}", null);
                     return new ResponseResultDto()
                     {
                         Result = false,
@@ -1304,7 +1265,7 @@ namespace DataInfo.Service.Managers.Member
 
                 #endregion 驗證資料
 
-                MemberModel memberModel = await this.GetMemberData(content.SearchKey).ConfigureAwait(false);
+                MemberModel memberModel = (await this.memberRepository.Get(content.SearchKey, false).ConfigureAwait(false)).FirstOrDefault();
                 if (memberModel == null)
                 {
                     this.logger.LogWarn("搜尋會員結果(嚴格比對)", $"Result: 搜尋失敗，無會員資料 Content: {JsonConvert.SerializeObject(content)} SearchMemberID: {searchMemberID}", null);
@@ -1316,7 +1277,7 @@ namespace DataInfo.Service.Managers.Member
                     };
                 }
 
-                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-login-{memberModel.MemberID}";
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{AppSettingHelper.Appsetting.Redis.Flag.LastLogin}-{memberModel.MemberID}";
                 Task<bool> onlineResult = this.redisRepository.IsExist(cacheKey);
 
                 #region 取得會員本身資料

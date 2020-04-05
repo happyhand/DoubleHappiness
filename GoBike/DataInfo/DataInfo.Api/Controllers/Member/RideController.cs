@@ -41,7 +41,7 @@ namespace DataInfo.Api.Controllers.Member
         }
 
         /// <summary>
-        /// 會員騎乘 - 取得會員的騎乘資料列表
+        /// 會員騎乘 - 取得騎乘資料列表
         /// </summary>
         /// <returns>IActionResult</returns>
         [HttpGet]
@@ -55,7 +55,7 @@ namespace DataInfo.Api.Controllers.Member
             }
             catch (Exception ex)
             {
-                this.logger.LogError("請求取得會員的騎乘資料列表發生錯誤", $"MemberID: {memberID}", ex);
+                this.logger.LogError("會員請求取得騎乘資料列表發生錯誤", $"MemberID: {memberID}", ex);
                 return Ok(new ResponseResultDto()
                 {
                     Result = false,
@@ -131,7 +131,7 @@ namespace DataInfo.Api.Controllers.Member
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員新增騎乘資料發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                this.logger.LogError("會員請求新增騎乘資料發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
                 return Ok(new ResponseResultDto()
                 {
                     Result = false,

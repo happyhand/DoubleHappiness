@@ -1,5 +1,5 @@
-﻿using DataInfo.Core.Extensions;
-using DataInfo.Core.Enums;
+﻿using DataInfo.Core.Enums;
+using DataInfo.Core.Extensions;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Member;
 using DataInfo.Service.Models.Member.Content;
@@ -11,38 +11,38 @@ using NLog;
 using System;
 using System.Threading.Tasks;
 
-namespace DataInfo.Api.Controllers.Member
+namespace DataInfo.Api.Controllers.Interactive
 {
     /// <summary>
-    /// 搜尋會員
+    /// 會員好友
     /// </summary>
-    [Route("api/Member/[controller]")]
+    [Route("api/[controller]")]
     [Authorize]
     [ApiController]
-    public class SearchController : ApiController
+    public class FriendController : ApiController
     {
+        /// <summary>
+        /// InteractiveService
+        /// </summary>
+        private readonly IInteractiveService InteractiveService;
+
         /// <summary>
         /// logger
         /// </summary>
-        private readonly ILogger logger = LogManager.GetLogger("SearchController");
-
-        /// <summary>
-        /// memberService
-        /// </summary>
-        private readonly IMemberService memberService;
+        private readonly ILogger logger = LogManager.GetLogger("FriendController");
 
         /// <summary>
         /// 建構式
         /// </summary>
         /// <param name="jwtService">jwtService</param>
-        /// <param name="memberService">memberService</param>
-        public SearchController(IJwtService jwtService, IMemberService memberService) : base(jwtService)
+        /// <param name="InteractiveService">InteractiveService</param>
+        public FriendController(IJwtService jwtService, IInteractiveService InteractiveService) : base(jwtService)
         {
-            this.memberService = memberService;
+            this.InteractiveService = InteractiveService;
         }
 
         /// <summary>
-        /// 搜尋會員 - 取得本身資料
+        /// 會員好友 - 取得好友列表
         /// </summary>
         /// <returns>IActionResult</returns>
         [HttpGet]
@@ -51,13 +51,12 @@ namespace DataInfo.Api.Controllers.Member
             string memberID = this.GetMemberID();
             try
             {
-                MemberSearchContent content = new MemberSearchContent() { SearchKey = memberID };
-                ResponseResultDto responseResult = await this.memberService.StrictSearch(content).ConfigureAwait(false);
+                ResponseResultDto responseResult = await this.InteractiveService.GetFriendList(memberID).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員請求取得本身資料發生錯誤", $"MemberID: {memberID}", ex);
+                this.logger.LogError("會員請求取得好友列表發生錯誤", $"MemberID: {memberID}", ex);
                 return Ok(new ResponseResultDto()
                 {
                     Result = false,
@@ -68,47 +67,39 @@ namespace DataInfo.Api.Controllers.Member
         }
 
         /// <summary>
-        /// 搜尋會員 - 搜尋其他會員資料
+        /// 會員好友 - 更新互動資料
         /// </summary>
         /// <param name="content">content</param>
         /// <returns>IActionResult</returns>
         [HttpPost]
-        public async Task<IActionResult> Post(MemberSearchContent content)
+        public async Task<IActionResult> Post(InteractiveContent content)
         {
             string memberID = this.GetMemberID();
             try
             {
                 if (content == null)
                 {
-                    this.logger.LogWarn("會員請求搜尋其他會員資料失敗", $"Content: 無資料 MemberID: {memberID}", null);
+                    this.logger.LogWarn("會員請求更新互動資料失敗", $"Content: 無資料 MemberID: {memberID}", null);
                     return Ok(new ResponseResultDto()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.InputError,
-                        Content = "未提供搜尋內容."
+                        Content = "未提供資料內容."
                     });
                 }
 
-                ResponseResultDto responseResult;
-                if (content.UseFuzzySearch == (int)SearchType.Fuzzy)
-                {
-                    responseResult = await this.memberService.FuzzySearch(content, memberID).ConfigureAwait(false);
-                }
-                else
-                {
-                    responseResult = await this.memberService.StrictSearch(content, memberID).ConfigureAwait(false);
-                }
-
+                this.logger.LogInfo("會員請求更新互動資料", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                ResponseResultDto responseResult = await this.InteractiveService.UpdateInteractive(memberID, content, (int)InteractiveType.Friend).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員請求搜尋其他會員資料發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                this.logger.LogError("會員請求更新互動資料發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
                 return Ok(new ResponseResultDto()
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = "取得資料發生錯誤."
+                    Content = "更新互動資料發生錯誤."
                 });
             }
         }

@@ -83,6 +83,7 @@ namespace DataInfo.Api
             services.AddSingleton<IJwtService, JwtService>();
             services.AddSingleton<IMemberService, MemberService>();
             services.AddSingleton<IRideService, RideService>();
+            services.AddSingleton<IInteractiveService, InteractiveService>();
             services.AddSingleton<IUploadService, UploadService>();
             services.AddSingleton<IServerService, ServerService>();
 
@@ -92,6 +93,7 @@ namespace DataInfo.Api
 
             services.AddSingleton<IMemberRepository, MemberRepository>();
             services.AddSingleton<IRideRepository, RideRepository>();
+            services.AddSingleton<IInteractiveRepository, InteractiveRepository>();
             services.AddSingleton<IRedisRepository, RedisRepository>();
 
             #endregion Repository
