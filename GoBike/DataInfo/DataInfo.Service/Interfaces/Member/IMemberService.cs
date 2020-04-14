@@ -1,5 +1,5 @@
-﻿using DataInfo.Service.Models.Member.Content;
-using DataInfo.Service.Models.Response;
+﻿using DataInfo.Core.Models.Dto.Member.Content;
+using DataInfo.Core.Models.Dto.Response;
 using System.Threading.Tasks;
 
 namespace DataInfo.Service.Interfaces.Member

@@ -1,4 +1,4 @@
-﻿using DataInfo.Repository.Models.Member;
+﻿using DataInfo.Core.Models.Dao.Member;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

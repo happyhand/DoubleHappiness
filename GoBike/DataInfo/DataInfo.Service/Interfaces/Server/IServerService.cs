@@ -1,4 +1,4 @@
-﻿using DataInfo.Service.Models.Server;
+﻿using DataInfo.Core.Models.Dto.Server;
 using System.Threading.Tasks;
 
 namespace DataInfo.Service.Interfaces.Server

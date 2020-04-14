@@ -1,7 +1,7 @@
 ﻿using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
 using DataInfo.Service.Interfaces.Common;
-using DataInfo.Service.Models.Response;
+using DataInfo.Core.Models.Dto.Response;
 using Newtonsoft.Json;
 using NLog;
 using System;

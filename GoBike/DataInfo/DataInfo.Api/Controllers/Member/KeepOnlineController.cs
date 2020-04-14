@@ -1,7 +1,7 @@
 ﻿using DataInfo.Core.Extensions;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Member;
-using DataInfo.Service.Models.Response;
+using DataInfo.Core.Models.Dto.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NLog;

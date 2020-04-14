@@ -1,9 +1,9 @@
 ﻿using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
 using DataInfo.Service.Interfaces.Server;
-using DataInfo.Service.Models.Member.Content;
-using DataInfo.Service.Models.Response;
-using DataInfo.Service.Models.Server;
+using DataInfo.Core.Models.Dto.Member.Content;
+using DataInfo.Core.Models.Dto.Response;
+using DataInfo.Core.Models.Dto.Server;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using NLog;

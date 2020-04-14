@@ -1,8 +1,8 @@
-﻿using DataInfo.Core.Enums;
+﻿using DataInfo.Core.Models.Enum;
 using DataInfo.Core.Extensions;
 using DataInfo.Repository.Interfaces;
 using DataInfo.Repository.Managers.Base;
-using DataInfo.Repository.Models.Member;
+using DataInfo.Core.Models.Dao.Member;
 using Newtonsoft.Json;
 using NLog;
 using SqlSugar;

@@ -1,15 +1,22 @@
 ﻿using AutoMapper;
 using DataInfo.Core.Applibs;
+using DataInfo.Core.Models.Enum;
 using DataInfo.Core.Extensions;
+using DataInfo.Core.Models.Dto.Member.Request;
+using DataInfo.Core.Models.Dto.Member.Response;
+
+using DataInfo.Core.Models.Enum;
+
 using DataInfo.Repository.Interfaces;
-using DataInfo.Repository.Models.Member;
-using DataInfo.Core.Enums;
+using DataInfo.Core.Models.Dao.Member;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Member;
-using DataInfo.Service.Models.Common.Data;
-using DataInfo.Service.Models.Member.Content;
-using DataInfo.Service.Models.Member.View;
-using DataInfo.Service.Models.Response;
+using DataInfo.Service.Interfaces.Server;
+using DataInfo.Core.Models.Dto.Common;
+using DataInfo.Core.Models.Dto.Member.Content;
+using DataInfo.Core.Models.Dto.Member.View;
+using DataInfo.Core.Models.Dto.Response;
+using DataInfo.Core.Models.Dto.Server;
 using FluentValidation.Results;
 using Newtonsoft.Json;
 using NLog;
@@ -52,6 +59,11 @@ namespace DataInfo.Service.Managers.Member
         private readonly IRedisRepository redisRepository;
 
         /// <summary>
+        /// serverService
+        /// </summary>
+        private readonly IServerService serverService;
+
+        /// <summary>
         /// uploadService
         /// </summary>
         private readonly IUploadService uploadService;
@@ -62,43 +74,20 @@ namespace DataInfo.Service.Managers.Member
         /// <param name="mapper">mapper</param>
         /// <param name="jwtService">jwtService</param>
         /// <param name="uploadService">uploadService</param>
+        /// <param name="serverService">serverService</param>
         /// <param name="memberRepository">memberRepository</param>
         /// <param name="redisRepository">redisRepository</param>
-        public MemberService(IMapper mapper, IJwtService jwtService, IUploadService uploadService, IMemberRepository memberRepository, IRedisRepository redisRepository)
+        public MemberService(IMapper mapper, IJwtService jwtService, IUploadService uploadService, IServerService serverService, IMemberRepository memberRepository, IRedisRepository redisRepository)
         {
             this.mapper = mapper;
             this.jwtService = jwtService;
             this.uploadService = uploadService;
+            this.serverService = serverService;
             this.memberRepository = memberRepository;
             this.redisRepository = redisRepository;
         }
 
         #region 註冊 \ 登入 \ 登出 \ 保持在線
-
-        /// <summary>
-        /// 建立會員資料
-        /// </summary>
-        /// <param name="email">email</param>
-        /// <param name="password">password</param>
-        /// <param name="fbToken">fbToken</param>
-        /// <param name="googleToken">googleToken</param>
-        /// <returns>MemberModel</returns>
-        private MemberModel CreateMemberModel(string email, string password, string fbToken, string googleToken)
-        {
-            byte[] dateTimeBytes = BitConverter.GetBytes(DateTime.UtcNow.Ticks);
-            Array.Resize(ref dateTimeBytes, 16);
-            string memberID = $"{AppSettingHelper.Appsetting.MemberIDFlag}-{new Guid(dateTimeBytes).ToString().Substring(0, 8)}";
-            return new MemberModel()
-            {
-                MemberID = memberID,
-                RegisterDate = DateTime.UtcNow,
-                RegisterSource = string.IsNullOrEmpty(fbToken) ? string.IsNullOrEmpty(googleToken) ? (int)RegisterSourceType.Normal : (int)RegisterSourceType.Google : (int)RegisterSourceType.FB,
-                Email = email,
-                Password = string.IsNullOrEmpty(password) ? string.Empty : Utility.EncryptAES(password),
-                FBToken = fbToken,
-                GoogleToken = googleToken,
-            };
-        }
 
         /// <summary>
         /// 生產 Jwt Token
@@ -307,38 +296,41 @@ namespace DataInfo.Service.Managers.Member
 
                 #endregion 驗證資料
 
-                #region 檢查 Email 是否已被註冊
+                #region 發送會員資料 to Server
 
-                MemberModel memberModel = (await this.memberRepository.Get(content.Email, false).ConfigureAwait(false)).FirstOrDefault();
-                if (memberModel != null)
+                MemberRegisterRequestDto request = new MemberRegisterRequestDto()
                 {
-                    this.logger.LogWarn("會員註冊結果", $"Result: 此信箱已經被註冊 Email: {content.Email} Password: {content.Password} ConfirmPassword: {content.ConfirmPassword} IsValidatePassword: {isValidatePassword} FbToken: {fbToken} GoogleToken: {googleToken}", null);
-                    return new ResponseResultDto()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.Existed,
-                        Content = "此信箱已經被註冊."
-                    };
+                    Email = content.Email,
+                    Password = content.Password,
+                    CheckPassword = content.ConfirmPassword,
+                    FBToken = fbToken,
+                    GoogleToken = googleToken,
+                    RegisterSource = string.IsNullOrEmpty(fbToken) ? string.IsNullOrEmpty(googleToken) ? (int)RegisterSourceType.Normal : (int)RegisterSourceType.Google : (int)RegisterSourceType.FB
+                };
+
+                CommandData<MemberRegisterResponseDto> response = await this.serverService.DoAction<MemberRegisterResponseDto>((int)CommandIDType.UserRegistered, CommandType.User.ToString(), request).ConfigureAwait(false);
+                this.logger.LogInfo("會員註冊結果", $"Result: {response.Data.Result} Email: {content.Email} Password: {content.Password} ConfirmPassword: {content.ConfirmPassword} IsValidatePassword: {isValidatePassword} FbToken: {fbToken} GoogleToken: {googleToken}", null);
+                switch (response.Data.Result)
+                {
+                    case (int)UserRegisteredResultType.EmailError:
+                    case (int)UserRegisteredResultType.PasswordError:
+                        return new ResponseResultDto()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.CreateFail,
+                            Content = "註冊失敗."
+                        };
+
+                    case (int)UserRegisteredResultType.Repeat:
+                        return new ResponseResultDto()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.Existed,
+                            Content = "此信箱已經被註冊."
+                        };
                 }
 
-                #endregion 檢查 Email 是否已被註冊
-
-                #region 建立 DB 會員資料
-
-                memberModel = this.CreateMemberModel(content.Email, content.Password, fbToken, googleToken);
-                bool dbCreateResult = await this.memberRepository.Create(memberModel).ConfigureAwait(false);
-                if (!dbCreateResult)
-                {
-                    this.logger.LogWarn("會員註冊結果", $"Result: DB 建立資料失敗 Email: {content.Email} Password: {content.Password} ConfirmPassword: {content.ConfirmPassword} IsValidatePassword: {isValidatePassword} FbToken: {fbToken} GoogleToken: {googleToken}", null);
-                    return new ResponseResultDto()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.CreateFail,
-                        Content = "註冊失敗."
-                    };
-                }
-
-                #endregion 建立 DB 會員資料
+                #endregion 發送會員資料 to Server
 
                 #region 建立 Firebase 會員資料 (TODO)
 

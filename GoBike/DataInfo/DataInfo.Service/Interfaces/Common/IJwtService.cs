@@ -1,5 +1,5 @@
-﻿using DataInfo.Service.Models.Common.Data;
-using DataInfo.Service.Models.Response;
+﻿using DataInfo.Core.Models.Dto.Common;
+using DataInfo.Core.Models.Dto.Response;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;

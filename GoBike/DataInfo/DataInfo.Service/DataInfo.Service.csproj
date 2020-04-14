@@ -19,8 +19,4 @@
     <ProjectReference Include="..\DataInfo.Repository\DataInfo.Repository.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Models\Member\Data\" />
-  </ItemGroup>
-
 </Project>

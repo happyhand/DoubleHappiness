@@ -1,8 +1,8 @@
 ﻿using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
 using DataInfo.Service.Interfaces.Common;
-using DataInfo.Service.Models.Common.Data;
-using DataInfo.Service.Models.Response;
+using DataInfo.Core.Models.Dto.Common;
+using DataInfo.Core.Models.Dto.Response;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using NLog;

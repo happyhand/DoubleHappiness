@@ -1,4 +1,4 @@
-﻿using DataInfo.Service.Models.Response;
+﻿using DataInfo.Core.Models.Dto.Response;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

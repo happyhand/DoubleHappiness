@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
-using DataInfo.Repository.Models.Member;
-using DataInfo.Service.Models.Member.Content;
-using DataInfo.Service.Models.Member.View;
+using DataInfo.Core.Models.Dao.Member;
+using DataInfo.Core.Models.Dto.Member.Content;
+using DataInfo.Core.Models.Dto.Member.View;
 using Newtonsoft.Json;
 
 namespace DataInfo.AutoMapperProfiles
