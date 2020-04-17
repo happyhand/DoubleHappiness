@@ -85,7 +85,7 @@ namespace DataInfo.Api.Controllers.Member
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = "手機綁定發生錯誤."
+                    Content = "更新資料發生錯誤."
                 });
             }
         }

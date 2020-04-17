@@ -32,7 +32,7 @@ namespace DataInfo.Api.Controllers.Common
             catch (Exception ex)
             {
                 this.logger.LogError("取得市區資料列表發生錯誤", string.Empty, ex);
-                return BadRequest("取得市區資料列表發生錯誤.");
+                return BadRequest("取得資料發生錯誤.");
             }
         }
     }

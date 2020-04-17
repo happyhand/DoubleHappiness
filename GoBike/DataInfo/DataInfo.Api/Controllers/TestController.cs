@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Threading.Tasks;
+using DataInfo.Core.Models.Enum;
 
 namespace DataInfo.Api.Controllers
 {
@@ -33,7 +34,7 @@ namespace DataInfo.Api.Controllers
             try
             {
                 this.logger.LogInfo("測試連線 Start", "1", null);
-                CommandData<MemberRegisterContent> result = await this.serverService.DoAction<MemberRegisterContent>(1001, AppSettingHelper.Appsetting.CommandServer.CommandType.Test, new MemberRegisterContent()
+                CommandData<MemberRegisterContent> result = await this.serverService.DoAction<MemberRegisterContent>(1001, CommandType.User.ToString(), new MemberRegisterContent()
                 {
                     Email = "Test@gmail.com",
                     Password = "123456",

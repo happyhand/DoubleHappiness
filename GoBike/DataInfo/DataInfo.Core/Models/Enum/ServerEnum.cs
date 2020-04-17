@@ -32,7 +32,12 @@
     public enum CommandType
     {
         /// <summary>
-        /// 未設定
+        /// 測試
+        /// </summary>
+        test = 0,
+
+        /// <summary>
+        /// 會員
         /// </summary>
         User = 1
     }

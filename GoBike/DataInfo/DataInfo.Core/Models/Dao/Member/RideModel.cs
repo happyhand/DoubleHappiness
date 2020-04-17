@@ -9,27 +9,27 @@ namespace DataInfo.Core.Models.Dao.Member
     public class RideModel
     {
         /// <summary>
-        /// Gets or sets Altitude
+        /// Gets or sets 騎乘坡度
         /// </summary>
         public decimal Altitude { get; set; }
 
         /// <summary>
-        /// Gets or sets CountyID
+        /// Gets or sets 鄉鎮地區
         /// </summary>
         public int CountyID { get; set; }
 
         /// <summary>
-        /// Gets or sets CreateDate
+        /// Gets or sets 建立日期
         /// </summary>
         public DateTime CreateDate { get; set; }
 
         /// <summary>
-        /// Gets or sets Distance
+        /// Gets or sets 騎乘距離
         /// </summary>
         public decimal Distance { get; set; }
 
         /// <summary>
-        /// Gets or sets Level
+        /// Gets or sets 等級
         /// </summary>
         public int Level { get; set; }
 
@@ -39,7 +39,7 @@ namespace DataInfo.Core.Models.Dao.Member
         public string MemberID { get; set; }
 
         /// <summary>
-        /// Gets or sets Photo
+        /// Gets or sets 封面圖片
         /// </summary>
         public string Photo { get; set; }
 
@@ -50,27 +50,27 @@ namespace DataInfo.Core.Models.Dao.Member
         public string RideID { get; set; }
 
         /// <summary>
-        /// Gets or sets Route
+        /// Gets or sets 騎乘路線
         /// </summary>
         public string Route { get; set; }
 
         /// <summary>
-        /// Gets or sets ShareContent
+        /// Gets or sets 分享內容
         /// </summary>
         public string ShareContent { get; set; }
 
         /// <summary>
-        /// Gets or sets SharedType
+        /// Gets or sets 分享類型
         /// </summary>
         public int SharedType { get; set; }
 
         /// <summary>
-        /// Gets or sets Time
+        /// Gets or sets 騎乘時間
         /// </summary>
         public long Time { get; set; }
 
         /// <summary>
-        /// Gets or sets Title
+        /// Gets or sets 標題
         /// </summary>
         public string Title { get; set; }
     }

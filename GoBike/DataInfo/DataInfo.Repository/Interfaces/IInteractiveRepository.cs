@@ -17,6 +17,14 @@ namespace DataInfo.Repository.Interfaces
         Task<bool> Create(InteractiveModel interactiveModel);
 
         /// <summary>
+        /// 刪除互動資料
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="targetID">targetID</param>
+        /// <returns>bool</returns>
+        Task<bool> Delete(string memberID, string targetID);
+
+        /// <summary>
         /// 取得會員的互動資料列表
         /// </summary>
         /// <param name="memberID">memberID</param>

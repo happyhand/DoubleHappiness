@@ -14,12 +14,12 @@ using System.Threading.Tasks;
 namespace DataInfo.Api.Controllers.Interactive
 {
     /// <summary>
-    /// 會員好友
+    /// 會員黑名單
     /// </summary>
     [Route("api/[controller]")]
     [Authorize]
     [ApiController]
-    public class FriendController : ApiController
+    public class BlackController : ApiController
     {
         /// <summary>
         /// InteractiveService
@@ -29,20 +29,20 @@ namespace DataInfo.Api.Controllers.Interactive
         /// <summary>
         /// logger
         /// </summary>
-        private readonly ILogger logger = LogManager.GetLogger("FriendController");
+        private readonly ILogger logger = LogManager.GetLogger("BlackController");
 
         /// <summary>
         /// 建構式
         /// </summary>
         /// <param name="jwtService">jwtService</param>
         /// <param name="InteractiveService">InteractiveService</param>
-        public FriendController(IJwtService jwtService, IInteractiveService InteractiveService) : base(jwtService)
+        public BlackController(IJwtService jwtService, IInteractiveService InteractiveService) : base(jwtService)
         {
             this.InteractiveService = InteractiveService;
         }
 
         /// <summary>
-        /// 會員好友 - 移除好友
+        /// 會員黑名單 - 移除黑名單
         /// </summary>
         /// <param name="content">content</param>
         /// <returns>IActionResult</returns>
@@ -54,7 +54,7 @@ namespace DataInfo.Api.Controllers.Interactive
             {
                 if (content == null)
                 {
-                    this.logger.LogWarn("會員請求移除好友失敗", $"Content: 無資料 MemberID: {memberID}", null);
+                    this.logger.LogWarn("會員請求移除黑名單失敗", $"Content: 無資料 MemberID: {memberID}", null);
                     return Ok(new ResponseResultDto()
                     {
                         Result = false,
@@ -63,13 +63,13 @@ namespace DataInfo.Api.Controllers.Interactive
                     });
                 }
 
-                this.logger.LogInfo("會員請求移除好友", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                this.logger.LogInfo("會員請求移除黑名單", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                 ResponseResultDto responseResult = await this.InteractiveService.DeleteInteractive(memberID, content).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員請求移除好友發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                this.logger.LogError("會員請求移除黑名單發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
                 return Ok(new ResponseResultDto()
                 {
                     Result = false,
@@ -80,7 +80,7 @@ namespace DataInfo.Api.Controllers.Interactive
         }
 
         /// <summary>
-        /// 會員好友 - 取得好友列表
+        /// 會員黑名單 - 取得黑名單列表
         /// </summary>
         /// <returns>IActionResult</returns>
         [HttpGet]
@@ -89,12 +89,12 @@ namespace DataInfo.Api.Controllers.Interactive
             string memberID = this.GetMemberID();
             try
             {
-                ResponseResultDto responseResult = await this.InteractiveService.GetFriendList(memberID).ConfigureAwait(false);
+                ResponseResultDto responseResult = await this.InteractiveService.GetBlackList(memberID).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員請求取得好友列表發生錯誤", $"MemberID: {memberID}", ex);
+                this.logger.LogError("會員請求取得黑名單列表發生錯誤", $"MemberID: {memberID}", ex);
                 return Ok(new ResponseResultDto()
                 {
                     Result = false,
@@ -105,7 +105,7 @@ namespace DataInfo.Api.Controllers.Interactive
         }
 
         /// <summary>
-        /// 會員好友 - 更新互動資料
+        /// 會員黑名單 - 更新互動資料
         /// </summary>
         /// <param name="content">content</param>
         /// <returns>IActionResult</returns>
@@ -127,7 +127,7 @@ namespace DataInfo.Api.Controllers.Interactive
                 }
 
                 this.logger.LogInfo("會員請求更新互動資料", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResultDto responseResult = await this.InteractiveService.UpdateInteractive(memberID, content, (int)InteractiveType.Friend).ConfigureAwait(false);
+                ResponseResultDto responseResult = await this.InteractiveService.UpdateInteractive(memberID, content, (int)InteractiveType.Black).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)

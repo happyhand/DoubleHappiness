@@ -16,7 +16,6 @@ namespace DataInfo.Core.Models.Dao.Member
         /// <summary>
         /// Gets or sets 狀態
         /// </summary>
-        [SugarColumn(IsPrimaryKey = true)]
         public int Status { get; set; }
 
         /// <summary>

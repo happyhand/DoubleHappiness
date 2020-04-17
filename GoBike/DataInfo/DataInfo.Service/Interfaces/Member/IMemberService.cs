@@ -1,5 +1,8 @@
-﻿using DataInfo.Core.Models.Dto.Member.Content;
+﻿using DataInfo.Core.Models.Dao.Member;
+using DataInfo.Core.Models.Dto.Member.Content;
+using DataInfo.Core.Models.Dto.Member.View;
 using DataInfo.Core.Models.Dto.Response;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace DataInfo.Service.Interfaces.Member
@@ -107,6 +110,22 @@ namespace DataInfo.Service.Interfaces.Member
         /// <param name="searchMemberID">searchMemberID</param>
         /// <returns>ResponseResultDto</returns>
         Task<ResponseResultDto> StrictSearch(MemberSearchContent content, string searchMemberID = null);
+
+        /// <summary>
+        /// 轉換為會員簡易資訊可視資料
+        /// </summary>
+        /// <param name="ignoreMemberIds">ignoreMemberIds</param>
+        /// <param name="memberModels">memberModels</param>
+        /// <returns>MemberSimpleInfoViewDtos</returns>
+        Task<IEnumerable<MemberSimpleInfoViewDto>> TransformMemberModel(IEnumerable<string> ignoreMemberIds, IEnumerable<MemberModel> memberModels);
+
+        /// <summary>
+        /// 轉換為會員簡易資訊可視資料
+        /// </summary>
+        /// <param name="ignoreMemberIds">ignoreMemberIds</param>
+        /// <param name="memberIDs">memberIDs</param>
+        /// <returns>MemberSimpleInfoViewDtos</returns>
+        Task<IEnumerable<MemberSimpleInfoViewDto>> TransformMemberModel(IEnumerable<string> ignoreMemberIds, IEnumerable<string> memberIDs);
 
         #endregion 會員資料
     }

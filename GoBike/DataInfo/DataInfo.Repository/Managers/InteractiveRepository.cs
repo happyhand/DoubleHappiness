@@ -32,7 +32,6 @@ namespace DataInfo.Repository.Managers
             try
             {
                 bool isSuccess = await this.Db.Insertable(interactiveModel)
-                                              .With(SqlWith.HoldLock)
                                               .With(SqlWith.UpdLock)
                                               .ExecuteCommandAsync() > 0;
                 this.logger.LogInfo("建立互動資料結果", $"Result: {isSuccess} InteractiveModel: {JsonConvert.SerializeObject(interactiveModel)}", null);
@@ -41,6 +40,30 @@ namespace DataInfo.Repository.Managers
             catch (Exception ex)
             {
                 this.logger.LogError("建立互動資料發生錯誤", $"InteractiveModel: {JsonConvert.SerializeObject(interactiveModel)}", ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 刪除互動資料
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="targetID">targetID</param>
+        /// <returns>bool</returns>
+        public async Task<bool> Delete(string memberID, string targetID)
+        {
+            try
+            {
+                bool isSuccess = await this.Db.Deleteable<InteractiveModel>()
+                                              .Where(data => data.CreatorID.Equals(memberID) && data.TargetID.Equals(targetID))
+                                              .With(SqlWith.RowLock)
+                                              .ExecuteCommandAsync() > 0;
+                this.logger.LogInfo("刪除互動資料結果", $"Result: {isSuccess} MemberID: {memberID} TargetID: {targetID}", null);
+                return isSuccess;
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("刪除互動資料發生錯誤", $"MemberID: {memberID} TargetID: {targetID}", ex);
                 return false;
             }
         }
@@ -165,7 +188,7 @@ namespace DataInfo.Repository.Managers
             try
             {
                 bool isSuccess = await this.Db.Updateable(interactiveModel)
-                                              .With(SqlWith.HoldLock)
+                                              .With(SqlWith.RowLock)
                                               .With(SqlWith.UpdLock)
                                               .ExecuteCommandAsync() > 0;
                 this.logger.LogInfo("更新互動資料結果", $"Result: {isSuccess} InteractiveModel: {JsonConvert.SerializeObject(interactiveModel)}", null);

@@ -1,15 +1,12 @@
 ﻿using AutoMapper;
-using DataInfo.Core.Applibs;
-using DataInfo.Core.Models.Enum;
 using DataInfo.Core.Extensions;
-using DataInfo.Repository.Interfaces;
 using DataInfo.Core.Models.Dao.Member;
-using DataInfo.Service.Interfaces.Member;
 using DataInfo.Core.Models.Dto.Member.Content;
 using DataInfo.Core.Models.Dto.Member.View;
 using DataInfo.Core.Models.Dto.Response;
+using DataInfo.Repository.Interfaces;
+using DataInfo.Service.Interfaces.Member;
 using FluentValidation.Results;
-using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -44,6 +41,11 @@ namespace DataInfo.Service.Managers.Member
         protected readonly IMemberRepository memberRepository;
 
         /// <summary>
+        /// memberService
+        /// </summary>
+        protected readonly IMemberService memberService;
+
+        /// <summary>
         /// redisRepository
         /// </summary>
         protected readonly IRedisRepository redisRepository;
@@ -52,39 +54,110 @@ namespace DataInfo.Service.Managers.Member
         /// 建構式
         /// </summary>
         /// <param name="mapper">mapper</param>
+        /// <param name="memberService">memberService</param>
         /// <param name="memberRepository">memberRepository</param>
         /// <param name="interactiveRepository">interactiveRepository</param>
         /// <param name="redisRepository">redisRepository</param>
-        public InteractiveService(IMapper mapper, IMemberRepository memberRepository, IInteractiveRepository interactiveRepository, IRedisRepository redisRepository)
+        public InteractiveService(IMapper mapper, IMemberService memberService, IMemberRepository memberRepository, IInteractiveRepository interactiveRepository, IRedisRepository redisRepository)
         {
             this.mapper = mapper;
+            this.memberService = memberService;
             this.memberRepository = memberRepository;
             this.interactiveRepository = interactiveRepository;
             this.redisRepository = redisRepository;
         }
 
         /// <summary>
-        /// 轉換為會員簡易資訊可視資料
+        /// 刪除互動資料
         /// </summary>
-        /// <param name="memberIDs">memberIDs</param>
-        /// <returns>MemberSimpleInfoViewDtos</returns>
-        private async Task<IEnumerable<MemberSimpleInfoViewDto>> TransformMemberModel(IEnumerable<string> memberIDs)
+        /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
+        /// <returns>ResponseResultDto</returns>
+        public async Task<ResponseResultDto> DeleteInteractive(string memberID, InteractiveContent content)
         {
-            this.logger.LogInfo("轉換為會員簡易資訊可視資料", $"MemberIDs: {JsonConvert.SerializeObject(memberIDs)}", null);
-            List<MemberSimpleInfoViewDto> memberSimpleInfoViewDtos = new List<MemberSimpleInfoViewDto>();
-            if (memberIDs.Any())
+            try
             {
-                IEnumerable<MemberModel> memberModels = await this.memberRepository.Get(memberIDs).ConfigureAwait(false);
-                foreach (MemberModel memberModel in memberModels)
-                {
-                    string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{AppSettingHelper.Appsetting.Redis.Flag.LastLogin}-{memberModel.MemberID}";
-                    MemberSimpleInfoViewDto memberSimpleInfoViewDto = this.mapper.Map<MemberSimpleInfoViewDto>(memberModel);
-                    memberSimpleInfoViewDto.OnlineType = await this.redisRepository.IsExist(cacheKey).ConfigureAwait(false) ? (int)OnlineStatusType.Online : (int)OnlineStatusType.Offline;
-                    memberSimpleInfoViewDtos.Add(memberSimpleInfoViewDto);
-                }
-            }
+                #region 驗證資料
 
-            return memberSimpleInfoViewDtos;
+                InteractiveContentValidator interactiveContentValidator = new InteractiveContentValidator();
+                ValidationResult validationResult = interactiveContentValidator.Validate(content);
+                if (!validationResult.IsValid)
+                {
+                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
+                    this.logger.LogWarn("刪除互動資料結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} TargetID: {content.TargetID}", null);
+                    return new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.InputError,
+                        Content = errorMessgae
+                    };
+                }
+
+                #endregion 驗證資料
+
+                #region 刪除互動資料
+
+                bool result = await this.interactiveRepository.Delete(memberID, content.TargetID).ConfigureAwait(false);
+                if (!result)
+                {
+                    return new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.DeleteFail,
+                        Content = "更新資料失敗."
+                    };
+                }
+
+                return new ResponseResultDto()
+                {
+                    Result = true,
+                    ResultCode = (int)ResponseResultType.Success,
+                    Content = "更新資料成功."
+                };
+
+                #endregion 刪除互動資料
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("刪除互動資料發生錯誤", $"MemberID: {memberID} TargetID: {content.TargetID}", ex);
+                return new ResponseResultDto()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = "更新資料發生錯誤."
+                };
+            }
+        }
+
+        /// <summary>
+        /// 取得黑名單列表
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>ResponseResultDto</returns>
+        public async Task<ResponseResultDto> GetBlackList(string memberID)
+        {
+            try
+            {
+                IEnumerable<InteractiveModel> blackList = await this.interactiveRepository.GetBlackList(memberID).ConfigureAwait(false);
+                IEnumerable<string> memberIDs = blackList.Select(data => data.TargetID);
+                IEnumerable<MemberSimpleInfoViewDto> memberSimpleInfoViewDtos = await this.memberService.TransformMemberModel(null, memberIDs).ConfigureAwait(false);
+                return new ResponseResultDto()
+                {
+                    Result = true,
+                    ResultCode = (int)ResponseResultType.Success,
+                    Content = memberSimpleInfoViewDtos
+                };
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得黑名單列表發生錯誤", $"MemberID: {memberID}", ex);
+                return new ResponseResultDto()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = "取得資料發生錯誤."
+                };
+            }
         }
 
         /// <summary>
@@ -104,8 +177,8 @@ namespace DataInfo.Service.Managers.Member
                                                                .Select(data => data.CreatorID);
                 List<IEnumerable<MemberSimpleInfoViewDto>> memberSimpleInfoViewDtos = new List<IEnumerable<MemberSimpleInfoViewDto>>
                 {
-                    await this.TransformMemberModel(targetIDsOfFriendList).ConfigureAwait(false),
-                    await this.TransformMemberModel(creatorIDsOfBeFriendList).ConfigureAwait(false)
+                    await this.memberService.TransformMemberModel(null, targetIDsOfFriendList).ConfigureAwait(false),
+                    await this.memberService.TransformMemberModel(null, creatorIDsOfBeFriendList).ConfigureAwait(false)
                 };
                 return new ResponseResultDto()
                 {

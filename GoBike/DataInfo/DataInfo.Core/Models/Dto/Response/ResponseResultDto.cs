@@ -31,14 +31,19 @@
         UpdateFail = 904,
 
         /// <summary>
+        /// 刪除失敗
+        /// </summary>
+        DeleteFail = 905,
+
+        /// <summary>
         /// 拒絕訪問
         /// </summary>
-        DenyAccess = 905,
+        DenyAccess = 906,
 
         /// <summary>
         /// 不存在
         /// </summary>
-        Missed = 906,
+        Missed = 907,
 
         /// <summary>
         /// 成功

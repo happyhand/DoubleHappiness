@@ -278,25 +278,14 @@ namespace DataInfo.Core.Applibs
         public class CommandServerSetting
         {
             /// <summary>
-            /// Gets or sets CommandType
-            /// </summary>
-            public CommandTypeSetting CommandType { get; set; }
-
-            /// <summary>
             /// Gets or sets ConnectionStrings
             /// </summary>
             public string ConnectionStrings { get; set; }
-        }
 
-        /// <summary>
-        /// CommandTypeSetting
-        /// </summary>
-        public class CommandTypeSetting
-        {
             /// <summary>
-            /// Gets or sets Test
+            /// Gets or sets TimeOut
             /// </summary>
-            public string Test { get; set; }
+            public int TimeOut { get; set; }
         }
 
         #endregion Command Server 設定資料

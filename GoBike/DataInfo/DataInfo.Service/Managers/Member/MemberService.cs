@@ -1,22 +1,19 @@
 ﻿using AutoMapper;
 using DataInfo.Core.Applibs;
-using DataInfo.Core.Models.Enum;
 using DataInfo.Core.Extensions;
-using DataInfo.Core.Models.Dto.Member.Request;
-using DataInfo.Core.Models.Dto.Member.Response;
-
-using DataInfo.Core.Models.Enum;
-
-using DataInfo.Repository.Interfaces;
 using DataInfo.Core.Models.Dao.Member;
-using DataInfo.Service.Interfaces.Common;
-using DataInfo.Service.Interfaces.Member;
-using DataInfo.Service.Interfaces.Server;
 using DataInfo.Core.Models.Dto.Common;
 using DataInfo.Core.Models.Dto.Member.Content;
+using DataInfo.Core.Models.Dto.Member.Request;
+using DataInfo.Core.Models.Dto.Member.Response;
 using DataInfo.Core.Models.Dto.Member.View;
 using DataInfo.Core.Models.Dto.Response;
 using DataInfo.Core.Models.Dto.Server;
+using DataInfo.Core.Models.Enum;
+using DataInfo.Repository.Interfaces;
+using DataInfo.Service.Interfaces.Common;
+using DataInfo.Service.Interfaces.Member;
+using DataInfo.Service.Interfaces.Server;
 using FluentValidation.Results;
 using Newtonsoft.Json;
 using NLog;
@@ -146,7 +143,7 @@ namespace DataInfo.Service.Managers.Member
                     {
                         Result = true,
                         ResultCode = (int)ResponseResultType.Success,
-                        Content = "保持在線成功."
+                        Content = "更新資料成功."
                     };
                 }
 
@@ -154,7 +151,7 @@ namespace DataInfo.Service.Managers.Member
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UpdateFail,
-                    Content = "保持在線失敗."
+                    Content = "更新資料失敗."
                 };
             }
             catch (Exception ex)
@@ -164,7 +161,7 @@ namespace DataInfo.Service.Managers.Member
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = "保持在線發生錯誤."
+                    Content = "更新資料發生錯誤."
                 };
             }
         }
@@ -309,6 +306,17 @@ namespace DataInfo.Service.Managers.Member
                 };
 
                 CommandData<MemberRegisterResponseDto> response = await this.serverService.DoAction<MemberRegisterResponseDto>((int)CommandIDType.UserRegistered, CommandType.User.ToString(), request).ConfigureAwait(false);
+                if (response == null)
+                {
+                    this.logger.LogInfo("會員註冊結果", $"Result: 後端無回覆資料 Email: {content.Email} Password: {content.Password} ConfirmPassword: {content.ConfirmPassword} IsValidatePassword: {isValidatePassword} FbToken: {fbToken} GoogleToken: {googleToken}", null);
+                    return new ResponseResultDto()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.UnknownError,
+                        Content = "註冊發生錯誤."
+                    };
+                }
+
                 this.logger.LogInfo("會員註冊結果", $"Result: {response.Data.Result} Email: {content.Email} Password: {content.Password} ConfirmPassword: {content.ConfirmPassword} IsValidatePassword: {isValidatePassword} FbToken: {fbToken} GoogleToken: {googleToken}", null);
                 switch (response.Data.Result)
                 {
@@ -686,7 +694,7 @@ namespace DataInfo.Service.Managers.Member
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.DenyAccess,
-                    Content = "編輯資訊發生錯誤."
+                    Content = "更新資料發生錯誤."
                 };
             }
         }
@@ -758,7 +766,7 @@ namespace DataInfo.Service.Managers.Member
                 {
                     Result = true,
                     ResultCode = (int)ResponseResultType.Success,
-                    Content = "修改密碼成功."
+                    Content = "更新資料成功."
                 };
             }
             catch (Exception ex)
@@ -768,7 +776,7 @@ namespace DataInfo.Service.Managers.Member
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = "修改密碼發生錯誤."
+                    Content = "更新資料發生錯誤."
                 };
             }
         }
@@ -801,23 +809,9 @@ namespace DataInfo.Service.Managers.Member
 
                 #endregion 驗證資料
 
+                string[] ignoreMemberIds = new string[] { searchMemberID };
                 IEnumerable<MemberModel> memberModels = await this.memberRepository.Get(content.SearchKey, true);
-                List<MemberSimpleInfoViewDto> memberSimpleInfoViewDtos = new List<MemberSimpleInfoViewDto>();
-                foreach (MemberModel memberModel in memberModels)
-                {
-                    //// 略過會員本人資料
-                    if (memberModel.MemberID.Equals(searchMemberID))
-                    {
-                        continue;
-                    }
-
-                    //// TODO 待檢驗其他會員是否同意被檢閱資料
-
-                    string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{AppSettingHelper.Appsetting.Redis.Flag.LastLogin}-{memberModel.MemberID}";
-                    MemberSimpleInfoViewDto memberSimpleInfoViewDto = this.mapper.Map<MemberSimpleInfoViewDto>(memberModel);
-                    memberSimpleInfoViewDto.OnlineType = await this.redisRepository.IsExist(cacheKey).ConfigureAwait(false) ? (int)OnlineStatusType.Online : (int)OnlineStatusType.Offline;
-                    memberSimpleInfoViewDtos.Add(memberSimpleInfoViewDto);
-                }
+                IEnumerable<MemberSimpleInfoViewDto> memberSimpleInfoViewDtos = await this.TransformMemberModel(ignoreMemberIds, memberModels).ConfigureAwait(false);
 
                 return new ResponseResultDto()
                 {
@@ -833,7 +827,7 @@ namespace DataInfo.Service.Managers.Member
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.DenyAccess,
-                    Content = "搜尋會員發生錯誤."
+                    Content = "取得資料發生錯誤."
                 };
             }
         }
@@ -937,7 +931,7 @@ namespace DataInfo.Service.Managers.Member
                 {
                     Result = true,
                     ResultCode = (int)ResponseResultType.Success,
-                    Content = "手機綁定成功."
+                    Content = "更新資料成功."
                 };
             }
             catch (Exception ex)
@@ -947,7 +941,7 @@ namespace DataInfo.Service.Managers.Member
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = "手機綁定發生錯誤."
+                    Content = "更新資料發生錯誤."
                 };
             }
         }
@@ -1053,7 +1047,7 @@ namespace DataInfo.Service.Managers.Member
                 {
                     Result = true,
                     ResultCode = (int)ResponseResultType.Success,
-                    Content = "重置密碼成功."
+                    Content = "更新資料成功."
                 };
             }
             catch (Exception ex)
@@ -1063,7 +1057,7 @@ namespace DataInfo.Service.Managers.Member
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = "重置密碼發生錯誤."
+                    Content = "更新資料發生錯誤."
                 };
             }
         }
@@ -1301,13 +1295,13 @@ namespace DataInfo.Service.Managers.Member
                 }
 
                 //// TODO 待檢驗其他會員是否同意被檢閱資料
-                MemberSimpleInfoViewDto memberSimpleInfoViewDto = this.mapper.Map<MemberSimpleInfoViewDto>(memberModel);
-                memberSimpleInfoViewDto.OnlineType = await onlineResult.ConfigureAwait(false) ? (int)OnlineStatusType.Online : (int)OnlineStatusType.Offline;
+                MemberModel[] memberModels = new MemberModel[] { memberModel };
+                IEnumerable<MemberSimpleInfoViewDto> memberSimpleInfoViewDtos = await this.TransformMemberModel(null, memberModels).ConfigureAwait(false);
                 return new ResponseResultDto()
                 {
                     Result = true,
                     ResultCode = (int)ResponseResultType.Success,
-                    Content = memberSimpleInfoViewDto //// 其他會員資料以簡易顯示
+                    Content = memberSimpleInfoViewDtos.FirstOrDefault() //// 其他會員資料以簡易顯示
                 };
 
                 #endregion 取得其他會員資料
@@ -1319,9 +1313,60 @@ namespace DataInfo.Service.Managers.Member
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.DenyAccess,
-                    Content = "搜尋會員發生錯誤."
+                    Content = "取得資料發生錯誤."
                 };
             }
+        }
+
+        /// <summary>
+        /// 轉換為會員簡易資訊可視資料
+        /// </summary>
+        /// <param name="ignoreMemberIds">ignoreMemberIds</param>
+        /// <param name="memberIDs">memberIDs</param>
+        /// <returns>MemberSimpleInfoViewDtos</returns>
+        public async Task<IEnumerable<MemberSimpleInfoViewDto>> TransformMemberModel(IEnumerable<string> ignoreMemberIds, IEnumerable<string> memberIDs)
+        {
+            if (memberIDs.Any())
+            {
+                IEnumerable<MemberModel> memberModels = await this.memberRepository.Get(memberIDs).ConfigureAwait(false);
+                return await this.TransformMemberModel(ignoreMemberIds, memberModels).ConfigureAwait(false);
+            }
+            else
+            {
+                return new List<MemberSimpleInfoViewDto>();
+            }
+        }
+
+        /// <summary>
+        /// 轉換為會員簡易資訊可視資料
+        /// </summary>
+        /// <param name="ignoreMemberIds">ignoreMemberIds</param>
+        /// <param name="memberModels">memberModels</param>
+        /// <returns>MemberSimpleInfoViewDtos</returns>
+        public async Task<IEnumerable<MemberSimpleInfoViewDto>> TransformMemberModel(IEnumerable<string> ignoreMemberIds, IEnumerable<MemberModel> memberModels)
+        {
+            this.logger.LogInfo("轉換為會員簡易資訊可視資料", $"IgnoreMemberIds: {JsonConvert.SerializeObject(ignoreMemberIds)} MemberModels: {JsonConvert.SerializeObject(memberModels)}", null);
+            List<MemberSimpleInfoViewDto> memberSimpleInfoViewDtos = new List<MemberSimpleInfoViewDto>();
+            if (memberModels.Any())
+            {
+                foreach (MemberModel memberModel in memberModels)
+                {
+                    //// 略過會員本人資料
+                    if (ignoreMemberIds != null && ignoreMemberIds.Contains(memberModel.MemberID))
+                    {
+                        continue;
+                    }
+
+                    //// TODO 待檢驗其他會員是否同意被檢閱資料
+
+                    string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{AppSettingHelper.Appsetting.Redis.Flag.LastLogin}-{memberModel.MemberID}";
+                    MemberSimpleInfoViewDto memberSimpleInfoViewDto = this.mapper.Map<MemberSimpleInfoViewDto>(memberModel);
+                    memberSimpleInfoViewDto.OnlineType = await this.redisRepository.IsExist(cacheKey).ConfigureAwait(false) ? (int)OnlineStatusType.Online : (int)OnlineStatusType.Offline;
+                    memberSimpleInfoViewDtos.Add(memberSimpleInfoViewDto);
+                }
+            }
+
+            return memberSimpleInfoViewDtos;
         }
 
         #endregion 會員資料
