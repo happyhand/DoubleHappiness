@@ -26,7 +26,7 @@ namespace DataInfo.Service.Managers.Common
         /// </summary>
         /// <param name="imgBase64s">imgBase64s</param>
         /// <returns>ResponseResultDto</returns>
-        public async Task<ResponseResultDto> UploadImages(IEnumerable<string> imgBase64s)
+        public async Task<ResponseResult> UploadImages(IEnumerable<string> imgBase64s)
         {
             try
             {
@@ -34,7 +34,7 @@ namespace DataInfo.Service.Managers.Common
                 if (!httpResponseMessage.IsSuccessStatusCode)
                 {
                     this.logger.LogWarn("上傳圖片結果", $"Result: 上傳圖片失敗 ImgBase64s: {JsonConvert.SerializeObject(imgBase64s)}", null);
-                    return new ResponseResultDto()
+                    return new ResponseResult()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.InputError,
@@ -42,7 +42,7 @@ namespace DataInfo.Service.Managers.Common
                     };
                 }
 
-                return new ResponseResultDto()
+                return new ResponseResult()
                 {
                     Result = true,
                     ResultCode = (int)ResponseResultType.Success,
@@ -52,7 +52,7 @@ namespace DataInfo.Service.Managers.Common
             catch (Exception ex)
             {
                 this.logger.LogError("上傳圖片發生錯誤", $"ImgBase64s: {JsonConvert.SerializeObject(imgBase64s)}", ex);
-                return new ResponseResultDto()
+                return new ResponseResult()
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,

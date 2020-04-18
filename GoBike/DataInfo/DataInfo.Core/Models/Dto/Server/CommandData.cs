@@ -4,7 +4,7 @@
     /// 後端指令資料
     /// </summary>
     /// <typeparam name="T">T</typeparam>
-    public class CommandDto<T>
+    public class CommandData<T>
     {
         /// <summary>
         /// Gets or sets CmdID

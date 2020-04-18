@@ -48,13 +48,13 @@ namespace DataInfo.Api.Controllers.Member
             string memberID = this.GetMemberID();
             try
             {
-                ResponseResultDto responseResult = await this.memberService.KeepOnline(memberID).ConfigureAwait(false);
+                ResponseResult responseResult = await this.memberService.KeepOnline(memberID).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求保持在線發生錯誤", $"MemberID: {memberID}", ex);
-                return Ok(new ResponseResultDto()
+                return Ok(new ResponseResult()
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,

@@ -3,7 +3,7 @@
     /// <summary>
     /// 會員登入回應客端資料
     /// </summary>
-    public class MemberLoginViewDto
+    public class MemberLoginView
     {
         /// <summary>
         /// Gets or sets Token

@@ -23,7 +23,6 @@ namespace DataInfo.Service.Managers.Team
         /// </summary>
         protected readonly IMapper mapper;
 
-
         /// <summary>
         /// 建構式
         /// </summary>
@@ -33,7 +32,7 @@ namespace DataInfo.Service.Managers.Team
             this.mapper = mapper;
         }
 
-        //#region 車隊資料
+        #region 車隊資料
 
         ///// <summary>
         ///// 建立車隊
@@ -452,6 +451,6 @@ namespace DataInfo.Service.Managers.Team
         //    return string.Empty;
         //}
 
-        //#endregion 車隊資料
+        #endregion 車隊資料
     }
 }

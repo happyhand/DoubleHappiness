@@ -55,7 +55,7 @@ namespace DataInfo.Api.Controllers.Interactive
                 if (content == null)
                 {
                     this.logger.LogWarn("會員請求移除黑名單失敗", $"Content: 無資料 MemberID: {memberID}", null);
-                    return Ok(new ResponseResultDto()
+                    return Ok(new ResponseResult()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.InputError,
@@ -64,13 +64,13 @@ namespace DataInfo.Api.Controllers.Interactive
                 }
 
                 this.logger.LogInfo("會員請求移除黑名單", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResultDto responseResult = await this.InteractiveService.DeleteInteractive(memberID, content).ConfigureAwait(false);
+                ResponseResult responseResult = await this.InteractiveService.DeleteInteractive(memberID, content).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求移除黑名單發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
-                return Ok(new ResponseResultDto()
+                return Ok(new ResponseResult()
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
@@ -89,13 +89,13 @@ namespace DataInfo.Api.Controllers.Interactive
             string memberID = this.GetMemberID();
             try
             {
-                ResponseResultDto responseResult = await this.InteractiveService.GetBlackList(memberID).ConfigureAwait(false);
+                ResponseResult responseResult = await this.InteractiveService.GetBlackList(memberID).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求取得黑名單列表發生錯誤", $"MemberID: {memberID}", ex);
-                return Ok(new ResponseResultDto()
+                return Ok(new ResponseResult()
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
@@ -118,7 +118,7 @@ namespace DataInfo.Api.Controllers.Interactive
                 if (content == null)
                 {
                     this.logger.LogWarn("會員請求更新互動資料失敗", $"Content: 無資料 MemberID: {memberID}", null);
-                    return Ok(new ResponseResultDto()
+                    return Ok(new ResponseResult()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.InputError,
@@ -127,13 +127,13 @@ namespace DataInfo.Api.Controllers.Interactive
                 }
 
                 this.logger.LogInfo("會員請求更新互動資料", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResultDto responseResult = await this.InteractiveService.UpdateInteractive(memberID, content, (int)InteractiveType.Black).ConfigureAwait(false);
+                ResponseResult responseResult = await this.InteractiveService.UpdateInteractive(memberID, content, (int)InteractiveType.Black).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求更新互動資料發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
-                return Ok(new ResponseResultDto()
+                return Ok(new ResponseResult()
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,

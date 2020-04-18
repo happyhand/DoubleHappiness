@@ -3,7 +3,7 @@
     /// <summary>
     /// 會員註冊請求後端資料
     /// </summary>
-    public class MemberRegisterRequestDto
+    public class MemberRegisterRequest
     {
         /// <summary>
         /// Gets or sets 確認密碼

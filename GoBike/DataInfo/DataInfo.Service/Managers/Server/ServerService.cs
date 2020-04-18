@@ -71,7 +71,7 @@ namespace DataInfo.Service.Managers.Server
         /// <param name="commandType">commandType</param>
         /// <param name="data">data</param>
         /// <returns>CommandData(T)</returns>
-        public async Task<CommandDto<T>> DoAction<T>(int commandID, string commandType, dynamic data)
+        public async Task<CommandData<T>> DoAction<T>(int commandID, string commandType, dynamic data)
         {
             try
             {
@@ -82,7 +82,7 @@ namespace DataInfo.Service.Managers.Server
                     //// 訂閱後端回覆
                     Task<string> result = this.Receive(client);
                     //// 發送後端指令
-                    CommandDto<dynamic> commandData = new CommandDto<dynamic>() { CmdID = commandID, Data = data };
+                    CommandData<dynamic> commandData = new CommandData<dynamic>() { CmdID = commandID, Data = data };
                     string sendDataJson = JsonConvert.SerializeObject(commandData);
                     ArraySegment<byte> array = new ArraySegment<byte>(Encoding.UTF8.GetBytes(sendDataJson));
                     client.SendAsync(array, WebSocketMessageType.Text, true, CancellationToken.None);
@@ -92,7 +92,7 @@ namespace DataInfo.Service.Managers.Server
                     //await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "1", CancellationToken.None).ConfigureAwait(false);
                     //client.Dispose();
 
-                    return JsonConvert.DeserializeObject<CommandDto<T>>(receiveDataJson);
+                    return JsonConvert.DeserializeObject<CommandData<T>>(receiveDataJson);
                 }
             }
             catch (Exception ex)

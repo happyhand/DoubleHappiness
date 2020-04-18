@@ -3,7 +3,7 @@
     /// <summary>
     /// 會員註冊後端回覆資料
     /// </summary>
-    public class MemberRegisterResponseDto
+    public class MemberRegisterResponse
     {
         /// <summary>
         /// Gets or sets 註冊結果

@@ -73,7 +73,7 @@ namespace DataInfo.Service.Managers.Member
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
         /// <returns>ResponseResultDto</returns>
-        public async Task<ResponseResultDto> DeleteInteractive(string memberID, InteractiveContent content)
+        public async Task<ResponseResult> DeleteInteractive(string memberID, InteractiveContent content)
         {
             try
             {
@@ -85,7 +85,7 @@ namespace DataInfo.Service.Managers.Member
                 {
                     string errorMessgae = validationResult.Errors[0].ErrorMessage;
                     this.logger.LogWarn("刪除互動資料結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} TargetID: {content.TargetID}", null);
-                    return new ResponseResultDto()
+                    return new ResponseResult()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.InputError,
@@ -100,7 +100,7 @@ namespace DataInfo.Service.Managers.Member
                 bool result = await this.interactiveRepository.Delete(memberID, content.TargetID).ConfigureAwait(false);
                 if (!result)
                 {
-                    return new ResponseResultDto()
+                    return new ResponseResult()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.DeleteFail,
@@ -108,7 +108,7 @@ namespace DataInfo.Service.Managers.Member
                     };
                 }
 
-                return new ResponseResultDto()
+                return new ResponseResult()
                 {
                     Result = true,
                     ResultCode = (int)ResponseResultType.Success,
@@ -120,7 +120,7 @@ namespace DataInfo.Service.Managers.Member
             catch (Exception ex)
             {
                 this.logger.LogError("刪除互動資料發生錯誤", $"MemberID: {memberID} TargetID: {content.TargetID}", ex);
-                return new ResponseResultDto()
+                return new ResponseResult()
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
@@ -134,24 +134,24 @@ namespace DataInfo.Service.Managers.Member
         /// </summary>
         /// <param name="memberID">memberID</param>
         /// <returns>ResponseResultDto</returns>
-        public async Task<ResponseResultDto> GetBlackList(string memberID)
+        public async Task<ResponseResult> GetBlackList(string memberID)
         {
             try
             {
                 IEnumerable<InteractiveModel> blackList = await this.interactiveRepository.GetBlackList(memberID).ConfigureAwait(false);
                 IEnumerable<string> memberIDs = blackList.Select(data => data.TargetID);
-                IEnumerable<MemberSimpleInfoViewDto> memberSimpleInfoViewDtos = await this.memberService.TransformMemberModel(null, memberIDs).ConfigureAwait(false);
-                return new ResponseResultDto()
+                IEnumerable<MemberSimpleInfoView> memberSimpleInfoViews = await this.memberService.TransformMemberModel(null, memberIDs).ConfigureAwait(false);
+                return new ResponseResult()
                 {
                     Result = true,
                     ResultCode = (int)ResponseResultType.Success,
-                    Content = memberSimpleInfoViewDtos
+                    Content = memberSimpleInfoViews
                 };
             }
             catch (Exception ex)
             {
                 this.logger.LogError("取得黑名單列表發生錯誤", $"MemberID: {memberID}", ex);
-                return new ResponseResultDto()
+                return new ResponseResult()
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
@@ -165,7 +165,7 @@ namespace DataInfo.Service.Managers.Member
         /// </summary>
         /// <param name="memberID">memberID</param>
         /// <returns>ResponseResultDto</returns>
-        public async Task<ResponseResultDto> GetFriendList(string memberID)
+        public async Task<ResponseResult> GetFriendList(string memberID)
         {
             try
             {
@@ -175,22 +175,22 @@ namespace DataInfo.Service.Managers.Member
                 IEnumerable<string> creatorIDsOfBeFriendList = interactiveModelsOfBeFriendList
                                                                .Where(data => !targetIDsOfFriendList.Contains(data.CreatorID)) //// 排除掉已經互為好友的會員
                                                                .Select(data => data.CreatorID);
-                List<IEnumerable<MemberSimpleInfoViewDto>> memberSimpleInfoViewDtos = new List<IEnumerable<MemberSimpleInfoViewDto>>
+                List<IEnumerable<MemberSimpleInfoView>> memberSimpleInfoViews = new List<IEnumerable<MemberSimpleInfoView>>
                 {
                     await this.memberService.TransformMemberModel(null, targetIDsOfFriendList).ConfigureAwait(false),
                     await this.memberService.TransformMemberModel(null, creatorIDsOfBeFriendList).ConfigureAwait(false)
                 };
-                return new ResponseResultDto()
+                return new ResponseResult()
                 {
                     Result = true,
                     ResultCode = (int)ResponseResultType.Success,
-                    Content = memberSimpleInfoViewDtos
+                    Content = memberSimpleInfoViews
                 };
             }
             catch (Exception ex)
             {
                 this.logger.LogError("取得好友列表發生錯誤", $"MemberID: {memberID}", ex);
-                return new ResponseResultDto()
+                return new ResponseResult()
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
@@ -206,7 +206,7 @@ namespace DataInfo.Service.Managers.Member
         /// <param name="content">content</param>
         /// <param name="status">status</param>
         /// <returns>ResponseResultDto</returns>
-        public async Task<ResponseResultDto> UpdateInteractive(string memberID, InteractiveContent content, int status)
+        public async Task<ResponseResult> UpdateInteractive(string memberID, InteractiveContent content, int status)
         {
             try
             {
@@ -218,7 +218,7 @@ namespace DataInfo.Service.Managers.Member
                 {
                     string errorMessgae = validationResult.Errors[0].ErrorMessage;
                     this.logger.LogWarn("更新互動資料結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} TargetID: {content.TargetID} Status: {status}", null);
-                    return new ResponseResultDto()
+                    return new ResponseResult()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.InputError,
@@ -229,7 +229,7 @@ namespace DataInfo.Service.Managers.Member
                 if (memberID.Equals(content.TargetID))
                 {
                     this.logger.LogWarn("更新互動資料結果", $"Result: 更新失敗，無法指定會員本身為好友 MemberID: {memberID} TargetID: {content.TargetID} Status: {status}", null);
-                    return new ResponseResultDto()
+                    return new ResponseResult()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.InputError,
@@ -245,7 +245,7 @@ namespace DataInfo.Service.Managers.Member
                 if (memberModel == null)
                 {
                     this.logger.LogWarn("更新互動資料結果", $"Result: 更新失敗，無會員資料 MemberID: {memberID} TargetID: {content.TargetID} Status: {status}", null);
-                    return new ResponseResultDto()
+                    return new ResponseResult()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.InputError,
@@ -257,7 +257,7 @@ namespace DataInfo.Service.Managers.Member
                 if (targetModel == null)
                 {
                     this.logger.LogWarn("更新互動資料結果", $"Result: 更新失敗，無目標資料 MemberID: {memberID} TargetID: {content.TargetID} Status: {status}", null);
-                    return new ResponseResultDto()
+                    return new ResponseResult()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.InputError,
@@ -284,7 +284,7 @@ namespace DataInfo.Service.Managers.Member
 
                 if (!result)
                 {
-                    return new ResponseResultDto()
+                    return new ResponseResult()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.UpdateFail,
@@ -294,7 +294,7 @@ namespace DataInfo.Service.Managers.Member
 
                 #endregion 新增或更新互動資料
 
-                return new ResponseResultDto()
+                return new ResponseResult()
                 {
                     Result = true,
                     ResultCode = (int)ResponseResultType.Success,
@@ -304,7 +304,7 @@ namespace DataInfo.Service.Managers.Member
             catch (Exception ex)
             {
                 this.logger.LogError("更新互動資料發生錯誤", $"MemberID: {memberID} TargetID: {content.TargetID} Status: {status}", ex);
-                return new ResponseResultDto()
+                return new ResponseResult()
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,

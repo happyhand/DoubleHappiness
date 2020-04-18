@@ -14,9 +14,9 @@ namespace DataInfo.Service.Interfaces.Common
         /// <summary>
         /// 生產 Token
         /// </summary>
-        /// <param name="jwtClaimsDto">jwtClaimsDto</param>
+        /// <param name="jwtClaims">jwtClaims</param>
         /// <returns>string</returns>
-        string GenerateToken(JwtClaimsDto jwtClaimsDto);
+        string GenerateToken(JwtClaims jwtClaims);
 
         /// <summary>
         /// 取得 Payload 指定欄位

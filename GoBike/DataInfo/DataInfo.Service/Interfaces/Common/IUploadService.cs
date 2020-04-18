@@ -14,6 +14,6 @@ namespace DataInfo.Service.Interfaces.Common
         /// </summary>
         /// <param name="imgBase64s">imgBase64s</param>
         /// <returns>ResponseResultDto</returns>
-        Task<ResponseResultDto> UploadImages(IEnumerable<string> imgBase64s);
+        Task<ResponseResult> UploadImages(IEnumerable<string> imgBase64s);
     }
 }

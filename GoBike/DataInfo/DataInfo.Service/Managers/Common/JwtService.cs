@@ -35,9 +35,9 @@ namespace DataInfo.Service.Managers.Common
         /// <summary>
         /// 生產 Token
         /// </summary>
-        /// <param name="jwtClaimsDto">jwtClaimsDto</param>
+        /// <param name="jwtClaims">jwtClaims</param>
         /// <returns>string</returns>
-        public string GenerateToken(JwtClaimsDto jwtClaimsDto)
+        public string GenerateToken(JwtClaims jwtClaims)
         {
             var issuer = AppSettingHelper.Appsetting.Jwt.Iss;
             var signKey = AppSettingHelper.Appsetting.Jwt.Secret;
@@ -68,7 +68,7 @@ namespace DataInfo.Service.Managers.Common
 
                 #region 新增自定義 Claim
 
-                new Claim(payloadKey, JsonConvert.SerializeObject(jwtClaimsDto))
+                new Claim(payloadKey, JsonConvert.SerializeObject(jwtClaims))
 
                 #endregion 新增自定義 Claim
             };
@@ -112,7 +112,7 @@ namespace DataInfo.Service.Managers.Common
             try
             {
                 string claimJson = user.Claims.Where(data => data.Type.Equals("Payload")).FirstOrDefault().Value;
-                JwtClaimsDto jwtClaimsDto = JsonConvert.DeserializeObject<JwtClaimsDto>(claimJson);
+                JwtClaims jwtClaimsDto = JsonConvert.DeserializeObject<JwtClaims>(claimJson);
                 return jwtClaimsDto.GetType().GetProperty(key).GetValue(jwtClaimsDto);
             }
             catch (Exception ex)

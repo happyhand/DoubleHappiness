@@ -95,7 +95,7 @@ namespace DataInfo.Service.Managers.Member
                     imgBase64s.Add(content.Photo);
                 }
 
-                ResponseResultDto uploadResponseResult = await this.uploadService.UploadImages(imgBase64s).ConfigureAwait(false);
+                ResponseResult uploadResponseResult = await this.uploadService.UploadImages(imgBase64s).ConfigureAwait(false);
                 if (!uploadResponseResult.Result)
                 {
                     return "上傳圖片失敗.";
@@ -136,7 +136,7 @@ namespace DataInfo.Service.Managers.Member
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
         /// <returns>ResponseResultDto</returns>
-        public async Task<ResponseResultDto> AddRideData(string memberID, RideInfoContent content)
+        public async Task<ResponseResult> AddRideData(string memberID, RideInfoContent content)
         {
             try
             {
@@ -148,7 +148,7 @@ namespace DataInfo.Service.Managers.Member
                 {
                     string errorMessgae = validationResult.Errors[0].ErrorMessage;
                     this.logger.LogWarn("新增騎乘資料結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                    return new ResponseResultDto()
+                    return new ResponseResult()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.InputError,
@@ -172,11 +172,11 @@ namespace DataInfo.Service.Managers.Member
 
                 List<string> imgBase64s = content.ShareContent.Select(data => data.ElementAt(1)).ToList();
                 imgBase64s.Add(content.Photo);
-                ResponseResultDto uploadResponseResult = await this.uploadService.UploadImages(imgBase64s).ConfigureAwait(false);
+                ResponseResult uploadResponseResult = await this.uploadService.UploadImages(imgBase64s).ConfigureAwait(false);
                 if (!uploadResponseResult.Result)
                 {
                     this.logger.LogWarn("新增騎乘資料結果", $"Result: 上傳圖片失敗 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                    return new ResponseResultDto()
+                    return new ResponseResult()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.InputError,
@@ -214,7 +214,7 @@ namespace DataInfo.Service.Managers.Member
                 this.logger.LogInfo("新增騎乘資料結果", $"Result: {isSuccess} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} RideModel: {JsonConvert.SerializeObject(rideModel)}", null);
                 if (!isSuccess)
                 {
-                    return new ResponseResultDto()
+                    return new ResponseResult()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.CreateFail,
@@ -222,7 +222,7 @@ namespace DataInfo.Service.Managers.Member
                     };
                 }
 
-                return new ResponseResultDto()
+                return new ResponseResult()
                 {
                     Result = true,
                     ResultCode = (int)ResponseResultType.Success,
@@ -234,7 +234,7 @@ namespace DataInfo.Service.Managers.Member
             catch (Exception ex)
             {
                 this.logger.LogError("新增騎乘資料發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
-                return new ResponseResultDto()
+                return new ResponseResult()
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
@@ -248,14 +248,14 @@ namespace DataInfo.Service.Managers.Member
         /// </summary>
         /// <param name="rideID">rideID</param>
         /// <returns>ResponseResultDto</returns>
-        public async Task<ResponseResultDto> GetRideData(string rideID)
+        public async Task<ResponseResult> GetRideData(string rideID)
         {
             try
             {
                 if (string.IsNullOrEmpty(rideID))
                 {
                     this.logger.LogWarn("取得騎乘資料失敗", $"Result: 騎乘編號無效", null);
-                    return new ResponseResultDto()
+                    return new ResponseResult()
                     {
                         Result = false,
                         Content = "騎乘編號無效."
@@ -266,23 +266,23 @@ namespace DataInfo.Service.Managers.Member
                 if (rideModel == null)
                 {
                     this.logger.LogWarn("取得騎乘資料失敗", $"Result: 無騎乘資料 RideID: {rideID}", null);
-                    return new ResponseResultDto()
+                    return new ResponseResult()
                     {
                         Result = false,
                         Content = "無騎乘資料."
                     };
                 }
 
-                return new ResponseResultDto()
+                return new ResponseResult()
                 {
                     Result = true,
-                    Content = this.mapper.Map<RideInfoViewDto>(rideModel) //// TODO 待轉換客端所需資料
+                    Content = this.mapper.Map<RideInfoView>(rideModel) //// TODO 待轉換客端所需資料
                 };
             }
             catch (Exception ex)
             {
                 this.logger.LogError("取得騎乘資料發生錯誤", $"RideID: {rideID}", ex);
-                return new ResponseResultDto()
+                return new ResponseResult()
                 {
                     Result = false,
                     Content = "取得資料發生錯誤."
@@ -295,14 +295,14 @@ namespace DataInfo.Service.Managers.Member
         /// </summary>
         /// <param name="memberID">memberID</param>
         /// <returns>ResponseResultDto</returns>
-        public async Task<ResponseResultDto> GetRideDataListOfMember(string memberID)
+        public async Task<ResponseResult> GetRideDataListOfMember(string memberID)
         {
             try
             {
                 if (string.IsNullOrEmpty(memberID))
                 {
                     this.logger.LogWarn("取得會員的騎乘資料列表失敗", $"Result: 會員編號無效", null);
-                    return new ResponseResultDto()
+                    return new ResponseResult()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.InputError,
@@ -311,17 +311,17 @@ namespace DataInfo.Service.Managers.Member
                 }
 
                 IEnumerable<RideModel> rideModels = await this.rideRepository.GetListOfMember(memberID);
-                return new ResponseResultDto()
+                return new ResponseResult()
                 {
                     Result = true,
                     ResultCode = (int)ResponseResultType.Success,
-                    Content = this.mapper.Map<IEnumerable<RideInfoViewDto>>(rideModels) //// TODO 待轉換客端所需資料
+                    Content = this.mapper.Map<IEnumerable<RideInfoView>>(rideModels) //// TODO 待轉換客端所需資料
                 };
             }
             catch (Exception ex)
             {
                 this.logger.LogError("取得會員的騎乘資料列表發生錯誤", $"MemberID: {memberID}", ex);
-                return new ResponseResultDto()
+                return new ResponseResult()
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,

@@ -51,7 +51,7 @@ namespace DataInfo.Api.Controllers.Member
                 if (content == null)
                 {
                     this.logger.LogWarn("會員請求註冊失敗", "Content: 無資料", null);
-                    return Ok(new ResponseResultDto()
+                    return Ok(new ResponseResult()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.InputError,
@@ -60,13 +60,13 @@ namespace DataInfo.Api.Controllers.Member
                 }
 
                 this.logger.LogInfo("會員請求註冊", $"Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResultDto responseResult = await memberService.Register(content, true, string.Empty, string.Empty).ConfigureAwait(false);
+                ResponseResult responseResult = await memberService.Register(content, true, string.Empty, string.Empty).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求註冊發生錯誤", $"Content: {JsonConvert.SerializeObject(content)}", ex);
-                return Ok(new ResponseResultDto()
+                return Ok(new ResponseResult()
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,

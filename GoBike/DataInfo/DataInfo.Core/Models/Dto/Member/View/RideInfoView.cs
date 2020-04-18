@@ -5,7 +5,7 @@ namespace DataInfo.Core.Models.Dto.Member.View
     /// <summary>
     /// 騎乘資訊回應客端資料
     /// </summary>
-    public class RideInfoViewDto
+    public class RideInfoView
     {
         /// <summary>
         /// Gets or sets Altitude

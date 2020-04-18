@@ -5,7 +5,7 @@ namespace DataInfo.Core.Models.Dto.Member.View
     /// <summary>
     /// 會員詳細資訊可視資料
     /// </summary>
-    public class MemberDetailInfoViewDto : MemberSimpleInfoViewDto
+    public class MemberDetailInfoView : MemberSimpleInfoView
     {
         /// <summary>
         /// Gets or sets 生日

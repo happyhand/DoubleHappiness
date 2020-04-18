@@ -5,7 +5,7 @@ namespace DataInfo.Core.Models.Dto.Member.View
     /// <summary>
     /// 會員簡易資訊可視資料
     /// </summary>
-    public class MemberSimpleInfoViewDto
+    public class MemberSimpleInfoView
     {
         /// <summary>
         /// Gets or sets 頭像路徑

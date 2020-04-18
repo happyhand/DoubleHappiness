@@ -16,6 +16,6 @@ namespace DataInfo.Service.Interfaces.Server
         /// <param name="commandType">commandType</param>
         /// <param name="data">data</param>
         /// <returns>CommandData(T)</returns>
-        Task<CommandDto<T>> DoAction<T>(int commandID, string commandType, dynamic data);
+        Task<CommandData<T>> DoAction<T>(int commandID, string commandType, dynamic data);
     }
 }

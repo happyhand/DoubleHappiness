@@ -19,14 +19,14 @@ namespace DataInfo.Service.Interfaces.Member
         /// </summary>
         /// <param name="memberID">memberID</param>
         /// <returns>ResponseResultDto</returns>
-        Task<ResponseResultDto> KeepOnline(string memberID);
+        Task<ResponseResult> KeepOnline(string memberID);
 
         /// <summary>
         /// 會員登入(一般登入)
         /// </summary>
         /// <param name="content">content</param>
         /// <returns>ResponseResultDto</returns>
-        Task<ResponseResultDto> Login(MemberLoginContent content);
+        Task<ResponseResult> Login(MemberLoginContent content);
 
         /// <summary>
         /// 會員註冊
@@ -36,14 +36,14 @@ namespace DataInfo.Service.Interfaces.Member
         /// <param name="fbToken">fbToken</param>
         /// <param name="googleToken">googleToken</param>
         /// <returns>ResponseResultDto</returns>
-        Task<ResponseResultDto> Register(MemberRegisterContent content, bool isValidatePassword, string fbToken, string googleToken);
+        Task<ResponseResult> Register(MemberRegisterContent content, bool isValidatePassword, string fbToken, string googleToken);
 
         /// <summary>
         /// 會員登入(重新登入)
         /// </summary>
         /// <param name="memberID">memberID</param>
         /// <returns>ResponseResultDto</returns>
-        Task<ResponseResultDto> Relogin(string memberID);
+        Task<ResponseResult> Relogin(string memberID);
 
         #endregion 註冊 \ 登入 \ 登出 \ 保持在線
 
@@ -55,7 +55,7 @@ namespace DataInfo.Service.Interfaces.Member
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
         /// <returns>ResponseResultDto</returns>
-        Task<ResponseResultDto> EditInfo(string memberID, MemberEditInfoContent content);
+        Task<ResponseResult> EditInfo(string memberID, MemberEditInfoContent content);
 
         /// <summary>
         /// 會員修改密碼
@@ -63,7 +63,7 @@ namespace DataInfo.Service.Interfaces.Member
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
         /// <returns>ResponseResultDto</returns>
-        Task<ResponseResultDto> EditPassword(string memberID, MemberEditPasswordContent content);
+        Task<ResponseResult> EditPassword(string memberID, MemberEditPasswordContent content);
 
         /// <summary>
         /// 搜尋會員(模糊比對)
@@ -71,7 +71,7 @@ namespace DataInfo.Service.Interfaces.Member
         /// <param name="content">content</param>
         /// <param name="searchMemberID">searchMemberID</param>
         /// <returns>ResponseResultDto</returns>
-        Task<ResponseResultDto> FuzzySearch(MemberSearchContent content, string searchMemberID);
+        Task<ResponseResult> FuzzySearch(MemberSearchContent content, string searchMemberID);
 
         /// <summary>
         /// 會員手機綁定
@@ -79,21 +79,21 @@ namespace DataInfo.Service.Interfaces.Member
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
         /// <returns>ResponseResultDto</returns>
-        Task<ResponseResultDto> MobileBind(string memberID, MemberMobileBindContent content);
+        Task<ResponseResult> MobileBind(string memberID, MemberMobileBindContent content);
 
         /// <summary>
         /// 重置會員密碼
         /// </summary>
         /// <param name="content">content</param>
         /// <returns>ResponseResultDto</returns>
-        Task<ResponseResultDto> ResetPassword(MemberForgetPasswordContent content);
+        Task<ResponseResult> ResetPassword(MemberForgetPasswordContent content);
 
         /// <summary>
         /// 發送會員忘記密碼驗證碼
         /// </summary>
         /// <param name="content">content</param>
         /// <returns>ResponseResultDto</returns>
-        Task<ResponseResultDto> SendForgetPasswordVerifierCode(MemberForgetPasswordContent content);
+        Task<ResponseResult> SendForgetPasswordVerifierCode(MemberForgetPasswordContent content);
 
         /// <summary>
         /// 發送會員手機綁定驗證碼
@@ -101,7 +101,7 @@ namespace DataInfo.Service.Interfaces.Member
         /// <param name="email">email</param>
         /// <param name="content">content</param>
         /// <returns>ResponseResultDto</returns>
-        Task<ResponseResultDto> SendMobileBindVerifierCode(string email, MemberMobileBindContent content);
+        Task<ResponseResult> SendMobileBindVerifierCode(string email, MemberMobileBindContent content);
 
         /// <summary>
         /// 搜尋會員(嚴格比對)
@@ -109,23 +109,23 @@ namespace DataInfo.Service.Interfaces.Member
         /// <param name="content">content</param>
         /// <param name="searchMemberID">searchMemberID</param>
         /// <returns>ResponseResultDto</returns>
-        Task<ResponseResultDto> StrictSearch(MemberSearchContent content, string searchMemberID = null);
+        Task<ResponseResult> StrictSearch(MemberSearchContent content, string searchMemberID = null);
 
         /// <summary>
         /// 轉換為會員簡易資訊可視資料
         /// </summary>
         /// <param name="ignoreMemberIds">ignoreMemberIds</param>
         /// <param name="memberModels">memberModels</param>
-        /// <returns>MemberSimpleInfoViewDtos</returns>
-        Task<IEnumerable<MemberSimpleInfoViewDto>> TransformMemberModel(IEnumerable<string> ignoreMemberIds, IEnumerable<MemberModel> memberModels);
+        /// <returns>MemberSimpleInfoViews</returns>
+        Task<IEnumerable<MemberSimpleInfoView>> TransformMemberModel(IEnumerable<string> ignoreMemberIds, IEnumerable<MemberModel> memberModels);
 
         /// <summary>
         /// 轉換為會員簡易資訊可視資料
         /// </summary>
         /// <param name="ignoreMemberIds">ignoreMemberIds</param>
         /// <param name="memberIDs">memberIDs</param>
-        /// <returns>MemberSimpleInfoViewDtos</returns>
-        Task<IEnumerable<MemberSimpleInfoViewDto>> TransformMemberModel(IEnumerable<string> ignoreMemberIds, IEnumerable<string> memberIDs);
+        /// <returns>MemberSimpleInfoViews</returns>
+        Task<IEnumerable<MemberSimpleInfoView>> TransformMemberModel(IEnumerable<string> ignoreMemberIds, IEnumerable<string> memberIDs);
 
         #endregion 會員資料
     }

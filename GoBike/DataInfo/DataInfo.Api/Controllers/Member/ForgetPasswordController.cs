@@ -51,7 +51,7 @@ namespace DataInfo.Api.Controllers.Member
                 if (content == null)
                 {
                     this.logger.LogWarn("會員請求重置密碼失敗", "Content: 無資料", null);
-                    return Ok(new ResponseResultDto()
+                    return Ok(new ResponseResult()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.InputError,
@@ -60,13 +60,13 @@ namespace DataInfo.Api.Controllers.Member
                 }
 
                 this.logger.LogInfo("會員請求重置密碼", $"Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResultDto responseResult = await this.memberService.ResetPassword(content).ConfigureAwait(false);
+                ResponseResult responseResult = await this.memberService.ResetPassword(content).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求重置密碼發生錯誤", $"Content: {JsonConvert.SerializeObject(content)}", ex);
-                return Ok(new ResponseResultDto()
+                return Ok(new ResponseResult()
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
@@ -88,7 +88,7 @@ namespace DataInfo.Api.Controllers.Member
                 if (content == null)
                 {
                     this.logger.LogWarn("會員請求發送忘記密碼驗證碼失敗", "Content: 無資料", null);
-                    return Ok(new ResponseResultDto()
+                    return Ok(new ResponseResult()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.InputError,
@@ -97,13 +97,13 @@ namespace DataInfo.Api.Controllers.Member
                 }
 
                 this.logger.LogInfo("會員請求發送忘記密碼驗證碼", $"Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResultDto responseResult = await this.memberService.SendForgetPasswordVerifierCode(content).ConfigureAwait(false);
+                ResponseResult responseResult = await this.memberService.SendForgetPasswordVerifierCode(content).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求發送忘記密碼驗證碼發生錯誤", $"Content: {JsonConvert.SerializeObject(content)}", ex);
-                return Ok(new ResponseResultDto()
+                return Ok(new ResponseResult()
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,

@@ -52,13 +52,13 @@ namespace DataInfo.Api.Controllers.Member
             try
             {
                 MemberSearchContent content = new MemberSearchContent() { SearchKey = memberID };
-                ResponseResultDto responseResult = await this.memberService.StrictSearch(content).ConfigureAwait(false);
+                ResponseResult responseResult = await this.memberService.StrictSearch(content).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求取得本身資料發生錯誤", $"MemberID: {memberID}", ex);
-                return Ok(new ResponseResultDto()
+                return Ok(new ResponseResult()
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
@@ -81,7 +81,7 @@ namespace DataInfo.Api.Controllers.Member
                 if (content == null)
                 {
                     this.logger.LogWarn("會員請求搜尋其他會員資料失敗", $"Content: 無資料 MemberID: {memberID}", null);
-                    return Ok(new ResponseResultDto()
+                    return Ok(new ResponseResult()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.InputError,
@@ -89,7 +89,7 @@ namespace DataInfo.Api.Controllers.Member
                     });
                 }
 
-                ResponseResultDto responseResult;
+                ResponseResult responseResult;
                 if (content.UseFuzzySearch == (int)SearchType.Fuzzy)
                 {
                     responseResult = await this.memberService.FuzzySearch(content, memberID).ConfigureAwait(false);
@@ -104,7 +104,7 @@ namespace DataInfo.Api.Controllers.Member
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求搜尋其他會員資料發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
-                return Ok(new ResponseResultDto()
+                return Ok(new ResponseResult()
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,

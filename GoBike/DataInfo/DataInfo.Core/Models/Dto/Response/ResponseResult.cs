@@ -54,7 +54,7 @@
     /// <summary>
     /// 回應資料
     /// </summary>
-    public class ResponseResultDto
+    public class ResponseResult
     {
         /// <summary>
         /// Gets or sets Content

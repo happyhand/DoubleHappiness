@@ -34,7 +34,7 @@ namespace DataInfo.Api.Controllers
             try
             {
                 this.logger.LogInfo("測試連線 Start", "1", null);
-                CommandDto<MemberRegisterContent> result = await this.serverService.DoAction<MemberRegisterContent>(1001, CommandType.User.ToString(), new MemberRegisterContent()
+                CommandData<MemberRegisterContent> result = await this.serverService.DoAction<MemberRegisterContent>(1001, CommandType.User.ToString(), new MemberRegisterContent()
                 {
                     Email = "Test@gmail.com",
                     Password = "123456",
@@ -43,7 +43,7 @@ namespace DataInfo.Api.Controllers
                 this.logger.LogInfo("測試連線 Start", $"Result: {JsonConvert.SerializeObject(result)}", null);
                 this.logger.LogInfo("測試連線 Start", $"getContent: {JsonConvert.SerializeObject(result.Data)}", null);
 
-                ResponseResultDto responseResult = new ResponseResultDto()
+                ResponseResult responseResult = new ResponseResult()
                 {
                     Result = true,
                     ResultCode = (int)ResponseResultType.Success,

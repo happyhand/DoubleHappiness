@@ -3,7 +3,7 @@
     /// <summary>
     /// 會員登入請求後端資料
     /// </summary>
-    public class MemberLoginRequestDto
+    public class MemberLoginRequest
     {
         /// <summary>
         /// Gets or sets 信箱

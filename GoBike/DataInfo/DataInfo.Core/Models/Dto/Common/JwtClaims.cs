@@ -3,7 +3,7 @@
     /// <summary>
     /// Jwy Claims 資料
     /// </summary>
-    public class JwtClaimsDto
+    public class JwtClaims
     {
         /// <summary>
         /// Gets or sets Avatar

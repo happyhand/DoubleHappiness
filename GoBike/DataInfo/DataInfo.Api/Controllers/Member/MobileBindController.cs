@@ -55,7 +55,7 @@ namespace DataInfo.Api.Controllers.Member
                 if (content == null)
                 {
                     this.logger.LogWarn("會員請求手機綁定失敗", $"Result: 無資料內容 MemberID: {memberID} Mobile: {mobile} ", null);
-                    return Ok(new ResponseResultDto()
+                    return Ok(new ResponseResult()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.InputError,
@@ -66,7 +66,7 @@ namespace DataInfo.Api.Controllers.Member
                 if (!string.IsNullOrEmpty(mobile))
                 {
                     this.logger.LogWarn("會員請求手機綁定失敗", $"Result: 已綁定手機 MemberID: {memberID} Mobile: {mobile} Content: {JsonConvert.SerializeObject(content)}", null);
-                    return Ok(new ResponseResultDto()
+                    return Ok(new ResponseResult()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.DenyAccess,
@@ -75,13 +75,13 @@ namespace DataInfo.Api.Controllers.Member
                 }
 
                 this.logger.LogInfo("會員請求手機綁定", $"MemberID: {memberID} Mobile: {mobile} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResultDto responseResult = await this.memberService.MobileBind(memberID, content).ConfigureAwait(false);
+                ResponseResult responseResult = await this.memberService.MobileBind(memberID, content).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求手機綁定發生錯誤", $"MemberID: {memberID} Mobile: {mobile} Content: {JsonConvert.SerializeObject(content)}", ex);
-                return Ok(new ResponseResultDto()
+                return Ok(new ResponseResult()
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
@@ -105,7 +105,7 @@ namespace DataInfo.Api.Controllers.Member
                 if (content == null)
                 {
                     this.logger.LogWarn("會員請求發送手機綁定驗證碼失敗", $"Result: 無資料內容 Email: {email} Mobile: {mobile} ", null);
-                    return Ok(new ResponseResultDto()
+                    return Ok(new ResponseResult()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.InputError,
@@ -116,7 +116,7 @@ namespace DataInfo.Api.Controllers.Member
                 if (!string.IsNullOrEmpty(mobile))
                 {
                     this.logger.LogWarn("會員請求手機綁定失敗", $"Result: 已綁定手機 Email: {email} Mobile: {mobile} Content: {JsonConvert.SerializeObject(content)}", null);
-                    return Ok(new ResponseResultDto()
+                    return Ok(new ResponseResult()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.DenyAccess,
@@ -125,13 +125,13 @@ namespace DataInfo.Api.Controllers.Member
                 }
 
                 this.logger.LogInfo("會員請求發送手機綁定驗證碼", $"Email: {email} Mobile: {mobile} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResultDto responseResult = await this.memberService.SendMobileBindVerifierCode(email, content).ConfigureAwait(false);
+                ResponseResult responseResult = await this.memberService.SendMobileBindVerifierCode(email, content).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求發送手機綁定驗證碼發生錯誤", $"Email: {email} Mobile: {mobile} Content: {JsonConvert.SerializeObject(content)}", ex);
-                return Ok(new ResponseResultDto()
+                return Ok(new ResponseResult()
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,

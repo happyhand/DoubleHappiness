@@ -113,13 +113,13 @@ namespace DataInfo.Api.Controllers.Member
             try
             {
                 this.logger.LogInfo("會員請求登入(重新登入)", $"MemberID: {memberID}", null);
-                ResponseResultDto responseResult = await memberService.Relogin(memberID).ConfigureAwait(false);
+                ResponseResult responseResult = await memberService.Relogin(memberID).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求登入發生錯誤(重新登入)", $"MemberID: {memberID}", ex);
-                return Ok(new ResponseResultDto()
+                return Ok(new ResponseResult()
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
@@ -142,7 +142,7 @@ namespace DataInfo.Api.Controllers.Member
                 if (content == null)
                 {
                     this.logger.LogWarn("會員請求登入失敗(一般登入)", "Content: 無資料", null);
-                    return Ok(new ResponseResultDto()
+                    return Ok(new ResponseResult()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.InputError,
@@ -151,13 +151,13 @@ namespace DataInfo.Api.Controllers.Member
                 }
 
                 this.logger.LogInfo("會員請求登入(一般登入)", $"Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResultDto responseResult = await memberService.Login(content).ConfigureAwait(false);
+                ResponseResult responseResult = await memberService.Login(content).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求登入發生錯誤(一般登入)", $"Content: {JsonConvert.SerializeObject(content)}", ex);
-                return Ok(new ResponseResultDto()
+                return Ok(new ResponseResult()
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
