@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using DataInfo.Core.Applibs;
+using FluentValidation;
 
 namespace DataInfo.Core.Models.Dto.Member.Content
 {
@@ -40,7 +41,8 @@ namespace DataInfo.Core.Models.Dto.Member.Content
             {
                 RuleFor(content => content.Password)
                   .NotNull().WithMessage("密碼無效.")
-                  .NotEmpty().WithMessage("密碼無效.");
+                  .NotEmpty().WithMessage("密碼無效.")
+                  .Must(password => { return Utility.ValidatePassword(password); }).WithMessage("密碼格式錯誤.");
                 RuleFor(content => content.ConfirmPassword)
                   .NotNull().WithMessage("未輸入相同密碼.")
                   .NotEmpty().WithMessage("未輸入相同密碼.")

@@ -204,6 +204,18 @@ namespace DataInfo.Core.Applibs
                 RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250));
         }
 
+        /// <summary>
+        /// Password 格式驗證
+        /// </summary>
+        /// <param name="password">password</param>
+        /// <returns>bool</returns>
+        public static bool ValidatePassword(string password)
+        {
+            return Regex.IsMatch(password,
+                @"^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z0-9]{6,12}$",
+                RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250));
+        }
+
         #endregion 驗證功能
     }
 }
