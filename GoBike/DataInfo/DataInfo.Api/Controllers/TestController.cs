@@ -34,7 +34,7 @@ namespace DataInfo.Api.Controllers
             try
             {
                 this.logger.LogInfo("測試連線 Start", "1", null);
-                CommandData<MemberRegisterContent> result = await this.serverService.DoAction<MemberRegisterContent>(1001, CommandType.User.ToString(), new MemberRegisterContent()
+                CommandDto<MemberRegisterContent> result = await this.serverService.DoAction<MemberRegisterContent>(1001, CommandType.User.ToString(), new MemberRegisterContent()
                 {
                     Email = "Test@gmail.com",
                     Password = "123456",

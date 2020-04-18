@@ -47,6 +47,8 @@ namespace DataInfo.Service.Managers.Member
         /// <summary>
         /// 建構式
         /// </summary>
+        /// <param name="mapper">mapper</param>
+        /// <param name="uploadService">uploadService</param>
         /// <param name="redisRepository">redisRepository</param>
         public RideService(IMapper mapper, IUploadService uploadService, IRideRepository rideRepository)
         {

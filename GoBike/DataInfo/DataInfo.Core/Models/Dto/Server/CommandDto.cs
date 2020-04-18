@@ -3,8 +3,8 @@
     /// <summary>
     /// 後端指令資料
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public class CommandData<T>
+    /// <typeparam name="T">T</typeparam>
+    public class CommandDto<T>
     {
         /// <summary>
         /// Gets or sets CmdID

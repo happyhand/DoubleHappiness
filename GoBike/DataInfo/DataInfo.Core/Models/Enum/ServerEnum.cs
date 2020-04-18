@@ -48,23 +48,54 @@
     public enum UserRegisteredResultType
     {
         /// <summary>
+        /// 註冊失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
         /// 註冊成功
         /// </summary>
-        Success = 0,
+        Success = 1,
 
         /// <summary>
         /// 帳號重複
         /// </summary>
-        Repeat = 1,
+        Repeat = 2,
 
         /// <summary>
         /// 密碼錯誤
         /// </summary>
-        PasswordError = 2,
+        PasswordError = 3,
 
         /// <summary>
         /// 帳號格式不符
         /// </summary>
-        EmailError = 3,
+        EmailError = 4,
+    }
+
+    /// <summary>
+    /// 使用者登入結果類別資料
+    /// </summary>
+    public enum UserLoginResultType
+    {
+        /// <summary>
+        /// 登入失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 登入成功
+        /// </summary>
+        Success = 1,
+
+        /// <summary>
+        /// 帳號錯誤
+        /// </summary>
+        EmailError = 2,
+
+        /// <summary>
+        /// 密碼錯誤
+        /// </summary>
+        PasswordError = 3
     }
 }

@@ -89,40 +89,37 @@ namespace DataInfo.Service.Managers.Member
         /// <summary>
         /// 生產 Jwt Token
         /// </summary>
-        /// <param name="memberModel">memberModel</param>
+        /// <param name="memberDao">memberDao</param>
         /// <returns>string</returns>
-        private string GenerateJwtToken(MemberModel memberModel)
+        private string GenerateJwtToken(MemberDao memberDao)
         {
             JwtClaimsDto jwtClaimsDto = new JwtClaimsDto()
             {
-                MemberID = memberModel.MemberID,
-                Email = memberModel.Email,
-                Nickname = memberModel.Nickname,
-                Avatar = memberModel.Avatar,
-                FrontCover = memberModel.FrontCover,
-                Mobile = memberModel.Mobile
+                MemberID = memberDao.MemberID,
+                Email = memberDao.Email,
+                Nickname = memberDao.Nickname,
+                Avatar = memberDao.Avatar,
+                FrontCover = memberDao.FrontCover,
+                Mobile = memberDao.Mobile
             };
             return this.jwtService.GenerateToken(jwtClaimsDto);
         }
 
         /// <summary>
-        /// 更新最新登入時間
+        /// 更新會員最新登入時間
         /// </summary>
-        /// <param name="memberModel">memberModel</param>
-        private void UpdateLastLoginDate(MemberModel memberModel)
+        /// <param name="memberDao">memberDao</param>
+        private void UpdateLastLoginDate(MemberDao memberDao)
         {
             try
             {
-                this.logger.LogInfo("更新會員最新登入時間", $"MemberID: {memberModel.MemberID}", null);
-                memberModel.LoginDate = DateTime.UtcNow;
-                this.memberRepository.Update(memberModel);
-
-                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{AppSettingHelper.Appsetting.Redis.Flag.LastLogin}-{memberModel.MemberID}";
+                this.logger.LogInfo("更新會員最新登入時間", $"MemberID: {memberDao.MemberID}", null);
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{AppSettingHelper.Appsetting.Redis.Flag.LastLogin}-{memberDao.MemberID}";
                 this.redisRepository.SetCache(cacheKey, JsonConvert.SerializeObject(DateTime.UtcNow), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.KeepOnlineTime));
             }
             catch (Exception ex)
             {
-                this.logger.LogError("更新會員最新登入時間發生錯誤", $"MemberID: {memberModel.MemberID}", ex);
+                this.logger.LogError("更新會員最新登入時間發生錯誤", $"MemberID: {memberDao.MemberID}", ex);
             }
         }
 
@@ -167,103 +164,6 @@ namespace DataInfo.Service.Managers.Member
         }
 
         /// <summary>
-        /// 會員登入(一般登入)
-        /// </summary>
-        /// <param name="content">content</param>
-        /// <returns>ResponseResultDto</returns>
-        public async Task<ResponseResultDto> Login(MemberLoginContent content)
-        {
-            try
-            {
-                #region 驗證資料
-
-                MemberLoginContentValidator memberLoginContentValidator = new MemberLoginContentValidator();
-                ValidationResult validationResult = memberLoginContentValidator.Validate(content);
-                if (!validationResult.IsValid)
-                {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("會員登入結果(一般登入)", $"Result: 驗證失敗({errorMessgae}) Email: {content.Email} Password: {content.Password}", null);
-                    return new ResponseResultDto()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = errorMessgae
-                    };
-                }
-
-                #endregion 驗證資料
-
-                #region 取得資料並驗證密碼
-
-                MemberModel memberModel = (await this.memberRepository.Get(content.Email, false).ConfigureAwait(false)).FirstOrDefault();
-                if (memberModel == null)
-                {
-                    this.logger.LogWarn("會員登入結果(一般登入)", $"Result: 無會員資料 Email: {content.Email} Password: {content.Password}", null);
-                    return new ResponseResultDto()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = "無法根據信箱查詢到相關會員."
-                    };
-                }
-
-                string decryptAESPassword = Utility.DecryptAES(memberModel.Password);
-                if (!decryptAESPassword.Equals(content.Password))
-                {
-                    this.logger.LogWarn("會員登入結果(一般登入)", $"Result: 密碼驗證失敗 Email: {content.Email} Password: {content.Password}", null);
-                    return new ResponseResultDto()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = "密碼驗證失敗."
-                    };
-                }
-
-                #endregion 取得資料並驗證密碼
-
-                #region 登入 Firebase (TODO)
-
-                bool firebaseLoginResult = true;
-                if (!firebaseLoginResult)
-                {
-                    this.logger.LogWarn("會員登入結果(一般登入)", $"Result: Firebase 登入失敗 Email: {content.Email} Password: {content.Password}", null);
-                    return new ResponseResultDto()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.UnknownError,
-                        Content = "登入失敗."
-                    };
-                }
-
-                #endregion 登入 Firebase (TODO)
-
-                #region 更新最新登入時間
-
-                this.UpdateLastLoginDate(memberModel);
-
-                #endregion 更新最新登入時間
-
-                this.logger.LogInfo("會員登入成功(一般登入)", $"Email: {content.Email} Password: {content.Password}", null);
-                return new ResponseResultDto()
-                {
-                    Result = true,
-                    ResultCode = (int)ResponseResultType.Success,
-                    Content = new MemberLoginViewDto() { Token = this.GenerateJwtToken(memberModel) }
-                };
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("會員登入發生錯誤(一般登入)", $"Email: {content.Email} Password: {content.Password}", ex);
-                return new ResponseResultDto()
-                {
-                    Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = "登入發生錯誤."
-                };
-            }
-        }
-
-        /// <summary>
         /// 會員註冊
         /// </summary>
         /// <param name="content">content</param>
@@ -293,7 +193,7 @@ namespace DataInfo.Service.Managers.Member
 
                 #endregion 驗證資料
 
-                #region 發送會員資料 to Server
+                #region 發送【會員註冊】指令至後端
 
                 MemberRegisterRequestDto request = new MemberRegisterRequestDto()
                 {
@@ -305,27 +205,24 @@ namespace DataInfo.Service.Managers.Member
                     RegisterSource = string.IsNullOrEmpty(fbToken) ? string.IsNullOrEmpty(googleToken) ? (int)RegisterSourceType.Normal : (int)RegisterSourceType.Google : (int)RegisterSourceType.FB
                 };
 
-                CommandData<MemberRegisterResponseDto> response = await this.serverService.DoAction<MemberRegisterResponseDto>((int)CommandIDType.UserRegistered, CommandType.User.ToString(), request).ConfigureAwait(false);
-                if (response == null)
-                {
-                    this.logger.LogInfo("會員註冊結果", $"Result: 後端無回覆資料 Email: {content.Email} Password: {content.Password} ConfirmPassword: {content.ConfirmPassword} IsValidatePassword: {isValidatePassword} FbToken: {fbToken} GoogleToken: {googleToken}", null);
-                    return new ResponseResultDto()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.UnknownError,
-                        Content = "註冊發生錯誤."
-                    };
-                }
-
+                CommandDto<MemberRegisterResponseDto> response = await this.serverService.DoAction<MemberRegisterResponseDto>((int)CommandIDType.UserRegistered, CommandType.User.ToString(), request).ConfigureAwait(false);
                 this.logger.LogInfo("會員註冊結果", $"Result: {response.Data.Result} Email: {content.Email} Password: {content.Password} ConfirmPassword: {content.ConfirmPassword} IsValidatePassword: {isValidatePassword} FbToken: {fbToken} GoogleToken: {googleToken}", null);
                 switch (response.Data.Result)
                 {
+                    case (int)UserRegisteredResultType.Fail:
+                        return new ResponseResultDto()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.CreateFail,
+                            Content = "註冊失敗."
+                        };
+
                     case (int)UserRegisteredResultType.EmailError:
                     case (int)UserRegisteredResultType.PasswordError:
                         return new ResponseResultDto()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.CreateFail,
+                            ResultCode = (int)ResponseResultType.InputError,
                             Content = "註冊失敗."
                         };
 
@@ -338,23 +235,7 @@ namespace DataInfo.Service.Managers.Member
                         };
                 }
 
-                #endregion 發送會員資料 to Server
-
-                #region 建立 Firebase 會員資料 (TODO)
-
-                bool firebaseCreateResult = true;
-                if (!firebaseCreateResult)
-                {
-                    this.logger.LogWarn("會員註冊結果", $"Result: Firebase 建立資料失敗 Email: {content.Email} Password: {content.Password} ConfirmPassword: {content.ConfirmPassword} IsValidatePassword: {isValidatePassword} FbToken: {fbToken} GoogleToken: {googleToken}", null);
-                    return new ResponseResultDto()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.CreateFail,
-                        Content = "註冊失敗."
-                    };
-                }
-
-                #endregion 建立 Firebase 會員資料 (TODO)
+                #endregion 發送【會員註冊】指令至後端
 
                 this.logger.LogInfo("會員註冊成功", $"Email: {content.Email} Password: {content.Password} ConfirmPassword: {content.ConfirmPassword} IsValidatePassword: {isValidatePassword} FbToken: {fbToken} GoogleToken: {googleToken}", null);
                 return new ResponseResultDto()
@@ -377,63 +258,82 @@ namespace DataInfo.Service.Managers.Member
         }
 
         /// <summary>
-        /// 會員登入(重新登入)
+        /// 會員登入(一般登入)
         /// </summary>
-        /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
         /// <returns>ResponseResultDto</returns>
-        public async Task<ResponseResultDto> Relogin(string memberID)
+        public async Task<ResponseResultDto> Login(MemberLoginContent content)
         {
             try
             {
-                #region 取得資料
+                #region 驗證資料
 
-                MemberModel memberModel = (await this.memberRepository.Get(memberID, false).ConfigureAwait(false)).FirstOrDefault();
-                if (memberModel == null)
+                MemberLoginContentValidator memberLoginContentValidator = new MemberLoginContentValidator();
+                ValidationResult validationResult = memberLoginContentValidator.Validate(content);
+                if (!validationResult.IsValid)
                 {
-                    this.logger.LogError("會員登入結果(重新登入)", $"Result: 無會員資料，須查詢 DB 比對 MemberID: {memberID}", null);
+                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
+                    this.logger.LogWarn("會員登入結果(一般登入)", $"Result: 驗證失敗({errorMessgae}) Email: {content.Email} Password: {content.Password}", null);
                     return new ResponseResultDto()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.Missed,
-                        Content = "無會員資料，無法重新登入."
+                        ResultCode = (int)ResponseResultType.InputError,
+                        Content = errorMessgae
                     };
                 }
 
-                #endregion 取得資料
+                #endregion 驗證資料
 
-                #region 登入 Firebase (TODO)
+                #region 發送【會員登入】指令至後端
 
-                bool firebaseLoginResult = true;
-                if (!firebaseLoginResult)
+                MemberLoginRequestDto request = new MemberLoginRequestDto()
                 {
-                    this.logger.LogWarn("會員登入結果(重新登入)", $"Result: Firebase 登入失敗 Email: {memberModel.Email} Password: {memberModel.Password}", null);
-                    return new ResponseResultDto()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.UnknownError,
-                        Content = "登入失敗."
-                    };
+                    Email = content.Email,
+                    Password = content.Password,
+                };
+
+                CommandDto<MemberLoginResponseDto> response = await this.serverService.DoAction<MemberLoginResponseDto>((int)CommandIDType.UserLogin, CommandType.User.ToString(), request).ConfigureAwait(false);
+                this.logger.LogInfo("會員登入結果(一般登入)", $"Result: {response.Data.Result} Email: {content.Email} Password: {content.Password}", null);
+                switch (response.Data.Result)
+                {
+                    case (int)UserLoginResultType.Fail:
+                        return new ResponseResultDto()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.UnknownError,
+                            Content = "登入失敗."
+                        };
+
+                    case (int)UserLoginResultType.EmailError:
+                    case (int)UserLoginResultType.PasswordError:
+                        return new ResponseResultDto()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.InputError,
+                            Content = "登入失敗."
+                        };
                 }
 
-                #endregion 登入 Firebase (TODO)
+                MemberDao memberDao = response.Data.LoginData;
+
+                #endregion 發送【會員登入】指令至後端
 
                 #region 更新最新登入時間
 
-                this.UpdateLastLoginDate(memberModel);
+                this.UpdateLastLoginDate(memberDao);
 
                 #endregion 更新最新登入時間
 
-                this.logger.LogInfo("會員登入成功(重新登入)", $"MemberID: {memberID}", null);
                 return new ResponseResultDto()
                 {
                     Result = true,
                     ResultCode = (int)ResponseResultType.Success,
-                    Content = new MemberLoginViewDto() { Token = this.GenerateJwtToken(memberModel) }
+                    Content = new MemberLoginViewDto() { Token = this.GenerateJwtToken(memberDao) }
                 };
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員登入發生錯誤(重新登入)", $"MemberID: {memberID}", ex);
+                this.logger.LogError("會員登入發生錯誤(一般登入)", $"Email: {content.Email} Password: {content.Password}", ex);
                 return new ResponseResultDto()
                 {
                     Result = false,
@@ -441,6 +341,79 @@ namespace DataInfo.Service.Managers.Member
                     Content = "登入發生錯誤."
                 };
             }
+        }
+
+        /// <summary>
+        /// 會員登入(重新登入)
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>ResponseResultDto</returns>
+        public async Task<ResponseResultDto> Relogin(string memberID)
+        {
+            //try
+            //{
+            //    #region 取得資料
+
+            //    MemberModel memberModel = (await this.memberRepository.Get(memberID, false).ConfigureAwait(false)).FirstOrDefault();
+            //    if (memberModel == null)
+            //    {
+            //        this.logger.LogError("會員登入結果(重新登入)", $"Result: 無會員資料，須查詢 DB 比對 MemberID: {memberID}", null);
+            //        return new ResponseResultDto()
+            //        {
+            //            Result = false,
+            //            ResultCode = (int)ResponseResultType.Missed,
+            //            Content = "無會員資料，無法重新登入."
+            //        };
+            //    }
+
+            //    #endregion 取得資料
+
+            //    #region 登入 Firebase (TODO)
+
+            //    bool firebaseLoginResult = true;
+            //    if (!firebaseLoginResult)
+            //    {
+            //        this.logger.LogWarn("會員登入結果(重新登入)", $"Result: Firebase 登入失敗 Email: {memberModel.Email} Password: {memberModel.Password}", null);
+            //        return new ResponseResultDto()
+            //        {
+            //            Result = false,
+            //            ResultCode = (int)ResponseResultType.UnknownError,
+            //            Content = "登入失敗."
+            //        };
+            //    }
+
+            //    #endregion 登入 Firebase (TODO)
+
+            //    #region 更新最新登入時間
+
+            //    this.UpdateLastLoginDate(memberModel);
+
+            //    #endregion 更新最新登入時間
+
+            //    this.logger.LogInfo("會員登入成功(重新登入)", $"MemberID: {memberID}", null);
+            //    return new ResponseResultDto()
+            //    {
+            //        Result = true,
+            //        ResultCode = (int)ResponseResultType.Success,
+            //        Content = new MemberLoginViewDto() { Token = this.GenerateJwtToken(memberModel) }
+            //    };
+            //}
+            //catch (Exception ex)
+            //{
+            //    this.logger.LogError("會員登入發生錯誤(重新登入)", $"MemberID: {memberID}", ex);
+            //    return new ResponseResultDto()
+            //    {
+            //        Result = false,
+            //        ResultCode = (int)ResponseResultType.UnknownError,
+            //        Content = "登入發生錯誤."
+            //    };
+            //}
+            return new ResponseResultDto()
+            {
+                Result = false,
+                ResultCode = (int)ResponseResultType.UnknownError,
+                Content = "登入發生錯誤."
+            };
         }
 
         ///// <summary>

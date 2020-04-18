@@ -23,6 +23,73 @@ namespace DataInfo.Repository.Managers
         /// </summary>
         private readonly ILogger logger = LogManager.GetLogger("MemberRepository");
 
+        #region 串接
+
+        ///// <summary>
+        ///// 取得會員資料
+        ///// </summary>
+        ///// <param name="memberID">memberID</param>
+        ///// <returns>MemberDao</returns>
+        //public async Task<IEnumerable<MemberDao>> Get(string searchKey, bool isFuzzy)
+        //{
+        //    try
+        //    {
+        //        if (isFuzzy)
+        //        {
+        //            return null;
+        //        }
+        //        else
+        //        {
+        //            MemberDao memberDao = null;
+        //            if (searchKey.Contains(AppSettingHelper.Appsetting.MemberIDFlag))
+        //            {
+        //                //// 搜尋  MemberID
+        //            }
+        //            else if (Utility.ValidateEmail(searchKey))
+        //            {
+        //                //// 搜尋  Email
+        //            }
+        //            else if (Utility.ValidateMobile(searchKey))
+        //            {
+        //                //// 搜尋  Mobile
+        //            }
+
+        //            List<MemberDao> list = new List<MemberDao>();
+        //            if (memberDao != null)
+        //            {
+        //                list.Add(memberDao);
+        //            }
+
+        //            return list;
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        this.logger.LogError("取得會員資料發生錯誤", $"SearchKey: {searchKey} IsFuzzy: {isFuzzy}", ex);
+        //        return null;
+        //    }
+        //}
+
+        ///// <summary>
+        ///// 取得會員資料列表
+        ///// </summary>
+        ///// <param name="memberIDs">memberIDs</param>
+        ///// <returns>MemberDao</returns>
+        //public async Task<IEnumerable<MemberDao>> Get(IEnumerable<string> memberIDs)
+        //{
+        //    try
+        //    {
+        //        return null;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        this.logger.LogError("取得會員資料發生錯誤", $"MemberIDs: {JsonConvert.SerializeObject(memberIDs)}", ex);
+        //        return null;
+        //    }
+        //}
+
+        #endregion 串接
+
         /// <summary>
         /// 建立會員資料
         /// </summary>
