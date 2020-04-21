@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using DataInfo.Core.Applibs;
+using FluentValidation;
 
 namespace DataInfo.Core.Models.Dto.Member.Content
 {
@@ -22,8 +23,8 @@ namespace DataInfo.Core.Models.Dto.Member.Content
         {
             ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
             RuleFor(content => content.TargetID)
-            .NotNull().WithMessage("會員編號無效.")
-            .NotEmpty().WithMessage("會員編號無效.");
+            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Member.MemberIDEmpty)
+            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Member.MemberIDEmpty);
         }
     }
 }

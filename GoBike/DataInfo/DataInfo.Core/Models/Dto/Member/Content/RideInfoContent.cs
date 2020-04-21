@@ -1,4 +1,5 @@
-﻿using DataInfo.Core.Models.Enum;
+﻿using DataInfo.Core.Applibs;
+using DataInfo.Core.Models.Enum;
 using FluentValidation;
 using System.Collections.Generic;
 
@@ -69,48 +70,48 @@ namespace DataInfo.Core.Models.Dto.Member.Content
         {
             ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
             RuleFor(content => content.Time)
-            .NotNull().WithMessage("騎乘時間無效.")
-            .NotEmpty().WithMessage("騎乘時間無效.")
+            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Ride.TimeEmpty)
+            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Ride.TimeEmpty)
             .Must(time =>
             {
                 return long.TryParse(time, out long value) && value > 0;
-            }).WithMessage("騎乘時間無效.");
+            }).WithMessage(MessageHelper.Message.ResponseMessage.Ride.TimeEmpty);
 
             RuleFor(content => content.Distance)
-            .NotNull().WithMessage("騎乘距離無效.")
-            .NotEmpty().WithMessage("騎乘距離無效.")
+            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Ride.DistanceEmpty)
+            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Ride.DistanceEmpty)
             .Must(distance =>
             {
                 return decimal.TryParse(distance, out decimal value) && value > 0;
-            }).WithMessage("騎乘距離無效.");
+            }).WithMessage(MessageHelper.Message.ResponseMessage.Ride.DistanceEmpty);
 
             RuleFor(content => content.Altitude)
-            .NotNull().WithMessage("爬升高度無效.")
-            .NotEmpty().WithMessage("爬升高度無效.")
+            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Ride.AltitudeEmpty)
+            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Ride.AltitudeEmpty)
             .Must(altitude =>
             {
                 return decimal.TryParse(altitude, out decimal value) && value > 0;
-            }).WithMessage("爬升高度無效.");
+            }).WithMessage(MessageHelper.Message.ResponseMessage.Ride.AltitudeEmpty);
 
             RuleFor(content => content.CountyID)
             .Must(countyID =>
             {
                 return countyID != (int)CityType.None;
-            }).WithMessage("未設定騎乘市區.");
+            }).WithMessage(MessageHelper.Message.ResponseMessage.Ride.AltitudeEmpty);
 
             RuleFor(content => content.Level)
             .Must(level =>
             {
                 return level != (int)RideLevelType.None;
-            }).WithMessage("未設定騎乘等級.");
+            }).WithMessage(MessageHelper.Message.ResponseMessage.Ride.LevelEmpty);
 
             RuleFor(content => content.Route)
-            .NotNull().WithMessage("騎乘路徑內容無效.")
-            .NotEmpty().WithMessage("無騎乘路徑內容資料.");
+            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Ride.RouteEmpty)
+            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Ride.RouteEmpty);
 
             RuleFor(content => content.Photo)
-            .NotNull().WithMessage("騎乘封面無效.")
-            .NotEmpty().WithMessage("騎乘封面無效.");
+            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Ride.PhotoEmpty)
+            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Ride.PhotoEmpty);
         }
     }
 }

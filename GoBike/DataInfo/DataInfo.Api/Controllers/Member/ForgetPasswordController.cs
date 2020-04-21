@@ -8,6 +8,8 @@ using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Threading.Tasks;
+using DataInfo.Core.Models.Dto.Common.Content;
+using DataInfo.Core.Applibs;
 
 namespace DataInfo.Api.Controllers.Member
 {
@@ -48,17 +50,6 @@ namespace DataInfo.Api.Controllers.Member
         {
             try
             {
-                if (content == null)
-                {
-                    this.logger.LogWarn("會員請求重置密碼失敗", "Content: 無資料", null);
-                    return Ok(new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = "未提供資料內容."
-                    });
-                }
-
                 this.logger.LogInfo("會員請求重置密碼", $"Content: {JsonConvert.SerializeObject(content)}", null);
                 ResponseResult responseResult = await this.memberService.ResetPassword(content).ConfigureAwait(false);
                 return Ok(responseResult);
@@ -76,26 +67,15 @@ namespace DataInfo.Api.Controllers.Member
         }
 
         /// <summary>
-        /// 會員忘記密碼 - 發送驗證碼
+        /// 會員忘記密碼 - 請求驗證碼
         /// </summary>
         /// <param name="content">content</param>
         /// <returns>IActionResult</returns>
         [HttpPost]
-        public async Task<IActionResult> Post(MemberForgetPasswordContent content)
+        public async Task<IActionResult> Post(SendVerifierCodeContent content)
         {
             try
             {
-                if (content == null)
-                {
-                    this.logger.LogWarn("會員請求發送忘記密碼驗證碼失敗", "Content: 無資料", null);
-                    return Ok(new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = "未提供資料內容."
-                    });
-                }
-
                 this.logger.LogInfo("會員請求發送忘記密碼驗證碼", $"Content: {JsonConvert.SerializeObject(content)}", null);
                 ResponseResult responseResult = await this.memberService.SendForgetPasswordVerifierCode(content).ConfigureAwait(false);
                 return Ok(responseResult);
@@ -107,7 +87,7 @@ namespace DataInfo.Api.Controllers.Member
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = "發送驗證碼發生錯誤."
+                    Content = MessageHelper.Message.ResponseMessage.VerifyCode.SendVerifyCodeError
                 });
             }
         }

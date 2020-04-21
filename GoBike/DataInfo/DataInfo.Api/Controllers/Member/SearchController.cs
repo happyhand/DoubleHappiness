@@ -78,17 +78,6 @@ namespace DataInfo.Api.Controllers.Member
             string memberID = this.GetMemberID();
             try
             {
-                if (content == null)
-                {
-                    this.logger.LogWarn("會員請求搜尋其他會員資料失敗", $"Content: 無資料 MemberID: {memberID}", null);
-                    return Ok(new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = "未提供搜尋內容."
-                    });
-                }
-
                 ResponseResult responseResult;
                 if (content.UseFuzzySearch == (int)SearchType.Fuzzy)
                 {

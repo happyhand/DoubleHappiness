@@ -48,17 +48,6 @@ namespace DataInfo.Api.Controllers.Member
         {
             try
             {
-                if (content == null)
-                {
-                    this.logger.LogWarn("會員請求註冊失敗", "Content: 無資料", null);
-                    return Ok(new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = "未提供資料內容."
-                    });
-                }
-
                 this.logger.LogInfo("會員請求註冊", $"Content: {JsonConvert.SerializeObject(content)}", null);
                 ResponseResult responseResult = await memberService.Register(content, true, string.Empty, string.Empty).ConfigureAwait(false);
                 return Ok(responseResult);

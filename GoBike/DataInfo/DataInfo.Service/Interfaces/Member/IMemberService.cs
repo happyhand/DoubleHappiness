@@ -1,4 +1,5 @@
 ﻿using DataInfo.Core.Models.Dao.Member;
+using DataInfo.Core.Models.Dto.Common.Content;
 using DataInfo.Core.Models.Dto.Member.Content;
 using DataInfo.Core.Models.Dto.Member.View;
 using DataInfo.Core.Models.Dto.Response;
@@ -93,7 +94,7 @@ namespace DataInfo.Service.Interfaces.Member
         /// </summary>
         /// <param name="content">content</param>
         /// <returns>ResponseResultDto</returns>
-        Task<ResponseResult> SendForgetPasswordVerifierCode(MemberForgetPasswordContent content);
+        Task<ResponseResult> SendForgetPasswordVerifierCode(SendVerifierCodeContent content);
 
         /// <summary>
         /// 發送會員手機綁定驗證碼

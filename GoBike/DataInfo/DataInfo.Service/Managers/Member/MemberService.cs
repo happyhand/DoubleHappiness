@@ -2,9 +2,11 @@
 using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dao.Member;
-using DataInfo.Core.Models.Dto.Common;
+using DataInfo.Core.Models.Dto.Common.Content;
+using DataInfo.Core.Models.Dto.Common.Item;
 using DataInfo.Core.Models.Dto.Member.Content;
 using DataInfo.Core.Models.Dto.Member.Request;
+using DataInfo.Core.Models.Dto.Member.Request.Data;
 using DataInfo.Core.Models.Dto.Member.Response;
 using DataInfo.Core.Models.Dto.Member.View;
 using DataInfo.Core.Models.Dto.Response;
@@ -164,6 +166,92 @@ namespace DataInfo.Service.Managers.Member
         }
 
         /// <summary>
+        /// 會員登入(一般登入)
+        /// </summary>
+        /// <param name="content">content</param>
+        /// <returns>ResponseResultDto</returns>
+        public async Task<ResponseResult> Login(MemberLoginContent content)
+        {
+            try
+            {
+                #region 驗證資料
+
+                MemberLoginContentValidator memberLoginContentValidator = new MemberLoginContentValidator();
+                ValidationResult validationResult = memberLoginContentValidator.Validate(content);
+                if (!validationResult.IsValid)
+                {
+                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
+                    this.logger.LogWarn("會員登入結果(一般登入)", $"Result: 驗證失敗({errorMessgae}) Email: {content.Email} Password: {content.Password}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.InputError,
+                        Content = errorMessgae
+                    };
+                }
+
+                #endregion 驗證資料
+
+                #region 發送【會員登入】指令至後端
+
+                MemberLoginRequest request = new MemberLoginRequest()
+                {
+                    Email = content.Email,
+                    Password = content.Password,
+                };
+
+                CommandData<MemberLoginResponse> response = await this.serverService.DoAction<MemberLoginResponse>((int)CommandIDType.UserLogin, CommandType.User.ToString(), request).ConfigureAwait(false);
+                this.logger.LogInfo("會員登入結果(一般登入)", $"Result: {response.Data.Result} Email: {content.Email} Password: {content.Password}", null);
+                switch (response.Data.Result)
+                {
+                    case (int)UserLoginResultType.Fail:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.UnknownError,
+                            Content = "登入失敗."
+                        };
+
+                    case (int)UserLoginResultType.EmailError:
+                    case (int)UserLoginResultType.PasswordError:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.InputError,
+                            Content = "登入失敗."
+                        };
+                }
+
+                MemberDao memberDao = response.Data.LoginData;
+
+                #endregion 發送【會員登入】指令至後端
+
+                #region 更新最新登入時間
+
+                this.UpdateLastLoginDate(memberDao);
+
+                #endregion 更新最新登入時間
+
+                return new ResponseResult()
+                {
+                    Result = true,
+                    ResultCode = (int)ResponseResultType.Success,
+                    Content = new MemberLoginView() { Token = this.GenerateJwtToken(memberDao) }
+                };
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("會員登入發生錯誤(一般登入)", $"Email: {content.Email} Password: {content.Password}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = "登入發生錯誤."
+                };
+            }
+        }
+
+        /// <summary>
         /// 會員註冊
         /// </summary>
         /// <param name="content">content</param>
@@ -258,92 +346,6 @@ namespace DataInfo.Service.Managers.Member
         }
 
         /// <summary>
-        /// 會員登入(一般登入)
-        /// </summary>
-        /// <param name="content">content</param>
-        /// <returns>ResponseResultDto</returns>
-        public async Task<ResponseResult> Login(MemberLoginContent content)
-        {
-            try
-            {
-                #region 驗證資料
-
-                MemberLoginContentValidator memberLoginContentValidator = new MemberLoginContentValidator();
-                ValidationResult validationResult = memberLoginContentValidator.Validate(content);
-                if (!validationResult.IsValid)
-                {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("會員登入結果(一般登入)", $"Result: 驗證失敗({errorMessgae}) Email: {content.Email} Password: {content.Password}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = errorMessgae
-                    };
-                }
-
-                #endregion 驗證資料
-
-                #region 發送【會員登入】指令至後端
-
-                MemberLoginRequest request = new MemberLoginRequest()
-                {
-                    Email = content.Email,
-                    Password = content.Password,
-                };
-
-                CommandData<MemberLoginResponse> response = await this.serverService.DoAction<MemberLoginResponse>((int)CommandIDType.UserLogin, CommandType.User.ToString(), request).ConfigureAwait(false);
-                this.logger.LogInfo("會員登入結果(一般登入)", $"Result: {response.Data.Result} Email: {content.Email} Password: {content.Password}", null);
-                switch (response.Data.Result)
-                {
-                    case (int)UserLoginResultType.Fail:
-                        return new ResponseResult()
-                        {
-                            Result = false,
-                            ResultCode = (int)ResponseResultType.UnknownError,
-                            Content = "登入失敗."
-                        };
-
-                    case (int)UserLoginResultType.EmailError:
-                    case (int)UserLoginResultType.PasswordError:
-                        return new ResponseResult()
-                        {
-                            Result = false,
-                            ResultCode = (int)ResponseResultType.InputError,
-                            Content = "登入失敗."
-                        };
-                }
-
-                MemberDao memberDao = response.Data.LoginData;
-
-                #endregion 發送【會員登入】指令至後端
-
-                #region 更新最新登入時間
-
-                this.UpdateLastLoginDate(memberDao);
-
-                #endregion 更新最新登入時間
-
-                return new ResponseResult()
-                {
-                    Result = true,
-                    ResultCode = (int)ResponseResultType.Success,
-                    Content = new MemberLoginView() { Token = this.GenerateJwtToken(memberDao) }
-                };
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("會員登入發生錯誤(一般登入)", $"Email: {content.Email} Password: {content.Password}", ex);
-                return new ResponseResult()
-                {
-                    Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = "登入發生錯誤."
-                };
-            }
-        }
-
-        /// <summary>
         /// 會員登入(重新登入)
         /// </summary>
         /// <param name="memberID">memberID</param>
@@ -354,41 +356,29 @@ namespace DataInfo.Service.Managers.Member
             //{
             //    #region 取得資料
 
-            //    MemberModel memberModel = (await this.memberRepository.Get(memberID, false).ConfigureAwait(false)).FirstOrDefault();
-            //    if (memberModel == null)
-            //    {
-            //        this.logger.LogError("會員登入結果(重新登入)", $"Result: 無會員資料，須查詢 DB 比對 MemberID: {memberID}", null);
-            //        return new ResponseResultDto()
-            //        {
-            //            Result = false,
-            //            ResultCode = (int)ResponseResultType.Missed,
-            //            Content = "無會員資料，無法重新登入."
-            //        };
-            //    }
+            // MemberModel memberModel = (await this.memberRepository.Get(memberID,
+            // false).ConfigureAwait(false)).FirstOrDefault(); if (memberModel == null) {
+            // this.logger.LogError("會員登入結果(重新登入)", $"Result: 無會員資料，須查詢 DB 比對 MemberID: {memberID}",
+            // null); return new ResponseResultDto() { Result = false, ResultCode =
+            // (int)ResponseResultType.Missed, Content = "無會員資料，無法重新登入." }; }
 
-            //    #endregion 取得資料
+            // #endregion 取得資料
 
-            //    #region 登入 Firebase (TODO)
+            // #region 登入 Firebase (TODO)
 
-            //    bool firebaseLoginResult = true;
-            //    if (!firebaseLoginResult)
-            //    {
-            //        this.logger.LogWarn("會員登入結果(重新登入)", $"Result: Firebase 登入失敗 Email: {memberModel.Email} Password: {memberModel.Password}", null);
-            //        return new ResponseResultDto()
-            //        {
-            //            Result = false,
-            //            ResultCode = (int)ResponseResultType.UnknownError,
-            //            Content = "登入失敗."
-            //        };
-            //    }
+            // bool firebaseLoginResult = true; if (!firebaseLoginResult) {
+            // this.logger.LogWarn("會員登入結果(重新登入)", $"Result: Firebase 登入失敗 Email:
+            // {memberModel.Email} Password: {memberModel.Password}", null); return new
+            // ResponseResultDto() { Result = false, ResultCode =
+            // (int)ResponseResultType.UnknownError, Content = "登入失敗." }; }
 
-            //    #endregion 登入 Firebase (TODO)
+            // #endregion 登入 Firebase (TODO)
 
-            //    #region 更新最新登入時間
+            // #region 更新最新登入時間
 
-            //    this.UpdateLastLoginDate(memberModel);
+            // this.UpdateLastLoginDate(memberModel);
 
-            //    #endregion 更新最新登入時間
+            // #endregion 更新最新登入時間
 
             //    this.logger.LogInfo("會員登入成功(重新登入)", $"MemberID: {memberID}", null);
             //    return new ResponseResultDto()
@@ -542,18 +532,19 @@ namespace DataInfo.Service.Managers.Member
         /// <summary>
         /// 會員資料更新處理
         /// </summary>
+        /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
-        /// <param name="model">model</param>
-        /// <returns>string</returns>
-        private async Task<string> UpdateInfoHandler(MemberEditInfoContent content, MemberModel model)
+        /// <returns>Tuple(string, MemberEditInfoRequest)</returns>
+        private async Task<Tuple<string, MemberEditInfoRequest>> UpdateInfoHandler(string memberID, MemberEditInfoContent content)
         {
+            MemberUpdateInfoData memberUpdateInfoData = new MemberUpdateInfoData();
             if (!string.IsNullOrEmpty(content.Avatar) || !string.IsNullOrEmpty(content.FrontCover))
             {
                 List<string> imgBase64s = new List<string>() { content.Avatar, content.FrontCover };
                 ResponseResult uploadResponseResult = await this.uploadService.UploadImages(imgBase64s).ConfigureAwait(false);
                 if (!uploadResponseResult.Result)
                 {
-                    return "上傳圖片失敗.";
+                    return Tuple.Create<string, MemberEditInfoRequest>("上傳圖片失敗.", null);
                 }
 
                 IEnumerable<string> imgUrls = uploadResponseResult.Content;
@@ -562,10 +553,10 @@ namespace DataInfo.Service.Managers.Member
                     string avatar = imgUrls.ElementAt(0);
                     if (string.IsNullOrEmpty(avatar))
                     {
-                        return "上傳頭像失敗.";
+                        return Tuple.Create<string, MemberEditInfoRequest>("上傳頭像失敗.", null);
                     }
 
-                    model.Avatar = avatar;
+                    memberUpdateInfoData.Avatar = avatar;
                 }
 
                 if (!string.IsNullOrEmpty(content.FrontCover))
@@ -573,39 +564,40 @@ namespace DataInfo.Service.Managers.Member
                     string frontCover = imgUrls.ElementAt(1);
                     if (string.IsNullOrEmpty(frontCover))
                     {
-                        return "上傳封面失敗.";
+                        return Tuple.Create<string, MemberEditInfoRequest>("上傳封面失敗.", null);
                     }
 
-                    model.FrontCover = frontCover;
+                    memberUpdateInfoData.FrontCover = frontCover;
                 }
             }
 
             if (content.Birthday.HasValue)
             {
-                model.Birthday = TimeZoneInfo.ConvertTimeToUtc(content.Birthday.Value);
+                memberUpdateInfoData.Birthday = content.Birthday.Value.ToString("yyyy/MM/dd HH:mm:ss");
             }
 
             if (content.BodyHeight > 0)
             {
-                model.BodyHeight = content.BodyHeight;
+                memberUpdateInfoData.BodyHeight = content.BodyHeight;
             }
 
             if (content.BodyWeight > 0)
             {
-                model.BodyWeight = content.BodyWeight;
+                memberUpdateInfoData.BodyWeight = content.BodyWeight;
             }
 
-            if (content.Gender != (int)GenderType.None)
+            if (content.Gender > (int)GenderType.None)
             {
-                model.Gender = content.Gender;
+                memberUpdateInfoData.Gender = content.Gender;
             }
 
             if (!string.IsNullOrEmpty(content.Nickname))
             {
-                model.Nickname = content.Nickname;
+                memberUpdateInfoData.NickName = content.Nickname;
             }
 
-            return string.Empty;
+            MemberEditInfoRequest memberEditInfoRequest = new MemberEditInfoRequest() { MemberID = memberID, UpdateData = memberUpdateInfoData };
+            return Tuple.Create(string.Empty, memberEditInfoRequest);
         }
 
         /// <summary>
@@ -618,40 +610,40 @@ namespace DataInfo.Service.Managers.Member
         {
             try
             {
-                MemberModel memberModel = (await this.memberRepository.Get(memberID, false).ConfigureAwait(false)).FirstOrDefault();
-                if (memberModel == null)
-                {
-                    this.logger.LogWarn("會員編輯資訊結果", $"Result: 搜尋失敗，無會員資料 MemberID: {memberID}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.Missed,
-                        Content = "無會員資料."
-                    };
-                }
+                #region 處理更新資料
 
-                string updateInfoHandlerResult = await this.UpdateInfoHandler(content, memberModel).ConfigureAwait(false);
-                if (!string.IsNullOrEmpty(updateInfoHandlerResult))
+                Tuple<string, MemberEditInfoRequest> updateInfoHandlerResult = await this.UpdateInfoHandler(memberID, content).ConfigureAwait(false);
+                if (!string.IsNullOrEmpty(updateInfoHandlerResult.Item1))
                 {
-                    this.logger.LogWarn("會員編輯資訊結果", $"Result: 更新失敗({updateInfoHandlerResult}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    this.logger.LogWarn("會員編輯資訊結果", $"Result: 更新失敗({updateInfoHandlerResult.Item1}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                     return new ResponseResult()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.UpdateFail,
-                        Content = updateInfoHandlerResult
+                        Content = updateInfoHandlerResult.Item1
                     };
                 }
 
-                bool updateResult = await this.memberRepository.Update(memberModel).ConfigureAwait(false);
-                if (!updateResult)
+                MemberEditInfoRequest request = updateInfoHandlerResult.Item2;
+
+                #endregion 處理更新資料
+
+                #region 發送【會員編輯】指令至後端
+
+                CommandData<MemberEditInfoResponse> response = await this.serverService.DoAction<MemberEditInfoResponse>((int)CommandIDType.UpdateUserInfo, CommandType.User.ToString(), request).ConfigureAwait(false);
+                this.logger.LogInfo("會員編輯資訊結果", $"Result: {response.Data.Result} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                switch (response.Data.Result)
                 {
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.UpdateFail,
-                        Content = "更新資料失敗."
-                    };
+                    case (int)UserRegisteredResultType.Fail:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.UpdateFail,
+                            Content = "更新資料失敗."
+                        };
                 }
+
+                #endregion 發送【會員編輯】指令至後端
 
                 return new ResponseResult()
                 {
@@ -1040,14 +1032,14 @@ namespace DataInfo.Service.Managers.Member
         /// </summary>
         /// <param name="content">content</param>
         /// <returns>ResponseResultDto</returns>
-        public async Task<ResponseResult> SendForgetPasswordVerifierCode(MemberForgetPasswordContent content)
+        public async Task<ResponseResult> SendForgetPasswordVerifierCode(SendVerifierCodeContent content)
         {
             try
             {
                 #region 驗證資料
 
-                MemberForgetPasswordContentValidator memberForgetPasswordContentValidator = new MemberForgetPasswordContentValidator(false);
-                ValidationResult validationResult = memberForgetPasswordContentValidator.Validate(content);
+                SendVerifierCodeContentValidator sendVerifierCodeContentValidator = new SendVerifierCodeContentValidator();
+                ValidationResult validationResult = sendVerifierCodeContentValidator.Validate(content);
                 if (!validationResult.IsValid)
                 {
                     string errorMessgae = validationResult.Errors[0].ErrorMessage;
@@ -1057,6 +1049,18 @@ namespace DataInfo.Service.Managers.Member
                         Result = false,
                         ResultCode = (int)ResponseResultType.InputError,
                         Content = errorMessgae
+                    };
+                }
+
+                bool isExist = await this.memberRepository.IsExist(content.Email).ConfigureAwait(false);
+                if (!isExist)
+                {
+                    this.logger.LogWarn("發送會員忘記密碼驗證碼結果", $"Result: 無 Content: {JsonConvert.SerializeObject(content)}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.InputError,
+                        Content = MessageHelper.Message.ResponseMessage.Member.EmailNotExist
                     };
                 }
 
@@ -1082,7 +1086,7 @@ namespace DataInfo.Service.Managers.Member
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = "發送郵件失敗."
+                        Content = MessageHelper.Message.ResponseMessage.Smtp.SendEmailFail
                     };
                 }
 
@@ -1090,7 +1094,7 @@ namespace DataInfo.Service.Managers.Member
                 {
                     Result = true,
                     ResultCode = (int)ResponseResultType.Success,
-                    Content = "已發送驗證碼."
+                    Content = MessageHelper.Message.ResponseMessage.VerifyCode.SendVerifyCodeSuccess
                 };
 
                 #endregion 發送郵件
@@ -1102,7 +1106,7 @@ namespace DataInfo.Service.Managers.Member
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.DenyAccess,
-                    Content = "發送驗證碼發生錯誤."
+                    Content = MessageHelper.Message.ResponseMessage.VerifyCode.SendVerifyCodeError
                 };
             }
         }

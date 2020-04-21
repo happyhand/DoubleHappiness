@@ -1,4 +1,4 @@
-﻿using DataInfo.Core.Models.Dto.Common;
+﻿using DataInfo.Core.Models.Dto.Common.Item;
 using DataInfo.Core.Models.Dto.Response;
 using System.Collections.Generic;
 using System.Security.Claims;

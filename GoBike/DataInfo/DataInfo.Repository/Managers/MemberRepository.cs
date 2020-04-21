@@ -25,6 +25,25 @@ namespace DataInfo.Repository.Managers
 
         #region 串接
 
+        /// <summary>
+        /// 檢查會員帳號是否存在
+        /// </summary>
+        /// <param name="email">email</param>
+        /// <returns>bool</returns>
+        public async Task<bool> IsExist(string email)
+        {
+            try
+            {
+                //// TODO
+                return true;
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("檢查會員帳號是否存在發生錯誤", $"Email: {email}", ex);
+                return false;
+            }
+        }
+
         ///// <summary>
         ///// 取得會員資料
         ///// </summary>
@@ -54,11 +73,8 @@ namespace DataInfo.Repository.Managers
         //                //// 搜尋  Mobile
         //            }
 
-        //            List<MemberDao> list = new List<MemberDao>();
-        //            if (memberDao != null)
-        //            {
-        //                list.Add(memberDao);
-        //            }
+        // List<MemberDao> list = new List<MemberDao>(); if (memberDao != null) {
+        // list.Add(memberDao); }
 
         //            return list;
         //        }

@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using DataInfo.Core.Applibs;
+using FluentValidation;
 
 namespace DataInfo.Core.Models.Dto.Member.Content
 {
@@ -35,15 +36,15 @@ namespace DataInfo.Core.Models.Dto.Member.Content
         {
             ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
             RuleFor(content => content.CurrentPassword)
-            .NotNull().WithMessage("目前密碼無效.")
-            .NotEmpty().WithMessage("目前密碼無效.");
+            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordEmpty)
+            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordEmpty);
             RuleFor(content => content.NewPassword)
-            .NotNull().WithMessage("新密碼無效.")
-            .NotEmpty().WithMessage("新密碼無效.");
+            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordEmpty)
+            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordEmpty);
             RuleFor(content => content.ConfirmPassword)
-            .NotNull().WithMessage("未輸入相同新密碼.")
-            .NotEmpty().WithMessage("未輸入相同新密碼.")
-            .Equal(content => content.NewPassword).WithMessage("未輸入相同新密碼.");
+            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordNotMatch)
+            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordNotMatch)
+            .Equal(content => content.NewPassword).WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordNotMatch);
         }
     }
 }

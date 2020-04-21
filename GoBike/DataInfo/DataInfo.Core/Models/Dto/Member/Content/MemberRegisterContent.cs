@@ -33,20 +33,20 @@ namespace DataInfo.Core.Models.Dto.Member.Content
         {
             ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
             RuleFor(content => content.Email)
-            .NotNull().WithMessage("信箱無效.")
-            .NotEmpty().WithMessage("信箱無效.")
-            .EmailAddress().WithMessage("信箱格式錯誤.");
+            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Member.EmailEmpty)
+            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Member.EmailEmpty)
+            .EmailAddress().WithMessage(MessageHelper.Message.ResponseMessage.Member.EmailFormatError);
 
             if (isValidatePassword)
             {
                 RuleFor(content => content.Password)
-                  .NotNull().WithMessage("密碼無效.")
-                  .NotEmpty().WithMessage("密碼無效.")
-                  .Must(password => { return Utility.ValidatePassword(password); }).WithMessage("密碼格式錯誤.");
+                  .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordEmpty)
+                  .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordEmpty)
+                  .Must(password => { return Utility.ValidatePassword(password); }).WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordFormatError);
                 RuleFor(content => content.ConfirmPassword)
-                  .NotNull().WithMessage("未輸入相同密碼.")
-                  .NotEmpty().WithMessage("未輸入相同密碼.")
-                  .Equal(content => content.Password).WithMessage("未輸入相同密碼.");
+                  .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordNotMatch)
+                  .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordNotMatch)
+                  .Equal(content => content.Password).WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordNotMatch);
             }
         }
     }

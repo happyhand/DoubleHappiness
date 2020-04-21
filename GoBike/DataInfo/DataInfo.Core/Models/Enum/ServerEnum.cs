@@ -16,14 +16,9 @@
         UserLogin = 1002,
 
         /// <summary>
-        /// 使用者登出
-        /// </summary>
-        UserLogout = 1003,
-
-        /// <summary>
         /// 更新使用者資訊
         /// </summary>
-        UpdateUserInfo = 1004,
+        UpdateUserInfo = 1003,
     }
 
     /// <summary>
@@ -40,6 +35,32 @@
         /// 會員
         /// </summary>
         User = 1
+    }
+
+    /// <summary>
+    /// 使用者登入結果類別資料
+    /// </summary>
+    public enum UserLoginResultType
+    {
+        /// <summary>
+        /// 登入失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 登入成功
+        /// </summary>
+        Success = 1,
+
+        /// <summary>
+        /// 帳號錯誤
+        /// </summary>
+        EmailError = 2,
+
+        /// <summary>
+        /// 密碼錯誤
+        /// </summary>
+        PasswordError = 3
     }
 
     /// <summary>
@@ -71,31 +92,5 @@
         /// 帳號格式不符
         /// </summary>
         EmailError = 4,
-    }
-
-    /// <summary>
-    /// 使用者登入結果類別資料
-    /// </summary>
-    public enum UserLoginResultType
-    {
-        /// <summary>
-        /// 登入失敗
-        /// </summary>
-        Fail = 0,
-
-        /// <summary>
-        /// 登入成功
-        /// </summary>
-        Success = 1,
-
-        /// <summary>
-        /// 帳號錯誤
-        /// </summary>
-        EmailError = 2,
-
-        /// <summary>
-        /// 密碼錯誤
-        /// </summary>
-        PasswordError = 3
     }
 }

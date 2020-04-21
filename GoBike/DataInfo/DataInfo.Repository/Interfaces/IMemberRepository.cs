@@ -32,6 +32,13 @@ namespace DataInfo.Repository.Interfaces
         Task<IEnumerable<MemberModel>> Get(IEnumerable<string> memberIDs);
 
         /// <summary>
+        /// 檢查會員帳號是否存在
+        /// </summary>
+        /// <param name="email">email</param>
+        /// <returns>bool</returns>
+        Task<bool> IsExist(string email);
+
+        /// <summary>
         /// 更新會員資料
         /// </summary>
         /// <param name="memberModel">memberModel</param>

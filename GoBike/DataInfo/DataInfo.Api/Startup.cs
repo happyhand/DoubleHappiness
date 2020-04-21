@@ -70,6 +70,7 @@ namespace DataInfo.Api
         private void ConfigurationHandler()
         {
             AppSettingHelper.Appsetting = Configuration.Get<AppSettingHelper>();
+            MessageHelper.Message = Configuration.Get<MessageHelper>();
         }
 
         /// <summary>

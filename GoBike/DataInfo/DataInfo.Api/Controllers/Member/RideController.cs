@@ -114,17 +114,6 @@ namespace DataInfo.Api.Controllers.Member
             string memberID = this.GetMemberID();
             try
             {
-                if (content == null)
-                {
-                    this.logger.LogWarn("會員請求新增騎乘資料失敗", $"Content: 無資料 MemberID: {memberID}", null);
-                    return Ok(new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = "未提供資料內容."
-                    });
-                }
-
                 this.logger.LogInfo("會員請求新增騎乘資料", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                 ResponseResult responseResult = await rideService.AddRideData(memberID, content).ConfigureAwait(false);
                 return Ok(responseResult);

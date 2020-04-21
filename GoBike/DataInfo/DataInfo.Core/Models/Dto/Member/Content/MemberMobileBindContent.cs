@@ -32,15 +32,15 @@ namespace DataInfo.Core.Models.Dto.Member.Content
         {
             ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
             RuleFor(content => content.Mobile)
-            .NotNull().WithMessage("手機號碼無效.")
-            .NotEmpty().WithMessage("手機號碼無效.")
-            .Must(mobile => { return Utility.ValidateMobile(mobile); }).WithMessage("手機號碼格式錯誤.");
+            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Member.MobileEmpty)
+            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Member.MobileEmpty)
+            .Must(mobile => { return Utility.ValidateMobile(mobile); }).WithMessage(MessageHelper.Message.ResponseMessage.Member.MobileFormatError);
 
             if (isValidateVerifierCode)
             {
                 RuleFor(content => content.VerifierCode)
-                .NotNull().WithMessage("驗證碼無效.")
-                .NotEmpty().WithMessage("驗證碼無效.");
+                .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.VerifyCode.VerifyCodeEmpty)
+                .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.VerifyCode.VerifyCodeEmpty);
             }
         }
     }

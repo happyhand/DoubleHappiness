@@ -52,17 +52,6 @@ namespace DataInfo.Api.Controllers.Member
             string mobile = this.GetMobile();
             try
             {
-                if (content == null)
-                {
-                    this.logger.LogWarn("會員請求手機綁定失敗", $"Result: 無資料內容 MemberID: {memberID} Mobile: {mobile} ", null);
-                    return Ok(new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = "未提供資料內容."
-                    });
-                }
-
                 if (!string.IsNullOrEmpty(mobile))
                 {
                     this.logger.LogWarn("會員請求手機綁定失敗", $"Result: 已綁定手機 MemberID: {memberID} Mobile: {mobile} Content: {JsonConvert.SerializeObject(content)}", null);
@@ -102,17 +91,6 @@ namespace DataInfo.Api.Controllers.Member
             string mobile = this.GetMobile();
             try
             {
-                if (content == null)
-                {
-                    this.logger.LogWarn("會員請求發送手機綁定驗證碼失敗", $"Result: 無資料內容 Email: {email} Mobile: {mobile} ", null);
-                    return Ok(new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = "未提供資料內容."
-                    });
-                }
-
                 if (!string.IsNullOrEmpty(mobile))
                 {
                     this.logger.LogWarn("會員請求手機綁定失敗", $"Result: 已綁定手機 Email: {email} Mobile: {mobile} Content: {JsonConvert.SerializeObject(content)}", null);

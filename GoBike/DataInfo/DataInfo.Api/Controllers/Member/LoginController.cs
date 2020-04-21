@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Threading.Tasks;
+using DataInfo.Core.Applibs;
 
 namespace DataInfo.Api.Controllers.Member
 {
@@ -139,17 +140,6 @@ namespace DataInfo.Api.Controllers.Member
         {
             try
             {
-                if (content == null)
-                {
-                    this.logger.LogWarn("會員請求登入失敗(一般登入)", "Content: 無資料", null);
-                    return Ok(new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = "無登入資料."
-                    });
-                }
-
                 this.logger.LogInfo("會員請求登入(一般登入)", $"Content: {JsonConvert.SerializeObject(content)}", null);
                 ResponseResult responseResult = await memberService.Login(content).ConfigureAwait(false);
                 return Ok(responseResult);

@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using DataInfo.Core.Applibs;
+using FluentValidation;
 
 namespace DataInfo.Core.Models.Dto.Member.Content
 {
@@ -31,15 +32,15 @@ namespace DataInfo.Core.Models.Dto.Member.Content
         {
             ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
             RuleFor(content => content.Email)
-            .NotNull().WithMessage("信箱無效.")
-            .NotEmpty().WithMessage("信箱無效.")
-            .EmailAddress().WithMessage("信箱格式錯誤.");
+            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Member.EmailEmpty)
+            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Member.EmailEmpty)
+            .EmailAddress().WithMessage(MessageHelper.Message.ResponseMessage.Member.EmailFormatError);
 
             if (isValidateVerifierCode)
             {
                 RuleFor(content => content.VerifierCode)
-                .NotNull().WithMessage("驗證碼無效.")
-                .NotEmpty().WithMessage("驗證碼無效.");
+                .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.VerifyCode.VerifyCodeEmpty)
+                .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.VerifyCode.VerifyCodeEmpty);
             }
         }
     }

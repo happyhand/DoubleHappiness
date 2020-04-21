@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using DataInfo.Core.Applibs;
+using FluentValidation;
 
 namespace DataInfo.Core.Models.Dto.Member.Content
 {
@@ -27,8 +28,8 @@ namespace DataInfo.Core.Models.Dto.Member.Content
         {
             ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
             RuleFor(content => content.SearchKey)
-            .NotNull().WithMessage("未提供搜尋內容.")
-            .NotEmpty().WithMessage("未提供搜尋內容.");
+            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Member.SearchEmpty)
+            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Member.SearchEmpty);
         }
     }
 }

@@ -51,17 +51,6 @@ namespace DataInfo.Api.Controllers.Member
             string memberID = this.GetMemberID();
             try
             {
-                if (content == null)
-                {
-                    this.logger.LogWarn("會員請求修改密碼失敗", $"Content: 無資料 MemberID: {memberID}", null);
-                    return Ok(new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = "未提供資料內容."
-                    });
-                }
-
                 this.logger.LogInfo("會員請求修改密碼", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                 ResponseResult responseResult = await this.memberService.EditPassword(memberID, content).ConfigureAwait(false);
                 return Ok(responseResult);
