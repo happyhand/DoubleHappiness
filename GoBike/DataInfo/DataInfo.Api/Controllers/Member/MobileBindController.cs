@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Threading.Tasks;
+using DataInfo.Core.Applibs;
 
 namespace DataInfo.Api.Controllers.Member
 {
@@ -59,11 +60,11 @@ namespace DataInfo.Api.Controllers.Member
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = "已綁定手機."
+                        Content = MessageHelper.Message.ResponseMessage.Member.MemberHasBindMobile
                     });
                 }
 
-                this.logger.LogInfo("會員請求手機綁定", $"MemberID: {memberID} Mobile: {mobile} Content: {JsonConvert.SerializeObject(content)}", null);
+                this.logger.LogInfo("會員請求手機綁定", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                 ResponseResult responseResult = await this.memberService.MobileBind(memberID, content).ConfigureAwait(false);
                 return Ok(responseResult);
             }
@@ -74,46 +75,46 @@ namespace DataInfo.Api.Controllers.Member
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = "更新資料發生錯誤."
+                    Content = MessageHelper.Message.ResponseMessage.Update.Error
                 });
             }
         }
 
         /// <summary>
-        /// 會員手機綁定 - 發送驗證碼
+        /// 會員手機綁定 - 請求發送驗證碼
         /// </summary>
         /// <param name="content">content</param>
         /// <returns>IActionResult</returns>
         [HttpPost]
-        public async Task<IActionResult> Post(MemberMobileBindContent content)
+        public async Task<IActionResult> Post(MemberRequestMobileBindContent content)
         {
-            string email = this.GetEmail();
+            string memberID = this.GetMemberID();
             string mobile = this.GetMobile();
             try
             {
                 if (!string.IsNullOrEmpty(mobile))
                 {
-                    this.logger.LogWarn("會員請求手機綁定失敗", $"Result: 已綁定手機 Email: {email} Mobile: {mobile} Content: {JsonConvert.SerializeObject(content)}", null);
+                    this.logger.LogWarn("會員請求發送手機綁定驗證碼失敗", $"Result: 會員已綁定手機 MemberID: {memberID} Mobile: {mobile} Content: {JsonConvert.SerializeObject(content)}", null);
                     return Ok(new ResponseResult()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = "已綁定手機."
+                        Content = MessageHelper.Message.ResponseMessage.Member.MemberHasBindMobile
                     });
                 }
 
-                this.logger.LogInfo("會員請求發送手機綁定驗證碼", $"Email: {email} Mobile: {mobile} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await this.memberService.SendMobileBindVerifierCode(email, content).ConfigureAwait(false);
+                this.logger.LogInfo("會員請求發送手機綁定驗證碼", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                ResponseResult responseResult = await this.memberService.SendMobileBindVerifierCode(memberID, content).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員請求發送手機綁定驗證碼發生錯誤", $"Email: {email} Mobile: {mobile} Content: {JsonConvert.SerializeObject(content)}", ex);
+                this.logger.LogError("會員請求發送手機綁定驗證碼發生錯誤", $"MemberID: {memberID} Mobile: {mobile} Content: {JsonConvert.SerializeObject(content)}", ex);
                 return Ok(new ResponseResult()
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = "發送驗證碼發生錯誤."
+                    Content = MessageHelper.Message.ResponseMessage.VerifyCode.SendVerifyCodeError
                 });
             }
         }

@@ -16,17 +16,17 @@ namespace DataInfo.Core.Models.Dao.Member
         /// <summary>
         /// Gets or sets 生日
         /// </summary>
-        public DateTime? Birthday { get; set; }
+        public DateTime Birthday { get; set; }
 
         /// <summary>
         /// Gets or sets 身高
         /// </summary>
-        public double BodyHeight { get; set; }
+        public float BodyHeight { get; set; }
 
         /// <summary>
         /// Gets or sets 體重
         /// </summary>
-        public double BodyWeight { get; set; }
+        public float BodyWeight { get; set; }
 
         /// <summary>
         /// Gets or sets 居住地
@@ -59,11 +59,6 @@ namespace DataInfo.Core.Models.Dao.Member
         public string GoogleToken { get; set; }
 
         /// <summary>
-        /// Gets or sets 登入時間
-        /// </summary>
-        public DateTime? LoginDate { get; set; }
-
-        /// <summary>
         /// Gets or sets MemberID
         /// </summary>
         public string MemberID { get; set; }
@@ -87,20 +82,5 @@ namespace DataInfo.Core.Models.Dao.Member
         /// Gets or sets 註冊來源
         /// </summary>
         public int RegisterSource { get; set; }
-
-        /// <summary>
-        /// Gets or sets 總騎乘爬升
-        /// </summary>
-        public double TotalAltitude { get; set; }
-
-        /// <summary>
-        /// Gets or sets 總騎乘距離
-        /// </summary>
-        public double TotalDistance { get; set; }
-
-        /// <summary>
-        /// Gets or sets 總騎乘時間
-        /// </summary>
-        public long TotalRideTime { get; set; }
     }
 }

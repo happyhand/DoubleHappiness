@@ -21,7 +21,7 @@ namespace DataInfo.Repository.Managers.Base
             Db = new SqlSugarClient(new ConnectionConfig()
             {
                 ConnectionString = AppSettingHelper.Appsetting.Sql.ConnectionStrings,
-                DbType = DbType.SqlServer,
+                DbType = DbType.MySql,
                 InitKeyType = InitKeyType.Attribute,
                 IsAutoCloseConnection = true,
             });

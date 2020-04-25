@@ -19,6 +19,11 @@
         /// 更新使用者資訊
         /// </summary>
         UpdateUserInfo = 1003,
+
+        /// <summary>
+        /// 更新密碼
+        /// </summary>
+        UpdatePassword = 1004
     }
 
     /// <summary>
@@ -35,6 +40,43 @@
         /// 會員
         /// </summary>
         User = 1
+    }
+
+    /// <summary>
+    /// 更新使用者資訊密碼結果
+    /// </summary>
+    public enum UpdatePasswordResultType
+    {
+        /// <summary>
+        /// 更新失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 更新成功
+        /// </summary>
+        Success = 1,
+
+        /// <summary>
+        /// 舊密碼錯誤
+        /// </summary>
+        OldPasswordError = 2,
+    }
+
+    /// <summary>
+    /// 更新使用者資訊結果
+    /// </summary>
+    public enum UpdateUserInfoResultType
+    {
+        /// <summary>
+        /// 更新失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 更新成功
+        /// </summary>
+        Success = 1,
     }
 
     /// <summary>

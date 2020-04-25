@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Threading.Tasks;
+using DataInfo.Core.Applibs;
 
 namespace DataInfo.Api.Controllers.Member
 {
@@ -59,7 +60,7 @@ namespace DataInfo.Api.Controllers.Member
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = "註冊發生錯誤."
+                    Content = MessageHelper.Message.ResponseMessage.Register.Error
                 });
             }
         }

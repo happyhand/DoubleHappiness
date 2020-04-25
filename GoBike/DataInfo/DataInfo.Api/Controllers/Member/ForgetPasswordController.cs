@@ -1,15 +1,14 @@
-﻿using DataInfo.Core.Extensions;
-using DataInfo.Service.Interfaces.Common;
-using DataInfo.Service.Interfaces.Member;
+﻿using DataInfo.Core.Applibs;
+using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dto.Member.Content;
 using DataInfo.Core.Models.Dto.Response;
+using DataInfo.Service.Interfaces.Common;
+using DataInfo.Service.Interfaces.Member;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Threading.Tasks;
-using DataInfo.Core.Models.Dto.Common.Content;
-using DataInfo.Core.Applibs;
 
 namespace DataInfo.Api.Controllers.Member
 {
@@ -61,18 +60,18 @@ namespace DataInfo.Api.Controllers.Member
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = "更新資料發生錯誤."
+                    Content = MessageHelper.Message.ResponseMessage.Update.Error
                 });
             }
         }
 
         /// <summary>
-        /// 會員忘記密碼 - 請求驗證碼
+        /// 會員忘記密碼 - 請求發送驗證碼
         /// </summary>
         /// <param name="content">content</param>
         /// <returns>IActionResult</returns>
         [HttpPost]
-        public async Task<IActionResult> Post(SendVerifierCodeContent content)
+        public async Task<IActionResult> Post(MemberRequestForgetPasswordContent content)
         {
             try
             {

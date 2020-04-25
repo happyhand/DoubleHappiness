@@ -6,7 +6,7 @@
     public class MessageHelper
     {
         /// <summary>
-        /// Appsetting
+        /// Message
         /// </summary>
         public static MessageHelper Message;
 
@@ -16,6 +16,69 @@
         /// Gets or sets ResponseMessage
         /// </summary>
         public ResponseMessageSetting ResponseMessage { get; set; }
+
+        /// <summary>
+        /// AddMessageSetting
+        /// </summary>
+        public class AddMessageSetting
+        {
+            /// <summary>
+            /// Gets or sets Error
+            /// </summary>
+            public string Error { get; set; }
+
+            /// <summary>
+            /// Gets or sets Fail
+            /// </summary>
+            public string Fail { get; set; }
+
+            /// <summary>
+            /// Gets or sets Success
+            /// </summary>
+            public string Success { get; set; }
+        }
+
+        /// <summary>
+        /// GetMessageSetting
+        /// </summary>
+        public class GetMessageSetting
+        {
+            /// <summary>
+            /// Gets or sets Error
+            /// </summary>
+            public string Error { get; set; }
+
+            /// <summary>
+            /// Gets or sets Fail
+            /// </summary>
+            public string Fail { get; set; }
+
+            /// <summary>
+            /// Gets or sets Success
+            /// </summary>
+            public string Success { get; set; }
+        }
+
+        /// <summary>
+        /// LoginMessageSetting
+        /// </summary>
+        public class LoginMessageSetting
+        {
+            /// <summary>
+            /// Gets or sets Error
+            /// </summary>
+            public string Error { get; set; }
+
+            /// <summary>
+            /// Gets or sets Fail
+            /// </summary>
+            public string Fail { get; set; }
+
+            /// <summary>
+            /// Gets or sets Success
+            /// </summary>
+            public string Success { get; set; }
+        }
 
         /// <summary>
         /// MemberMessageSetting
@@ -38,9 +101,24 @@
             public string EmailNotExist { get; set; }
 
             /// <summary>
+            /// Gets or sets MemberHasBindMobile
+            /// </summary>
+            public string MemberHasBindMobile { get; set; }
+
+            /// <summary>
             /// Gets or sets MemberIDEmpty
             /// </summary>
             public string MemberIDEmpty { get; set; }
+
+            /// <summary>
+            /// Gets or sets MemberNotExist
+            /// </summary>
+            public string MemberNotExist { get; set; }
+
+            /// <summary>
+            /// Gets or sets MobileBind
+            /// </summary>
+            public string MobileBind { get; set; }
 
             /// <summary>
             /// Gets or sets MobileEmpty
@@ -56,6 +134,11 @@
             /// Gets or sets PasswordEmpty
             /// </summary>
             public string PasswordEmpty { get; set; }
+
+            /// <summary>
+            /// Gets or sets PasswordFail
+            /// </summary>
+            public string PasswordFail { get; set; }
 
             /// <summary>
             /// Gets or sets PasswordFormatError
@@ -74,14 +157,60 @@
         }
 
         /// <summary>
+        /// RegisterMessageSetting
+        /// </summary>
+        public class RegisterMessageSetting
+        {
+            /// <summary>
+            /// Gets or sets EmailExist
+            /// </summary>
+            public string EmailExist { get; set; }
+
+            /// <summary>
+            /// Gets or sets Error
+            /// </summary>
+            public string Error { get; set; }
+
+            /// <summary>
+            /// Gets or sets Fail
+            /// </summary>
+            public string Fail { get; set; }
+
+            /// <summary>
+            /// Gets or sets Success
+            /// </summary>
+            public string Success { get; set; }
+        }
+
+        /// <summary>
         /// ResponseMessageSetting
         /// </summary>
         public class ResponseMessageSetting
         {
             /// <summary>
+            /// Gets or sets Add
+            /// </summary>
+            public AddMessageSetting Add { get; set; }
+
+            /// <summary>
+            /// Gets or sets Get
+            /// </summary>
+            public GetMessageSetting Get { get; set; }
+
+            /// <summary>
+            /// Gets or sets Login
+            /// </summary>
+            public LoginMessageSetting Login { get; set; }
+
+            /// <summary>
             /// Gets or sets Common
             /// </summary>
             public MemberMessageSetting Member { get; set; }
+
+            /// <summary>
+            /// Gets or sets Register
+            /// </summary>
+            public RegisterMessageSetting Register { get; set; }
 
             /// <summary>
             /// Gets or sets Common
@@ -97,6 +226,11 @@
             /// Gets or sets Update
             /// </summary>
             public UpdateMessageSetting Update { get; set; }
+
+            /// <summary>
+            /// Gets or sets Upload
+            /// </summary>
+            public UploadMessageSetting Upload { get; set; }
 
             /// <summary>
             /// Gets or sets Common
@@ -178,10 +312,36 @@
         }
 
         /// <summary>
+        /// UploadMessageSetting
+        /// </summary>
+        public class UploadMessageSetting
+        {
+            /// <summary>
+            /// Gets or sets AvatarFail
+            /// </summary>
+            public string AvatarFail { get; set; }
+
+            /// <summary>
+            /// Gets or sets FrontCoverFail
+            /// </summary>
+            public string FrontCoverFail { get; set; }
+
+            /// <summary>
+            /// Gets or sets PhotoFail
+            /// </summary>
+            public string PhotoFail { get; set; }
+        }
+
+        /// <summary>
         /// VerifyCodeMessageSetting
         /// </summary>
         public class VerifyCodeMessageSetting
         {
+            /// <summary>
+            /// Gets or sets MatchFail
+            /// </summary>
+            public string MatchFail { get; set; }
+
             /// <summary>
             /// Gets or sets SendVerifyCodeError
             /// </summary>

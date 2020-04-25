@@ -8,13 +8,13 @@ namespace DataInfo.Core.Models.Dto.Member.Response
     public class MemberLoginResponse
     {
         /// <summary>
-        /// Gets or sets 註冊結果
-        /// </summary>
-        public int Result { get; set; }
-
-        /// <summary>
         /// Gets or sets 會員資料
         /// </summary>
-        public MemberDao LoginData { get; set; }
+        public string MemberID { get; set; }
+
+        /// <summary>
+        /// Gets or sets 回覆結果
+        /// </summary>
+        public int Result { get; set; }
     }
 }

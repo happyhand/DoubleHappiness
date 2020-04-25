@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using NLog;
 using System;
 using System.Threading.Tasks;
+using DataInfo.Core.Applibs;
 
 namespace DataInfo.Api.Controllers.Member
 {
@@ -58,7 +59,7 @@ namespace DataInfo.Api.Controllers.Member
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = "更新資料發生錯誤."
+                    Content = MessageHelper.Message.ResponseMessage.Update.Error
                 });
             }
         }

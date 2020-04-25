@@ -9,21 +9,22 @@ using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Threading.Tasks;
+using DataInfo.Core.Applibs;
 
 namespace DataInfo.Api.Controllers.Member
 {
     /// <summary>
-    /// 會員修改密碼
+    /// 會員更新密碼
     /// </summary>
     [Route("api/Member/[controller]")]
     [Authorize]
     [ApiController]
-    public class EditPasswordController : ApiController
+    public class UpdatePasswordController : ApiController
     {
         /// <summary>
         /// logger
         /// </summary>
-        private readonly ILogger logger = LogManager.GetLogger("EditPasswordController");
+        private readonly ILogger logger = LogManager.GetLogger("UpdatePasswordController");
 
         /// <summary>
         /// memberService
@@ -35,34 +36,34 @@ namespace DataInfo.Api.Controllers.Member
         /// </summary>
         /// <param name="jwtService">jwtService</param>
         /// <param name="memberService">memberService</param>
-        public EditPasswordController(IJwtService jwtService, IMemberService memberService) : base(jwtService)
+        public UpdatePasswordController(IJwtService jwtService, IMemberService memberService) : base(jwtService)
         {
             this.memberService = memberService;
         }
 
         /// <summary>
-        /// 會員修改密碼
+        /// 會員更新密碼
         /// </summary>
         /// <param name="content">content</param>
         /// <returns>IActionResult</returns>
         [HttpPatch]
-        public async Task<IActionResult> Patch(MemberEditPasswordContent content)
+        public async Task<IActionResult> Patch(MemberUpdatePasswordContent content)
         {
             string memberID = this.GetMemberID();
             try
             {
-                this.logger.LogInfo("會員請求修改密碼", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await this.memberService.EditPassword(memberID, content).ConfigureAwait(false);
+                this.logger.LogInfo("會員請求更新密碼", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                ResponseResult responseResult = await this.memberService.UpdatePassword(memberID, content, false).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員請求修改密碼發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                this.logger.LogError("會員請求更新密碼發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
                 return Ok(new ResponseResult()
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = "更新資料發生錯誤."
+                    Content = MessageHelper.Message.ResponseMessage.Update.Error
                 });
             }
         }

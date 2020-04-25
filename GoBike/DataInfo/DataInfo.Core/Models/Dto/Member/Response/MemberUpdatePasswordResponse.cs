@@ -1,9 +1,9 @@
 ﻿namespace DataInfo.Core.Models.Dto.Member.Response
 {
     /// <summary>
-    /// 會員註冊後端回覆資料
+    /// 會員更新密碼後端回覆資料
     /// </summary>
-    public class MemberRegisterResponse
+    public class MemberUpdatePasswordResponse
     {
         /// <summary>
         /// Gets or sets 回覆結果

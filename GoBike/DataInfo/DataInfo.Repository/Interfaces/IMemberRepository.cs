@@ -10,46 +10,20 @@ namespace DataInfo.Repository.Interfaces
     public interface IMemberRepository
     {
         /// <summary>
-        /// 建立會員資料
-        /// </summary>
-        /// <param name="memberModel">memberModel</param>
-        /// <returns>bool</returns>
-        Task<bool> Create(MemberModel memberModel);
-
-        /// <summary>
         /// 取得會員資料
         /// </summary>
         /// <param name="searchKey">searchKey</param>
         /// <param name="isFuzzy">isFuzzy</param>
-        /// <returns>MemberModels</returns>
-        Task<IEnumerable<MemberModel>> Get(string searchKey, bool isFuzzy);
+        /// <param name="ignoreMemberIDs">ignoreMemberIDs</param>
+        /// <returns>MemberDaos</returns>
+        Task<IEnumerable<MemberDao>> Get(string searchKey, bool isFuzzy, IEnumerable<string> ignoreMemberIDs);
 
         /// <summary>
         /// 取得會員資料列表
         /// </summary>
         /// <param name="memberIDs">memberIDs</param>
-        /// <returns>MemberModels</returns>
-        Task<IEnumerable<MemberModel>> Get(IEnumerable<string> memberIDs);
-
-        /// <summary>
-        /// 檢查會員帳號是否存在
-        /// </summary>
-        /// <param name="email">email</param>
-        /// <returns>bool</returns>
-        Task<bool> IsExist(string email);
-
-        /// <summary>
-        /// 更新會員資料
-        /// </summary>
-        /// <param name="memberModel">memberModel</param>
-        /// <returns>bool</returns>
-        Task<bool> Update(MemberModel memberModel);
-
-        /// <summary>
-        /// 更新多筆會員資料
-        /// </summary>
-        /// <param name="memberModels">memberModels</param>
-        /// <returns>bool</returns>
-        Task<bool> Update(List<MemberModel> memberModels);
+        /// <param name="ignoreMemberIDs">ignoreMemberIDs</param>
+        /// <returns>MemberDaos</returns>
+        Task<IEnumerable<MemberDao>> Get(IEnumerable<string> memberIDs, IEnumerable<string> ignoreMemberIDs);
     }
 }

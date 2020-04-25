@@ -124,7 +124,7 @@ namespace DataInfo.Api.Controllers.Member
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = "登入發生錯誤."
+                    Content = MessageHelper.Message.ResponseMessage.Login.Error
                 });
             }
         }
@@ -151,7 +151,7 @@ namespace DataInfo.Api.Controllers.Member
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = "登入發生錯誤."
+                    Content = MessageHelper.Message.ResponseMessage.Login.Error
                 });
             }
         }

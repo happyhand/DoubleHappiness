@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DataInfo.Core.Models.Dao.Member.Table;
 
 namespace DataInfo.Repository.Managers
 {
@@ -23,111 +24,32 @@ namespace DataInfo.Repository.Managers
         /// </summary>
         private readonly ILogger logger = LogManager.GetLogger("MemberRepository");
 
-        #region 串接
-
         /// <summary>
-        /// 檢查會員帳號是否存在
+        /// 轉換 MemberDao
         /// </summary>
-        /// <param name="email">email</param>
-        /// <returns>bool</returns>
-        public async Task<bool> IsExist(string email)
+        /// <param name="userAccount">userAccount</param>
+        /// <param name="userInfo">userInfo</param>
+        /// <returns>MemberDaos</returns>
+        private async Task<IEnumerable<MemberDao>> TransformMemberDao(ISugarQueryable<UserAccount, UserInfo> query)
         {
-            try
+            return await query.Select((ua, ui) => new MemberDao()
             {
-                //// TODO
-                return true;
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("檢查會員帳號是否存在發生錯誤", $"Email: {email}", ex);
-                return false;
-            }
-        }
-
-        ///// <summary>
-        ///// 取得會員資料
-        ///// </summary>
-        ///// <param name="memberID">memberID</param>
-        ///// <returns>MemberDao</returns>
-        //public async Task<IEnumerable<MemberDao>> Get(string searchKey, bool isFuzzy)
-        //{
-        //    try
-        //    {
-        //        if (isFuzzy)
-        //        {
-        //            return null;
-        //        }
-        //        else
-        //        {
-        //            MemberDao memberDao = null;
-        //            if (searchKey.Contains(AppSettingHelper.Appsetting.MemberIDFlag))
-        //            {
-        //                //// 搜尋  MemberID
-        //            }
-        //            else if (Utility.ValidateEmail(searchKey))
-        //            {
-        //                //// 搜尋  Email
-        //            }
-        //            else if (Utility.ValidateMobile(searchKey))
-        //            {
-        //                //// 搜尋  Mobile
-        //            }
-
-        // List<MemberDao> list = new List<MemberDao>(); if (memberDao != null) {
-        // list.Add(memberDao); }
-
-        //            return list;
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        this.logger.LogError("取得會員資料發生錯誤", $"SearchKey: {searchKey} IsFuzzy: {isFuzzy}", ex);
-        //        return null;
-        //    }
-        //}
-
-        ///// <summary>
-        ///// 取得會員資料列表
-        ///// </summary>
-        ///// <param name="memberIDs">memberIDs</param>
-        ///// <returns>MemberDao</returns>
-        //public async Task<IEnumerable<MemberDao>> Get(IEnumerable<string> memberIDs)
-        //{
-        //    try
-        //    {
-        //        return null;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        this.logger.LogError("取得會員資料發生錯誤", $"MemberIDs: {JsonConvert.SerializeObject(memberIDs)}", ex);
-        //        return null;
-        //    }
-        //}
-
-        #endregion 串接
-
-        /// <summary>
-        /// 建立會員資料
-        /// </summary>
-        /// <param name="memberModel">memberModel</param>
-        /// <returns>bool</returns>
-        public async Task<bool> Create(MemberModel memberModel)
-        {
-            try
-            {
-                bool isSuccess = await this.Db.Insertable(memberModel)
-                                              .With(SqlWith.HoldLock)
-                                              .With(SqlWith.UpdLock)
-                                              .ExecuteCommandAsync()
-                                              .ConfigureAwait(false) > 0;
-                this.logger.LogInfo("建立會員資料結果", $"Result: {isSuccess} MemberModel: {JsonConvert.SerializeObject(memberModel)}", null);
-                return isSuccess;
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("建立會員資料發生錯誤", $"MemberModel: {JsonConvert.SerializeObject(memberModel)}", ex);
-                return false;
-            }
+                Avatar = ui.Avatar,
+                Birthday = Convert.ToDateTime(ui.Birthday),
+                BodyHeight = ui.BodyHeight,
+                BodyWeight = ui.BodyWeight,
+                Country = ui.Country,
+                Email = ua.Email,
+                FBToken = ua.FBToken,
+                FrontCover = ui.FrontCover,
+                Gender = ui.Gender,
+                GoogleToken = ua.GoogleToken,
+                MemberID = ua.MemberID,
+                Mobile = ui.Mobile,
+                Nickname = ui.NickName,
+                RegisterDate = Convert.ToDateTime(ua.RegisterDate),
+                RegisterSource = ua.RegisterSource
+            }).ToListAsync().ConfigureAwait(false);
         }
 
         /// <summary>
@@ -135,53 +57,59 @@ namespace DataInfo.Repository.Managers
         /// </summary>
         /// <param name="searchKey">searchKey</param>
         /// <param name="isFuzzy">isFuzzy</param>
-        /// <returns>MemberModels</returns>
-        public async Task<IEnumerable<MemberModel>> Get(string searchKey, bool isFuzzy)
+        /// <param name="ignoreMemberIDs">ignoreMemberIDs</param>
+        /// <returns>MemberDaos</returns>
+        public async Task<IEnumerable<MemberDao>> Get(string searchKey, bool isFuzzy, IEnumerable<string> ignoreMemberIDs)
         {
             try
             {
+                ISugarQueryable<UserAccount, UserInfo> query = null;
                 if (isFuzzy)
                 {
-                    return await this.Db.Queryable<MemberModel>()
-                        .Where(data => data.Email.Contains(searchKey) || data.Nickname.Contains(searchKey) || data.MemberID.Contains(searchKey))
-                        .ToListAsync()
-                        .ConfigureAwait(false);
+                    //// 注意避免 NickName 若為空值時，由 NickName 去比對 searchKey 會發生報錯，所以改用 searchKey 去比對 NickName
+                    query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => new object[] {
+                        JoinType.Left,ua.MemberID.Equals(ui.MemberID)})
+                          .Where((ua, ui) => ua.Email.Contains(searchKey) || (!string.IsNullOrEmpty(ui.NickName) && ui.NickName.Contains(searchKey)) || ua.MemberID.Contains(searchKey))
+                          .Where(ua => ignoreMemberIDs == null || !ignoreMemberIDs.Contains(ua.MemberID));
                 }
                 else
                 {
-                    MemberModel memberModel = null;
                     if (Utility.ValidateEmail(searchKey))
                     {
-                        memberModel = await this.Db.Queryable<MemberModel>().Where(data => searchKey.Equals(data.Email))
-                                                           .SingleAsync()
-                                                           .ConfigureAwait(false);
+                        query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => new object[] {
+                        JoinType.Left,ua.MemberID.Equals(ui.MemberID)})
+                          .Where((ua, ui) => ua.Email.Equals(searchKey))
+                          .Where(ua => ignoreMemberIDs == null || !ignoreMemberIDs.Contains(ua.MemberID));
                     }
                     else if (searchKey.Contains(AppSettingHelper.Appsetting.MemberIDFlag))
                     {
-                        memberModel = await this.Db.Queryable<MemberModel>().Where(data => searchKey.Equals(data.MemberID))
-                                                          .SingleAsync()
-                                                          .ConfigureAwait(false);
+                        query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => new object[] {
+                        JoinType.Left,ua.MemberID.Equals(ui.MemberID)})
+                          .Where((ua, ui) => ua.MemberID.Equals(searchKey))
+                          .Where(ua => ignoreMemberIDs == null || !ignoreMemberIDs.Contains(ua.MemberID));
                     }
                     else if (Utility.ValidateMobile(searchKey))
                     {
-                        memberModel = await this.Db.Queryable<MemberModel>().Where(data => searchKey.Equals(data.Mobile))
-                                                         .SingleAsync()
-                                                         .ConfigureAwait(false);
+                        query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => new object[] {
+                        JoinType.Left,ua.MemberID.Equals(ui.MemberID)})
+                          .Where((ua, ui) => !string.IsNullOrEmpty(ui.Mobile) && ui.Mobile.Equals(searchKey))
+                          .Where(ua => ignoreMemberIDs == null || !ignoreMemberIDs.Contains(ua.MemberID));
                     }
+                }
 
-                    List<MemberModel> list = new List<MemberModel>();
-                    if (memberModel != null)
-                    {
-                        list.Add(memberModel);
-                    }
-
-                    return list;
+                if (query != null)
+                {
+                    return await this.TransformMemberDao(query).ConfigureAwait(false);
+                }
+                else
+                {
+                    return new List<MemberDao>();
                 }
             }
             catch (Exception ex)
             {
                 this.logger.LogError("取得會員資料發生錯誤", $"SearchKey: {searchKey} IsFuzzy: {isFuzzy}", ex);
-                return new List<MemberModel>();
+                return new List<MemberDao>();
             }
         }
 
@@ -189,68 +117,23 @@ namespace DataInfo.Repository.Managers
         /// 取得會員資料列表
         /// </summary>
         /// <param name="memberIDs">memberIDs</param>
-        /// <returns>MemberModels</returns>
-        public async Task<IEnumerable<MemberModel>> Get(IEnumerable<string> memberIDs)
+        /// <param name="ignoreMemberIDs">ignoreMemberIDs</param>
+        /// <returns>MemberDaos</returns>
+        public async Task<IEnumerable<MemberDao>> Get(IEnumerable<string> memberIDs, IEnumerable<string> ignoreMemberIDs)
         {
             try
             {
-                return await this.Db.Queryable<MemberModel>()
-                    .Where(data => memberIDs.Contains(data.MemberID))
-                    .ToListAsync()
-                    .ConfigureAwait(false);
+                ISugarQueryable<UserAccount, UserInfo> query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => new object[] {
+                        JoinType.Left,ua.MemberID.Equals(ui.MemberID)})
+                           .Where(ua => memberIDs.Contains(ua.MemberID))
+                           .Where(ua => ignoreMemberIDs == null || !ignoreMemberIDs.Contains(ua.MemberID));
+
+                return await this.TransformMemberDao(query).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("取得會員資料列表發生錯誤", $"MemberIDs: {JsonConvert.SerializeObject(memberIDs)}", ex);
-                return new List<MemberModel>();
-            }
-        }
-
-        /// <summary>
-        /// 更新會員資料
-        /// </summary>
-        /// <param name="memberModel">memberModel</param>
-        /// <returns>bool</returns>
-        public async Task<bool> Update(MemberModel memberModel)
-        {
-            try
-            {
-                bool isSuccess = await this.Db.Updateable(memberModel)
-                                              .With(SqlWith.HoldLock)
-                                              .With(SqlWith.UpdLock)
-                                              .ExecuteCommandAsync()
-                                              .ConfigureAwait(false) > 0;
-                this.logger.LogInfo("更新會員資料結果", $"Result: {isSuccess} MemberModel: {JsonConvert.SerializeObject(memberModel)}", null);
-                return isSuccess;
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("更新會員資料發生錯誤", $"MemberModel: {JsonConvert.SerializeObject(memberModel)}", ex);
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// 更新多筆會員資料
-        /// </summary>
-        /// <param name="memberModels">memberModels</param>
-        /// <returns>bool</returns>
-        public async Task<bool> Update(List<MemberModel> memberModels)
-        {
-            try
-            {
-                bool isSuccess = await this.Db.Updateable(memberModels)
-                                              .With(SqlWith.HoldLock)
-                                              .With(SqlWith.UpdLock)
-                                              .ExecuteCommandAsync()
-                                              .ConfigureAwait(false) > 0;
-                this.logger.LogInfo("更新多筆會員資料結果", $"Result: {isSuccess} MemberModels: {JsonConvert.SerializeObject(memberModels)}", null);
-                return isSuccess;
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("更新多筆會員資料發生錯誤", $"MemberModels: {JsonConvert.SerializeObject(memberModels)}", ex);
-                return false;
+                return new List<MemberDao>();
             }
         }
     }

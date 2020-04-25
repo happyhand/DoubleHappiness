@@ -16,8 +16,8 @@ namespace DataInfo.AutoMapperProfiles
         /// </summary>
         public MemberProfile()
         {
-            CreateMap<MemberModel, MemberSimpleInfoView>();
-            CreateMap<MemberModel, MemberDetailInfoView>();
+            CreateMap<MemberDao, MemberSimpleInfoView>();
+            CreateMap<MemberDao, MemberDetailInfoView>();
 
             CreateMap<RideModel, RideInfoContent>()
             .ForMember(dto => dto.ShareContent, options => options.MapFrom(data => JsonConvert.DeserializeObject(data.ShareContent)))

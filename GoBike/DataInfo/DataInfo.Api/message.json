@@ -2,14 +2,18 @@
     "ResponseMessage": {
         "Member": {
             "MemberIDEmpty": "會員編號無效.",
+            "MemberNotExist": "會員資料不存在.",
+            "MemberHasBindMobile": "會員已綁定手機.",
             "EmailEmpty": "信箱無效.",
             "EmailNotExist": "查無以此信箱註冊的會員.",
             "EmailFormatError": "信箱格式錯誤.",
             "PasswordEmpty": "密碼無效.",
             "PasswordFormatError": "密碼格式錯誤.",
             "PasswordNotMatch": "未輸入相同密碼.",
+            "PasswordFail": "密碼錯誤.",
             "MobileEmpty": "手機號碼無效.",
             "MobileFormatError": "手機號碼格式錯誤.",
+            "MobileBind": "該手機已被綁定.",
             "SearchEmpty": "未提供搜尋內容"
         },
         "Update": {
@@ -18,11 +22,28 @@
             "Error": "更新資料發生錯誤."
         },
         "Login": {
-            "Success": "更新資料成功.",
-            "Fail": "更新資料失敗.",
-            "Error": "更新資料發生錯誤."
+            "Success": "登入成功.",
+            "Fail": "登入失敗.",
+            "Error": "登入發生錯誤."
+        },
+        "Register": {
+            "Success": "註冊成功.",
+            "Fail": "註冊失敗.",
+            "Error": "註冊發生錯誤.",
+            "EmailExist": "此信箱已經被註冊."
+        },
+        "Add": {
+            "Success": "新增資料成功.",
+            "Fail": "新增資料失敗.",
+            "Error": "新增資料發生錯誤."
+        },
+        "Get": {
+            "Success": "取得資料成功.",
+            "Fail": "取得資料失敗.",
+            "Error": "取得資料發生錯誤."
         },
         "VerifyCode": {
+            "MatchFail": "驗證碼錯誤.",
             "SendVerifyCodeSuccess": "已發送驗證碼.",
             "SendVerifyCodeFail": "請求驗證碼失敗.",
             "SendVerifyCodeError": "請求驗證碼發生錯誤.",
@@ -39,6 +60,11 @@
         },
         "smtp": {
             "SendEmailFail": "發送郵件失敗"
+        },
+        "Upload": {
+            "PhotoFail": "上傳圖片失敗",
+            "AvatarFail": "上傳頭像失敗",
+            "FrontCoverFail": "上傳封面失敗"
         }
     }
 }
