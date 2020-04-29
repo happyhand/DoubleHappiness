@@ -8,84 +8,11 @@ using System;
 namespace DataInfo.Api.Controllers
 {
     /// <summary>
-    /// Base API
+    /// Api Controller
     /// </summary>
     [ApiController]
     public class ApiController : ControllerBase
     {
-        /// <summary>
-        /// jwtService
-        /// </summary>
-        private readonly IJwtService jwtService;
-
-        /// <summary>
-        /// logger
-        /// </summary>
-        private readonly ILogger logger = LogManager.GetLogger("ApiController");
-
-        /// <summary>
-        /// 建構式
-        /// </summary>
-        /// <param name="jwtService">jwtService</param>
-        public ApiController(IJwtService jwtService)
-        {
-            this.jwtService = jwtService;
-        }
-
-        /// <summary>
-        /// 取得 Email
-        /// </summary>
-        /// <returns>string</returns>
-        protected string GetEmail()
-        {
-            try
-            {
-                return this.jwtService.GetPayloadAppointValue(User, "Email");
-            }
-            catch (Exception ex)
-            {
-                this.HttpContext.Request.Headers.TryGetValue("Authorization", out StringValues token);
-                this.logger.LogError("取得 Email 發生錯誤", $"Token: {token}", ex);
-                return string.Empty;
-            }
-        }
-
-        /// <summary>
-        /// 取得 MemberID
-        /// </summary>
-        /// <returns>string</returns>
-        protected string GetMemberID()
-        {
-            try
-            {
-                return this.jwtService.GetPayloadAppointValue(User, "MemberID");
-            }
-            catch (Exception ex)
-            {
-                this.HttpContext.Request.Headers.TryGetValue("Authorization", out StringValues token);
-                this.logger.LogError("取得 MemberID 發生錯誤", $"Token: {token}", ex);
-                return string.Empty;
-            }
-        }
-
-        /// <summary>
-        /// 取得 Mobile
-        /// </summary>
-        /// <returns>string</returns>
-        protected string GetMobile()
-        {
-            try
-            {
-                return this.jwtService.GetPayloadAppointValue(User, "Mobile");
-            }
-            catch (Exception ex)
-            {
-                this.HttpContext.Request.Headers.TryGetValue("Authorization", out StringValues token);
-                this.logger.LogError("取得 Mobile 發生錯誤", $"Token: {token}", ex);
-                return string.Empty;
-            }
-        }
-
         /// <summary>
         /// 執行 BadRequest 回覆加密
         /// </summary>

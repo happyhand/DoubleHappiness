@@ -223,6 +223,11 @@
             public SmtpMessageSetting Smtp { get; set; }
 
             /// <summary>
+            /// Gets or sets Team
+            /// </summary>
+            public TeamMessageSetting Team { get; set; }
+
+            /// <summary>
             /// Gets or sets Update
             /// </summary>
             public UpdateMessageSetting Update { get; set; }
@@ -291,6 +296,52 @@
         }
 
         /// <summary>
+        /// TeamMessageSetting
+        /// </summary>
+        public class TeamMessageSetting
+        {
+            /// <summary>
+            /// Gets or sets AvatarEmpty
+            /// </summary>
+            public string AvatarEmpty { get; set; }
+
+            /// <summary>
+            /// Gets or sets CountyIDEmpty
+            /// </summary>
+            public string CountyIDEmpty { get; set; }
+
+            /// <summary>
+            /// Gets or sets ExamineStatusEmpty
+            /// </summary>
+            public string ExamineStatusEmpty { get; set; }
+
+            /// <summary>
+            /// Gets or sets FrontCoverEmpty
+            /// </summary>
+            public string FrontCoverEmpty { get; set; }
+
+            /// <summary>
+            /// Gets or sets SearchStatusEmpty
+            /// </summary>
+            public string SearchStatusEmpty { get; set; }
+
+            /// <summary>
+            /// Gets or sets TeamInfoEmpty
+            /// </summary>
+            public string TeamInfoEmpty { get; set; }
+
+            /// <summary>
+            /// Gets or sets TeamNameEmpty
+            /// </summary>
+            public string TeamNameEmpty { get; set; }
+
+            /// <summary>
+            /// Gets or sets TeamNameRepeat
+            /// </summary>
+            public string TeamNameRepeat { get; set; }
+        }
+
+        /// <summary>
         /// UpdateMessageSetting
         /// </summary>
         public class UpdateMessageSetting
@@ -341,6 +392,11 @@
             /// Gets or sets MatchFail
             /// </summary>
             public string MatchFail { get; set; }
+
+            /// <summary>
+            /// Gets or sets MatchSuccess
+            /// </summary>
+            public string MatchSuccess { get; set; }
 
             /// <summary>
             /// Gets or sets SendVerifyCodeError

@@ -2,7 +2,6 @@
 using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dto.Member.Content;
 using DataInfo.Core.Models.Dto.Response;
-using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Member;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -32,9 +31,8 @@ namespace DataInfo.Api.Controllers.Member
         /// <summary>
         /// 建構式
         /// </summary>
-        /// <param name="jwtService">jwtService</param>
         /// <param name="memberService">memberService</param>
-        public ForgetPasswordController(IJwtService jwtService, IMemberService memberService) : base(jwtService)
+        public ForgetPasswordController(IMemberService memberService)
         {
             this.memberService = memberService;
         }

@@ -17,7 +17,7 @@ namespace DataInfo.Api.Controllers.Member
     /// 會員登入
     /// </summary>
     [ApiController]
-    public class LoginController : ApiController
+    public class LoginController : JwtController
     {
         /// <summary>
         /// logger

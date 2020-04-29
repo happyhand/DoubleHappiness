@@ -14,21 +14,21 @@ namespace DataInfo.Service.Interfaces.Member
         /// </summary>
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
-        /// <returns>ResponseResultDto</returns>
+        /// <returns>ResponseResult</returns>
         Task<ResponseResult> DeleteInteractive(string memberID, InteractiveContent content);
 
         /// <summary>
         /// 取得黑名單列表
         /// </summary>
         /// <param name="memberID">memberID</param>
-        /// <returns>ResponseResultDto</returns>
+        /// <returns>ResponseResult</returns>
         Task<ResponseResult> GetBlackList(string memberID);
 
         /// <summary>
         /// 取得好友列表
         /// </summary>
         /// <param name="memberID">memberID</param>
-        /// <returns>ResponseResultDto</returns>
+        /// <returns>ResponseResult</returns>
         Task<ResponseResult> GetFriendList(string memberID);
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace DataInfo.Service.Interfaces.Member
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
         /// <param name="status">status</param>
-        /// <returns>ResponseResultDto</returns>
+        /// <returns>ResponseResult</returns>
         Task<ResponseResult> UpdateInteractive(string memberID, InteractiveContent content, int status);
     }
 }

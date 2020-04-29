@@ -73,7 +73,7 @@ namespace DataInfo.Service.Managers.Member
         /// </summary>
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
-        /// <returns>ResponseResultDto</returns>
+        /// <returns>ResponseResult</returns>
         public async Task<ResponseResult> DeleteInteractive(string memberID, InteractiveContent content)
         {
             try
@@ -142,7 +142,7 @@ namespace DataInfo.Service.Managers.Member
         /// 取得黑名單列表
         /// </summary>
         /// <param name="memberID">memberID</param>
-        /// <returns>ResponseResultDto</returns>
+        /// <returns>ResponseResult</returns>
         public async Task<ResponseResult> GetBlackList(string memberID)
         {
             try
@@ -181,7 +181,7 @@ namespace DataInfo.Service.Managers.Member
         /// 取得好友列表
         /// </summary>
         /// <param name="memberID">memberID</param>
-        /// <returns>ResponseResultDto</returns>
+        /// <returns>ResponseResult</returns>
         public async Task<ResponseResult> GetFriendList(string memberID)
         {
             try
@@ -230,7 +230,7 @@ namespace DataInfo.Service.Managers.Member
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
         /// <param name="status">status</param>
-        /// <returns>ResponseResultDto</returns>
+        /// <returns>ResponseResult</returns>
         public async Task<ResponseResult> UpdateInteractive(string memberID, InteractiveContent content, int status)
         {
             try

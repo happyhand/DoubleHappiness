@@ -1,6 +1,6 @@
 ﻿using DataInfo.Core.Applibs;
 
-namespace DataInfo.Core.Models.Dto.Common.Item
+namespace DataInfo.Core.Models.Dto.Common
 {
     /// <summary>
     /// 郵件資料

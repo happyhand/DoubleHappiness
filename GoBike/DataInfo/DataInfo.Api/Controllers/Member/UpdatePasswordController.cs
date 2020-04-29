@@ -19,7 +19,7 @@ namespace DataInfo.Api.Controllers.Member
     [Route("api/Member/[controller]")]
     [Authorize]
     [ApiController]
-    public class UpdatePasswordController : ApiController
+    public class UpdatePasswordController : JwtController
     {
         /// <summary>
         /// logger

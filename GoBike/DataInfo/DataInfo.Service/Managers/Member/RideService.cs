@@ -67,7 +67,7 @@ namespace DataInfo.Service.Managers.Member
         /// <returns>string</returns>
         private async Task<string> UpdateInfoHandler(RideUpdateInfoContent content, RideModel rideModel)
         {
-            if (content.CountyID != (int)CityType.None)
+            if (content.CountyID != (int)CountyType.None)
             {
                 rideModel.CountyID = content.CountyID;
             }
@@ -135,7 +135,7 @@ namespace DataInfo.Service.Managers.Member
         /// </summary>
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
-        /// <returns>ResponseResultDto</returns>
+        /// <returns>ResponseResult</returns>
         public async Task<ResponseResult> AddRideData(string memberID, RideInfoContent content)
         {
             try
@@ -247,7 +247,7 @@ namespace DataInfo.Service.Managers.Member
         /// 取得騎乘資料
         /// </summary>
         /// <param name="rideID">rideID</param>
-        /// <returns>ResponseResultDto</returns>
+        /// <returns>ResponseResult</returns>
         public async Task<ResponseResult> GetRideData(string rideID)
         {
             try
@@ -294,7 +294,7 @@ namespace DataInfo.Service.Managers.Member
         /// 取得會員的騎乘資料列表
         /// </summary>
         /// <param name="memberID">memberID</param>
-        /// <returns>ResponseResultDto</returns>
+        /// <returns>ResponseResult</returns>
         public async Task<ResponseResult> GetRideDataListOfMember(string memberID)
         {
             try

@@ -25,7 +25,7 @@ namespace DataInfo.Service.Managers.Common
         /// 上傳圖片
         /// </summary>
         /// <param name="imgBase64s">imgBase64s</param>
-        /// <returns>ResponseResultDto</returns>
+        /// <returns>ResponseResult</returns>
         public async Task<ResponseResult> UploadImages(IEnumerable<string> imgBase64s)
         {
             try

@@ -3,7 +3,7 @@
     /// <summary>
     /// 市區類別資料
     /// </summary>
-    public enum CityType
+    public enum CountyType
     {
         /// <summary>
         /// 無設定

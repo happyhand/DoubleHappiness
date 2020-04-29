@@ -20,7 +20,7 @@ namespace DataInfo.Api.Controllers.Member
     [Route("api/Member/[controller]")]
     [Authorize]
     [ApiController]
-    public class SearchController : ApiController
+    public class SearchController : JwtController
     {
         /// <summary>
         /// logger

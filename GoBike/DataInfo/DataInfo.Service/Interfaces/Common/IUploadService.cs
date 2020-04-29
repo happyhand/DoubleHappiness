@@ -13,7 +13,7 @@ namespace DataInfo.Service.Interfaces.Common
         /// 上傳圖片
         /// </summary>
         /// <param name="imgBase64s">imgBase64s</param>
-        /// <returns>ResponseResultDto</returns>
+        /// <returns>ResponseResult</returns>
         Task<ResponseResult> UploadImages(IEnumerable<string> imgBase64s);
     }
 }

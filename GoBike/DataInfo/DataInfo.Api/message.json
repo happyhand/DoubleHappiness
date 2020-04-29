@@ -33,9 +33,9 @@
             "EmailExist": "此信箱已經被註冊."
         },
         "Add": {
-            "Success": "新增資料成功.",
-            "Fail": "新增資料失敗.",
-            "Error": "新增資料發生錯誤."
+            "Success": "建立資料成功.",
+            "Fail": "建立資料失敗.",
+            "Error": "建立資料發生錯誤."
         },
         "Get": {
             "Success": "取得資料成功.",
@@ -43,7 +43,8 @@
             "Error": "取得資料發生錯誤."
         },
         "VerifyCode": {
-            "MatchFail": "驗證碼錯誤.",
+            "MatchSuccess": "驗證成功.",
+            "MatchFail": "驗證失敗.",
             "SendVerifyCodeSuccess": "已發送驗證碼.",
             "SendVerifyCodeFail": "請求驗證碼失敗.",
             "SendVerifyCodeError": "請求驗證碼發生錯誤.",
@@ -65,6 +66,16 @@
             "PhotoFail": "上傳圖片失敗",
             "AvatarFail": "上傳頭像失敗",
             "FrontCoverFail": "上傳封面失敗"
+        },
+        "Team": {
+            "AvatarEmpty": "車隊頭像無效",
+            "FrontCoverEmpty": "車隊封面無效",
+            "CountyIDEmpty": "未設定車隊所在地",
+            "ExamineStatusEmpty": "車隊審核狀態無效",
+            "SearchStatusEmpty": "車隊搜尋狀態無效",
+            "TeamInfoEmpty": "車隊簡介無效",
+            "TeamNameEmpty": "車隊名稱無效",
+            "TeamNameRepeat": "車隊名稱重複"
         }
     }
 }

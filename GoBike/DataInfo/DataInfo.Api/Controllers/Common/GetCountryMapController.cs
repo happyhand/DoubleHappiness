@@ -11,7 +11,7 @@ namespace DataInfo.Api.Controllers.Common
     /// </summary>
     [Route("api/Common/[controller]")]
     [ApiController]
-    public class GetCountryMapController : ControllerBase
+    public class GetCountryMapController : ApiController
     {
         /// <summary>
         /// logger

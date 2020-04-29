@@ -16,10 +16,10 @@ namespace DataInfo.Api.Controllers.Interactive
     /// <summary>
     /// 會員黑名單
     /// </summary>
-    [Route("api/[controller]")]
-    [Authorize]
     [ApiController]
-    public class BlackController : ApiController
+    [Authorize]
+    [Route("api/[controller]")]
+    public class BlackController : JwtController
     {
         /// <summary>
         /// InteractiveService

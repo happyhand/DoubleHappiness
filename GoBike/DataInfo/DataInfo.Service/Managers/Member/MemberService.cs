@@ -2,7 +2,7 @@
 using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dao.Member;
-using DataInfo.Core.Models.Dto.Common.Item;
+using DataInfo.Core.Models.Dto.Common;
 using DataInfo.Core.Models.Dto.Member.Content;
 using DataInfo.Core.Models.Dto.Member.Request;
 using DataInfo.Core.Models.Dto.Member.Request.Data;
@@ -67,19 +67,26 @@ namespace DataInfo.Service.Managers.Member
         private readonly IUploadService uploadService;
 
         /// <summary>
+        /// verifyCodeService
+        /// </summary>
+        private readonly IVerifyCodeService verifyCodeService;
+
+        /// <summary>
         /// 建構式
         /// </summary>
         /// <param name="mapper">mapper</param>
         /// <param name="jwtService">jwtService</param>
         /// <param name="uploadService">uploadService</param>
+        /// <param name="verifyCodeService">verifyCodeService</param>
         /// <param name="serverService">serverService</param>
         /// <param name="memberRepository">memberRepository</param>
         /// <param name="redisRepository">redisRepository</param>
-        public MemberService(IMapper mapper, IJwtService jwtService, IUploadService uploadService, IServerService serverService, IMemberRepository memberRepository, IRedisRepository redisRepository)
+        public MemberService(IMapper mapper, IJwtService jwtService, IUploadService uploadService, IVerifyCodeService verifyCodeService, IServerService serverService, IMemberRepository memberRepository, IRedisRepository redisRepository)
         {
             this.mapper = mapper;
             this.jwtService = jwtService;
             this.uploadService = uploadService;
+            this.verifyCodeService = verifyCodeService;
             this.serverService = serverService;
             this.memberRepository = memberRepository;
             this.redisRepository = redisRepository;
@@ -199,7 +206,7 @@ namespace DataInfo.Service.Managers.Member
                     Password = content.Password,
                 };
 
-                CommandData<MemberLoginResponse> response = await this.serverService.DoAction<MemberLoginResponse>((int)CommandIDType.UserLogin, CommandType.User.ToString(), request).ConfigureAwait(false);
+                CommandData<MemberLoginResponse> response = await this.serverService.DoAction<MemberLoginResponse>((int)UserCommandIDType.UserLogin, CommandType.User.ToString(), request).ConfigureAwait(false);
                 this.logger.LogInfo("會員登入結果(一般登入)", $"Result: {response.Data.Result} Email: {content.Email} Password: {content.Password}", null);
                 switch (response.Data.Result)
                 {
@@ -207,7 +214,7 @@ namespace DataInfo.Service.Managers.Member
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.UnknownError,
+                            ResultCode = (int)ResponseResultType.DenyAccess,
                             Content = MessageHelper.Message.ResponseMessage.Login.Fail
                         };
 
@@ -292,7 +299,7 @@ namespace DataInfo.Service.Managers.Member
                     RegisterSource = string.IsNullOrEmpty(fbToken) ? string.IsNullOrEmpty(googleToken) ? (int)RegisterSourceType.Normal : (int)RegisterSourceType.Google : (int)RegisterSourceType.FB
                 };
 
-                CommandData<MemberRegisterResponse> response = await this.serverService.DoAction<MemberRegisterResponse>((int)CommandIDType.UserRegistered, CommandType.User.ToString(), request).ConfigureAwait(false);
+                CommandData<MemberRegisterResponse> response = await this.serverService.DoAction<MemberRegisterResponse>((int)UserCommandIDType.UserRegistered, CommandType.User.ToString(), request).ConfigureAwait(false);
                 this.logger.LogInfo("會員註冊結果", $"Result: {response.Data.Result} Email: {content.Email} Password: {content.Password} ConfirmPassword: {content.ConfirmPassword} IsValidatePassword: {isValidatePassword} FbToken: {fbToken} GoogleToken: {googleToken}", null);
                 switch (response.Data.Result)
                 {
@@ -619,7 +626,7 @@ namespace DataInfo.Service.Managers.Member
 
                 #region 發送【會員編輯】指令至後端
 
-                CommandData<MemberEditInfoResponse> response = await this.serverService.DoAction<MemberEditInfoResponse>((int)CommandIDType.UpdateUserInfo, CommandType.User.ToString(), request).ConfigureAwait(false);
+                CommandData<MemberEditInfoResponse> response = await this.serverService.DoAction<MemberEditInfoResponse>((int)UserCommandIDType.UpdateUserInfo, CommandType.User.ToString(), request).ConfigureAwait(false);
                 this.logger.LogInfo("會員編輯資訊結果", $"Result: {response.Data.Result} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                 switch (response.Data.Result)
                 {
@@ -740,17 +747,11 @@ namespace DataInfo.Service.Managers.Member
 
                 #region 比對驗證碼
 
-                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.VerifierCode}-{VerifierType.MobileBind}-{content.Mobile}";
-                string verifierCode = await this.redisRepository.GetCache<string>(cacheKey).ConfigureAwait(false);
-                if (!content.VerifierCode.Equals(verifierCode))
+                ResponseResult validateVerifyCodeResult = await this.verifyCodeService.Validate(content.VerifierCode, false).ConfigureAwait(false);
+                if (!validateVerifyCodeResult.Result)
                 {
-                    this.logger.LogWarn("會員手機綁定結果", $"Result: 驗證碼錯誤, MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} VerifierCode: {verifierCode}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = MessageHelper.Message.ResponseMessage.VerifyCode.MatchFail
-                    };
+                    this.logger.LogWarn("會員手機綁定結果", $"Result: 驗證碼錯誤, MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    return validateVerifyCodeResult;
                 }
 
                 #endregion 比對驗證碼
@@ -794,7 +795,7 @@ namespace DataInfo.Service.Managers.Member
                         Mobile = content.Mobile
                     }
                 };
-                CommandData<MemberEditInfoResponse> response = await this.serverService.DoAction<MemberEditInfoResponse>((int)CommandIDType.UpdateUserInfo, CommandType.User.ToString(), request).ConfigureAwait(false);
+                CommandData<MemberEditInfoResponse> response = await this.serverService.DoAction<MemberEditInfoResponse>((int)UserCommandIDType.UpdateUserInfo, CommandType.User.ToString(), request).ConfigureAwait(false);
                 this.logger.LogInfo("會員手機綁定結果", $"Result: {response.Data.Result} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                 switch (response.Data.Result)
                 {
@@ -811,7 +812,7 @@ namespace DataInfo.Service.Managers.Member
 
                 #region 刪除 Redis 驗證碼
 
-                this.redisRepository.DeleteCache(cacheKey);
+                this.verifyCodeService.Delete(content.VerifierCode);
 
                 #endregion 刪除 Redis 驗證碼
 
@@ -863,17 +864,11 @@ namespace DataInfo.Service.Managers.Member
 
                 #region 比對驗證碼
 
-                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.VerifierCode}-{VerifierType.ForgetPassword}-{content.Email}";
-                string verifierCode = await this.redisRepository.GetCache<string>(cacheKey).ConfigureAwait(false);
-                if (!content.VerifierCode.Equals(verifierCode))
+                ResponseResult validateVerifyCodeResult = await this.verifyCodeService.Validate(content.VerifierCode, false).ConfigureAwait(false);
+                if (!validateVerifyCodeResult.Result)
                 {
-                    this.logger.LogWarn("重置會員密碼結果", $"Result: 驗證碼錯誤, Content: {JsonConvert.SerializeObject(content)} VerifierCode: {verifierCode}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = MessageHelper.Message.ResponseMessage.VerifyCode.MatchFail
-                    };
+                    this.logger.LogWarn("重置會員密碼結果", $"Result: 驗證碼驗證失敗, ResultCode: {validateVerifyCodeResult.ResultCode} Content: {JsonConvert.SerializeObject(content)}", null);
+                    return validateVerifyCodeResult;
                 }
 
                 #endregion 比對驗證碼
@@ -908,7 +903,7 @@ namespace DataInfo.Service.Managers.Member
 
                 if (responseResult.Result)
                 {
-                    this.redisRepository.DeleteCache(cacheKey);
+                    this.verifyCodeService.Delete(content.VerifierCode);
                 }
 
                 #endregion 刪除 Redis 驗證碼
@@ -968,9 +963,7 @@ namespace DataInfo.Service.Managers.Member
 
                 #region 產生驗證碼
 
-                string verifierCode = Guid.NewGuid().ToString().Substring(0, 6);
-                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.VerifierCode}-{VerifierType.ForgetPassword}-{content.Email}";
-                this.redisRepository.SetCache(cacheKey, JsonConvert.SerializeObject(verifierCode), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.VerifierCodeExpirationDate));
+                string verifierCode = await this.verifyCodeService.Generate().ConfigureAwait(false);
 
                 #endregion 產生驗證碼
 
@@ -1069,9 +1062,7 @@ namespace DataInfo.Service.Managers.Member
 
                 #region 產生驗證碼
 
-                string verifierCode = Guid.NewGuid().ToString().Substring(0, 6);
-                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.VerifierCode}-{VerifierType.MobileBind}-{content.Mobile}";
-                this.redisRepository.SetCache(cacheKey, JsonConvert.SerializeObject(verifierCode), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.VerifierCodeExpirationDate));
+                string verifierCode = await this.verifyCodeService.Generate().ConfigureAwait(false);
 
                 #endregion 產生驗證碼
 
@@ -1266,7 +1257,7 @@ namespace DataInfo.Service.Managers.Member
                     Password = content.Password,
                     NewPassword = content.NewPassword
                 };
-                CommandData<MemberEditInfoResponse> response = await this.serverService.DoAction<MemberEditInfoResponse>((int)CommandIDType.UpdatePassword, CommandType.User.ToString(), request).ConfigureAwait(false);
+                CommandData<MemberEditInfoResponse> response = await this.serverService.DoAction<MemberEditInfoResponse>((int)UserCommandIDType.UpdatePassword, CommandType.User.ToString(), request).ConfigureAwait(false);
                 this.logger.LogInfo("會員更新密碼結果", $"Result: {response.Data.Result} Content: {JsonConvert.SerializeObject(content)}", null);
                 switch (response.Data.Result)
                 {

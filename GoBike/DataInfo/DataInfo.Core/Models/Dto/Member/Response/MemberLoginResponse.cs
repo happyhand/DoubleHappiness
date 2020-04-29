@@ -8,7 +8,7 @@ namespace DataInfo.Core.Models.Dto.Member.Response
     public class MemberLoginResponse
     {
         /// <summary>
-        /// Gets or sets 會員資料
+        /// Gets or sets 會員 ID
         /// </summary>
         public string MemberID { get; set; }
 

@@ -17,7 +17,7 @@ namespace DataInfo.Api.Controllers.Member
     [ApiController]
     [Authorize]
     [Route("api/Member/[controller]")]
-    public class KeepOnlineController : ApiController
+    public class KeepOnlineController : JwtController
     {
         /// <summary>
         /// logger

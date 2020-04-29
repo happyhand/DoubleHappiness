@@ -16,10 +16,10 @@ namespace DataInfo.Api.Controllers.Interactive
     /// <summary>
     /// 會員好友
     /// </summary>
-    [Route("api/[controller]")]
-    [Authorize]
     [ApiController]
-    public class FriendController : ApiController
+    [Authorize]
+    [Route("api/[controller]")]
+    public class FriendController : JwtController
     {
         /// <summary>
         /// InteractiveService

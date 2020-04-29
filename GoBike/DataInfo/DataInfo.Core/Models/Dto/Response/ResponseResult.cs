@@ -46,6 +46,11 @@
         Missed = 907,
 
         /// <summary>
+        /// 逾期
+        /// </summary>
+        TimeOut = 908,
+
+        /// <summary>
         /// 成功
         /// </summary>
         Success = 1000

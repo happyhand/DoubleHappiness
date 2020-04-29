@@ -32,9 +32,8 @@ namespace DataInfo.Api.Controllers.Member
         /// <summary>
         /// 建構式
         /// </summary>
-        /// <param name="jwtService">jwtService</param>
         /// <param name="memberService">memberService</param>
-        public RegisterController(IJwtService jwtService, IMemberService memberService) : base(jwtService)
+        public RegisterController(IMemberService memberService)
         {
             this.memberService = memberService;
         }

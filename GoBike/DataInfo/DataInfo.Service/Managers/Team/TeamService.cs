@@ -1,9 +1,21 @@
 ﻿using AutoMapper;
+using DataInfo.Core.Applibs;
+using DataInfo.Core.Extensions;
+using DataInfo.Core.Models.Dao.Team;
 using DataInfo.Core.Models.Dto.Response;
+using DataInfo.Core.Models.Dto.Server;
+using DataInfo.Core.Models.Dto.Team.Content;
+using DataInfo.Core.Models.Dto.Team.Request;
+using DataInfo.Core.Models.Dto.Team.Response;
+using DataInfo.Core.Models.Enum;
+using DataInfo.Repository.Interfaces;
+using DataInfo.Service.Interfaces.Server;
+using DataInfo.Service.Interfaces.Team;
+using FluentValidation.Results;
+using Newtonsoft.Json;
 using NLog;
 using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace DataInfo.Service.Managers.Team
@@ -11,8 +23,18 @@ namespace DataInfo.Service.Managers.Team
     /// <summary>
     /// 車隊服務
     /// </summary>
-    public class TeamService
+    public class TeamService : ITeamService
     {
+        /// <summary>
+        /// serverService
+        /// </summary>
+        private readonly IServerService serverService;
+
+        /// <summary>
+        /// teamRepository
+        /// </summary>
+        private readonly ITeamRepository teamRepository;
+
         /// <summary>
         /// logger
         /// </summary>
@@ -27,12 +49,103 @@ namespace DataInfo.Service.Managers.Team
         /// 建構式
         /// </summary>
         /// <param name="mapper">mapper</param>
-        public TeamService(IMapper mapper)
+        /// <param name="serverService">serverService</param>
+        /// <param name="teamRepository">teamRepository</param>
+        public TeamService(IMapper mapper, IServerService serverService, ITeamRepository teamRepository)
         {
             this.mapper = mapper;
+            this.serverService = serverService;
+            this.teamRepository = teamRepository;
         }
 
         #region 車隊資料
+
+        /// <summary>
+        /// 建立車隊
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> Create(string memberID, TeamCreateContent content)
+        {
+            try
+            {
+                #region 驗證資料
+
+                TeamCreateContentValidator teamCreateContentValidator = new TeamCreateContentValidator();
+                ValidationResult validationResult = teamCreateContentValidator.Validate(content);
+                if (!validationResult.IsValid)
+                {
+                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
+                    this.logger.LogWarn("建立車隊結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.InputError,
+                        Content = errorMessgae
+                    };
+                }
+
+                TeamDao teamDao = (await this.teamRepository.Get(content.TeamName, TeamSearchType.TeamName, false).ConfigureAwait(false)).FirstOrDefault();
+                if (teamDao != null)
+                {
+                    this.logger.LogWarn("建立車隊結果", $"Result: 車隊名稱重複 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.CreateFail,
+                        Content = MessageHelper.Message.ResponseMessage.Team.TeamNameRepeat
+                    };
+                }
+
+                #endregion 驗證資料
+
+                #region 發送【建立車隊】指令至後端
+
+                TeamCreateRequest request = new TeamCreateRequest();
+
+                CommandData<TeamCreateResponse> response = await this.serverService.DoAction<TeamCreateResponse>((int)TeamCommandIDType.CreateNewTeam, CommandType.User.ToString(), request).ConfigureAwait(false);
+                this.logger.LogInfo("建立車隊結果", $"Result: {response.Data.Result} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                switch (response.Data.Result)
+                {
+                    case (int)CreateNewTeamResultType.Success:
+                        return new ResponseResult()
+                        {
+                            Result = true,
+                            ResultCode = (int)ResponseResultType.Success,
+                            Content = MessageHelper.Message.ResponseMessage.Add.Success
+                        };
+
+                    case (int)CreateNewTeamResultType.Fail:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.CreateFail,
+                            Content = MessageHelper.Message.ResponseMessage.Add.Fail
+                        };
+
+                    default:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.DenyAccess,
+                            Content = MessageHelper.Message.ResponseMessage.Add.Fail
+                        };
+                }
+
+                #endregion 發送【建立車隊】指令至後端
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("建立車隊發生錯誤", $"MemberID: {memberID} IsValidatePassword: {JsonConvert.SerializeObject(content)}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = MessageHelper.Message.ResponseMessage.Add.Error
+                };
+            }
+        }
 
         ///// <summary>
         ///// 建立車隊
@@ -49,12 +162,8 @@ namespace DataInfo.Service.Managers.Team
         //            return verifyCreateTeamResult;
         //        }
 
-        //        TeamData teamData = this.CreateTeamData(teamDto);
-        //        bool isSuccess = await this.teamRepository.CreateTeamData(teamData);
-        //        if (!isSuccess)
-        //        {
-        //            return "建立車隊失敗.";
-        //        }
+        // TeamData teamData = this.CreateTeamData(teamDto); bool isSuccess = await
+        // this.teamRepository.CreateTeamData(teamData); if (!isSuccess) { return "建立車隊失敗."; }
 
         //        return string.Empty;
         //    }
@@ -79,27 +188,15 @@ namespace DataInfo.Service.Managers.Team
         //            return "車隊編號無效.";
         //        }
 
-        //        if (string.IsNullOrEmpty(teamDto.ExecutorID))
-        //        {
-        //            return "無法進行解散車隊審核.";
-        //        }
+        // if (string.IsNullOrEmpty(teamDto.ExecutorID)) { return "無法進行解散車隊審核."; }
 
-        //        TeamData teamData = await this.teamRepository.GetTeamData(teamDto.TeamID);
-        //        if (teamData == null)
-        //        {
-        //            return "車隊不存在.";
-        //        }
+        // TeamData teamData = await this.teamRepository.GetTeamData(teamDto.TeamID); if (teamData
+        // == null) { return "車隊不存在."; }
 
-        //        if (!teamData.TeamLeaderID.Equals(teamDto.ExecutorID))
-        //        {
-        //            return "非車隊隊長無法解散車隊.";
-        //        }
+        // if (!teamData.TeamLeaderID.Equals(teamDto.ExecutorID)) { return "非車隊隊長無法解散車隊."; }
 
-        //        bool deleteTeamDataResult = await this.teamRepository.DeleteTeamData(teamData.TeamID);
-        //        if (!deleteTeamDataResult)
-        //        {
-        //            return "解散車隊失敗.";
-        //        }
+        // bool deleteTeamDataResult = await this.teamRepository.DeleteTeamData(teamData.TeamID); if
+        // (!deleteTeamDataResult) { return "解散車隊失敗."; }
 
         //        return string.Empty;
         //    }
@@ -124,28 +221,17 @@ namespace DataInfo.Service.Managers.Team
         //            return "車隊編號無效.";
         //        }
 
-        //        if (string.IsNullOrEmpty(teamDto.ExecutorID))
-        //        {
-        //            return "無法進行編輯車隊資料審核.";
-        //        }
+        // if (string.IsNullOrEmpty(teamDto.ExecutorID)) { return "無法進行編輯車隊資料審核."; }
 
-        //        TeamData teamData = await this.teamRepository.GetTeamData(teamDto.TeamID);
-        //        if (teamData == null)
-        //        {
-        //            return "車隊不存在.";
-        //        }
+        // TeamData teamData = await this.teamRepository.GetTeamData(teamDto.TeamID); if (teamData
+        // == null) { return "車隊不存在."; }
 
-        //        if (!teamData.TeamLeaderID.Equals(teamDto.ExecutorID) && !teamData.TeamViceLeaderIDs.Contains(teamDto.ExecutorID))
-        //        {
-        //            return "無編輯車隊資料權限.";
-        //        }
+        // if (!teamData.TeamLeaderID.Equals(teamDto.ExecutorID) &&
+        // !teamData.TeamViceLeaderIDs.Contains(teamDto.ExecutorID)) { return "無編輯車隊資料權限."; }
 
-        //        this.UpdateTeamDataHandler(teamDto, teamData);
-        //        bool updateTeamDataResult = await this.teamRepository.UpdateTeamData(teamData);
-        //        if (!updateTeamDataResult)
-        //        {
-        //            return "車隊資料更新失敗.";
-        //        }
+        // this.UpdateTeamDataHandler(teamDto, teamData); bool updateTeamDataResult = await
+        // this.teamRepository.UpdateTeamData(teamData); if (!updateTeamDataResult) { return
+        // "車隊資料更新失敗."; }
 
         //        return string.Empty;
         //    }
@@ -237,20 +323,17 @@ namespace DataInfo.Service.Managers.Team
         //            return Tuple.Create<TeamDto, string>(null, "車隊編號無效.");
         //        }
 
-        //        TeamData teamData = await this.teamRepository.GetTeamData(teamDto.TeamID);
-        //        TeamDto targetTeamDto = this.mapper.Map<TeamDto>(teamData);
-        //        TeamInteractiveData teamInteractiveData = await this.teamRepository.GetAppointTeamInteractiveData(teamData.TeamID, teamDto.ExecutorID);
-        //        if (teamInteractiveData != null)
-        //        {
-        //            targetTeamDto.JoinStatus = teamInteractiveData.InteractiveType == (int)TeamInteractiveType.Invite ?
-        //                teamInteractiveData.ReviewFlag == (int)TeamReviewStatusType.Review ?
-        //                (int)TeamJoinStatusType.WaitInviteExamined : (int)TeamJoinStatusType.BeInvited :
-        //                (int)TeamJoinStatusType.ApplyFor;
-        //        }
-        //        else
-        //        {
-        //            targetTeamDto.JoinStatus = teamData.TeamMemberIDs.Contains(teamDto.ExecutorID) ? (int)TeamJoinStatusType.Join : (int)TeamJoinStatusType.None;
-        //        }
+        // TeamData teamData = await this.teamRepository.GetTeamData(teamDto.TeamID); TeamDto
+        // targetTeamDto = this.mapper.Map<TeamDto>(teamData); TeamInteractiveData
+        // teamInteractiveData = await
+        // this.teamRepository.GetAppointTeamInteractiveData(teamData.TeamID, teamDto.ExecutorID);
+        // if (teamInteractiveData != null) { targetTeamDto.JoinStatus =
+        // teamInteractiveData.InteractiveType == (int)TeamInteractiveType.Invite ?
+        // teamInteractiveData.ReviewFlag == (int)TeamReviewStatusType.Review ?
+        // (int)TeamJoinStatusType.WaitInviteExamined : (int)TeamJoinStatusType.BeInvited :
+        // (int)TeamJoinStatusType.ApplyFor; } else { targetTeamDto.JoinStatus =
+        // teamData.TeamMemberIDs.Contains(teamDto.ExecutorID) ? (int)TeamJoinStatusType.Join :
+        // (int)TeamJoinStatusType.None; }
 
         //        return Tuple.Create(targetTeamDto, string.Empty);
         //    }
@@ -358,25 +441,16 @@ namespace DataInfo.Service.Managers.Team
         //{
         //    //// 不修改車隊編號、車隊名稱、車隊所在地
 
-        //    if (!string.IsNullOrEmpty(teamDto.TeamInfo))
-        //    {
-        //        teamData.TeamInfo = teamDto.TeamInfo;
-        //    }
+        // if (!string.IsNullOrEmpty(teamDto.TeamInfo)) { teamData.TeamInfo = teamDto.TeamInfo; }
 
-        //    if (teamDto.SearchStatus != (int)TeamSearchStatusType.None)
-        //    {
-        //        teamData.SearchStatus = teamDto.SearchStatus;
-        //    }
+        // if (teamDto.SearchStatus != (int)TeamSearchStatusType.None) { teamData.SearchStatus =
+        // teamDto.SearchStatus; }
 
-        //    if (teamDto.ExamineStatus != (int)TeamExamineStatusType.None)
-        //    {
-        //        teamData.ExamineStatus = teamDto.ExamineStatus;
-        //    }
+        // if (teamDto.ExamineStatus != (int)TeamExamineStatusType.None) { teamData.ExamineStatus =
+        // teamDto.ExamineStatus; }
 
-        //    if (!string.IsNullOrEmpty(teamDto.FrontCoverUrl))
-        //    {
-        //        teamData.FrontCoverUrl = teamDto.FrontCoverUrl;
-        //    }
+        // if (!string.IsNullOrEmpty(teamDto.FrontCoverUrl)) { teamData.FrontCoverUrl =
+        // teamDto.FrontCoverUrl; }
 
         //    if (!string.IsNullOrEmpty(teamDto.PhotoUrl))
         //    {
@@ -405,48 +479,21 @@ namespace DataInfo.Service.Managers.Team
         //        }
         //    }
 
-        //    if (string.IsNullOrEmpty(teamDto.TeamName))
-        //    {
-        //        return "車隊名稱無效.";
-        //    }
-        //    else
-        //    {
-        //        bool isRepeatTeamName = await this.teamRepository.VerifyTeamDataByTeamName(teamDto.TeamName);
-        //        if (isRepeatTeamName)
-        //        {
-        //            return "車隊名稱重複.";
-        //        }
-        //    }
+        // if (string.IsNullOrEmpty(teamDto.TeamName)) { return "車隊名稱無效."; } else { bool
+        // isRepeatTeamName = await this.teamRepository.VerifyTeamDataByTeamName(teamDto.TeamName);
+        // if (isRepeatTeamName) { return "車隊名稱重複."; } }
 
-        //    if (teamDto.CityID == (int)CityType.None)
-        //    {
-        //        return "未設定車隊所在地.";
-        //    }
+        // if (teamDto.CityID == (int)CityType.None) { return "未設定車隊所在地."; }
 
-        //    if (string.IsNullOrEmpty(teamDto.TeamInfo))
-        //    {
-        //        return "車隊簡介無效.";
-        //    }
+        // if (string.IsNullOrEmpty(teamDto.TeamInfo)) { return "車隊簡介無效."; }
 
-        //    if (string.IsNullOrEmpty(teamDto.PhotoUrl))
-        //    {
-        //        return "未上傳車隊頭像.";
-        //    }
+        // if (string.IsNullOrEmpty(teamDto.PhotoUrl)) { return "未上傳車隊頭像."; }
 
-        //    if (string.IsNullOrEmpty(teamDto.FrontCoverUrl))
-        //    {
-        //        return "未上傳車隊封面.";
-        //    }
+        // if (string.IsNullOrEmpty(teamDto.FrontCoverUrl)) { return "未上傳車隊封面."; }
 
-        //    if (teamDto.SearchStatus == (int)TeamSearchStatusType.None)
-        //    {
-        //        return "未設定搜尋狀態.";
-        //    }
+        // if (teamDto.SearchStatus == (int)TeamSearchStatusType.None) { return "未設定搜尋狀態."; }
 
-        //    if (teamDto.ExamineStatus == (int)TeamExamineStatusType.None)
-        //    {
-        //        return "未設定審核狀態.";
-        //    }
+        // if (teamDto.ExamineStatus == (int)TeamExamineStatusType.None) { return "未設定審核狀態."; }
 
         //    return string.Empty;
         //}

@@ -19,7 +19,7 @@ namespace DataInfo.Api.Controllers.Member
     [ApiController]
     [Authorize]
     [Route("api/Member/[controller]")]
-    public class RideController : ApiController
+    public class RideController : JwtController
     {
         /// <summary>
         /// logger

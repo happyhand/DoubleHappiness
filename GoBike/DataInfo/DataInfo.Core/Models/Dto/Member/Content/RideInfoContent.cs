@@ -96,8 +96,8 @@ namespace DataInfo.Core.Models.Dto.Member.Content
             RuleFor(content => content.CountyID)
             .Must(countyID =>
             {
-                return countyID != (int)CityType.None;
-            }).WithMessage(MessageHelper.Message.ResponseMessage.Ride.AltitudeEmpty);
+                return countyID != (int)CountyType.None;
+            }).WithMessage(MessageHelper.Message.ResponseMessage.Ride.CountyIDEmpty);
 
             RuleFor(content => content.Level)
             .Must(level =>
