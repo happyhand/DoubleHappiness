@@ -3,12 +3,12 @@ using DataInfo.Core.Models.Enum;
 using FluentValidation;
 using System.Collections.Generic;
 
-namespace DataInfo.Core.Models.Dto.Member.Content
+namespace DataInfo.Core.Models.Dto.Ride.Content
 {
     /// <summary>
-    /// 騎乘資訊內容
+    /// 新增騎乘資訊內容
     /// </summary>
-    public class RideInfoContent
+    public class AddRideInfoContent
     {
         /// <summary>
         /// Gets or sets Altitude
@@ -62,11 +62,11 @@ namespace DataInfo.Core.Models.Dto.Member.Content
     }
 
     /// <summary>
-    /// 驗證騎乘資訊內容
+    /// 驗證新增騎乘資訊內容
     /// </summary>
-    public class RideInfoContentValidator : AbstractValidator<RideInfoContent>
+    public class AddRideInfoContentValidator : AbstractValidator<AddRideInfoContent>
     {
-        public RideInfoContentValidator()
+        public AddRideInfoContentValidator()
         {
             ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
             RuleFor(content => content.Time)

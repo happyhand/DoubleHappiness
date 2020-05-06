@@ -10,10 +10,19 @@ namespace DataInfo.Service.Interfaces.Common
     public interface IUploadService
     {
         /// <summary>
-        /// 上傳圖片
+        /// 上傳會員圖片
         /// </summary>
         /// <param name="imgBase64s">imgBase64s</param>
-        /// <returns>ResponseResult</returns>
-        Task<ResponseResult> UploadImages(IEnumerable<string> imgBase64s);
+        /// <param name="isIgnoreUri">isIgnoreUri</param>
+        /// <returns>strings</returns>
+        Task<IEnumerable<string>> UploadMemberImages(IEnumerable<string> imgBase64s, bool isIgnoreUri);
+
+        /// <summary>
+        /// 上傳騎乘圖片
+        /// </summary>
+        /// <param name="imgBase64s">imgBase64s</param>
+        /// <param name="isIgnoreUri">isIgnoreUri</param>
+        /// <returns>strings</returns>
+        Task<IEnumerable<string>> UploadRideImages(IEnumerable<string> imgBase64s, bool isIgnoreUri);
     }
 }

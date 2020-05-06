@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace DataInfo.Service.Managers.Common
 {
@@ -25,39 +26,76 @@ namespace DataInfo.Service.Managers.Common
         /// 上傳圖片
         /// </summary>
         /// <param name="imgBase64s">imgBase64s</param>
-        /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> UploadImages(IEnumerable<string> imgBase64s)
+        /// <param name="api">api</param>
+        /// <returns>strings</returns>
+        private async Task<IEnumerable<string>> UploadImages(IEnumerable<string> imgBase64s, string api)
         {
             try
             {
-                HttpResponseMessage httpResponseMessage = await Utility.ApiPost(AppSettingHelper.Appsetting.UploadServer.Domain, AppSettingHelper.Appsetting.UploadServer.ImageApi, JsonConvert.SerializeObject(imgBase64s));
+                HttpResponseMessage httpResponseMessage = await Utility.ApiPost(AppSettingHelper.Appsetting.UploadServer.Domain, api, JsonConvert.SerializeObject(imgBase64s));
                 if (!httpResponseMessage.IsSuccessStatusCode)
                 {
                     this.logger.LogWarn("上傳圖片結果", $"Result: 上傳圖片失敗 ImgBase64s: {JsonConvert.SerializeObject(imgBase64s)}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = "上傳圖片失敗."
-                    };
+                    return null;
                 }
 
-                return new ResponseResult()
-                {
-                    Result = true,
-                    ResultCode = (int)ResponseResultType.Success,
-                    Content = JsonConvert.DeserializeObject<IEnumerable<string>>(await httpResponseMessage.Content.ReadAsStringAsync().ConfigureAwait(false))
-                };
+                string dataJson = await httpResponseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
+                return JsonConvert.DeserializeObject<IEnumerable<string>>(dataJson);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("上傳圖片發生錯誤", $"ImgBase64s: {JsonConvert.SerializeObject(imgBase64s)}", ex);
-                return new ResponseResult()
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 上傳會員圖片
+        /// </summary>
+        /// <param name="imgBase64s">imgBase64s</param>
+        /// <param name="isIgnoreUri">isIgnoreUri</param>
+        /// <returns>strings</returns>
+        public async Task<IEnumerable<string>> UploadMemberImages(IEnumerable<string> imgBase64s, bool isIgnoreUri)
+        {
+            try
+            {
+                IEnumerable<string> imgUris = await this.UploadImages(imgBase64s, AppSettingHelper.Appsetting.UploadServer.Member.Api).ConfigureAwait(false);
+                if (isIgnoreUri)
                 {
-                    Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = "上傳圖片發生錯誤."
-                };
+                    imgUris = imgUris.Select(uri => uri.Replace(AppSettingHelper.Appsetting.UploadServer.Member.Uri, string.Empty));
+                }
+
+                return imgUris;
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("上傳會員圖片發生錯誤", $"ImgBase64s: {JsonConvert.SerializeObject(imgBase64s)}", ex);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 上傳騎乘圖片
+        /// </summary>
+        /// <param name="imgBase64s">imgBase64s</param>
+        /// <param name="isIgnoreUri">isIgnoreUri</param>
+        /// <returns>strings</returns>
+        public async Task<IEnumerable<string>> UploadRideImages(IEnumerable<string> imgBase64s, bool isIgnoreUri)
+        {
+            try
+            {
+                IEnumerable<string> imgUris = await this.UploadImages(imgBase64s, AppSettingHelper.Appsetting.UploadServer.Ride.Api).ConfigureAwait(false);
+                if (isIgnoreUri)
+                {
+                    imgUris = imgUris.Select(uri => uri.Replace(AppSettingHelper.Appsetting.UploadServer.Ride.Uri, string.Empty));
+                }
+
+                return imgUris;
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("上傳騎乘圖片發生錯誤", $"ImgBase64s: {JsonConvert.SerializeObject(imgBase64s)}", ex);
+                return null;
             }
         }
     }

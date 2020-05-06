@@ -217,5 +217,36 @@ namespace DataInfo.Core.Applibs
         }
 
         #endregion 驗證功能
+
+        #region 取得週日期
+
+        /// <summary>
+        /// 取得本周第一天(星期天)
+        /// </summary>
+        /// <param name="dateTime">dateTime</param>
+        /// <returns>string</returns>
+
+        public static string GetWeekFirstDay(DateTime dateTime)
+        {
+            int weekNow = Convert.ToInt32(dateTime.DayOfWeek);
+            int dayDiff = (-1) * weekNow;
+
+            return dateTime.AddDays(dayDiff).ToString("yyyy-MM-dd");
+        }
+
+        /// <summary>
+        /// 取得本周最後一天(星期六)
+        /// </summary>
+        /// <param name="dateTime">dateTime</param>
+        /// <returns>string</returns>
+        public static string GetWeekLastDay(DateTime dateTime)
+        {
+            int weekNow = Convert.ToInt32(dateTime.DayOfWeek);
+            int dayDiff = (7 - weekNow) - 1;
+
+            return dateTime.AddDays(dayDiff).ToString("yyyy-MM-dd");
+        }
+
+        #endregion 取得週日期
     }
 }

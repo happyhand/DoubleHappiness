@@ -25,7 +25,7 @@ namespace DataInfo.Api.Controllers.Member
         /// <summary>
         /// logger
         /// </summary>
-        private readonly ILogger logger = LogManager.GetLogger("SearchController");
+        private readonly ILogger logger = LogManager.GetLogger("MemberSearchController");
 
         /// <summary>
         /// memberService
@@ -71,16 +71,18 @@ namespace DataInfo.Api.Controllers.Member
         /// <summary>
         /// 搜尋會員 - 搜尋其他會員資料
         /// </summary>
-        /// <param name="content">content</param>
+        /// <param name="searchKey">searchKey</param>
+        /// <param name="useFuzzySearch">useFuzzySearch</param>
         /// <returns>IActionResult</returns>
-        [HttpPost]
-        public async Task<IActionResult> Post(MemberSearchContent content)
+        [HttpGet("{searchKey}/{useFuzzySearch}")]
+        public async Task<IActionResult> Get(string searchKey, int useFuzzySearch)
         {
             string memberID = this.GetMemberID();
             try
             {
                 ResponseResult responseResult;
-                if (content.UseFuzzySearch == (int)SearchType.Fuzzy)
+                MemberSearchContent content = new MemberSearchContent() { SearchKey = searchKey, UseFuzzySearch = useFuzzySearch };
+                if (useFuzzySearch == (int)SearchType.Fuzzy)
                 {
                     responseResult = await this.memberService.FuzzySearch(content, memberID).ConfigureAwait(false);
                 }
@@ -93,7 +95,7 @@ namespace DataInfo.Api.Controllers.Member
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員請求搜尋其他會員資料發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                this.logger.LogError("會員請求搜尋其他會員資料發生錯誤", $"MemberID: {memberID} SearchKey: {searchKey} UseFuzzySearch: {useFuzzySearch}", ex);
                 return Ok(new ResponseResult()
                 {
                     Result = false,

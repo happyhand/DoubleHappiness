@@ -29,7 +29,7 @@ namespace DataInfo.Api.Controllers.Interactive
         /// <summary>
         /// logger
         /// </summary>
-        private readonly ILogger logger = LogManager.GetLogger("BlackController");
+        private readonly ILogger logger = LogManager.GetLogger("InteractiveBlackController");
 
         /// <summary>
         /// 建構式

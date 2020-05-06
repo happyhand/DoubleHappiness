@@ -16,6 +16,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DataInfo.Core.Models.Dto.Ride.Content;
+using DataInfo.Core.Models.Dto.Ride.Request;
+using DataInfo.Core.Models.Dto.Server;
+using DataInfo.Core.Models.Dto.Ride.Response;
+using DataInfo.Service.Interfaces.Server;
 
 namespace DataInfo.Service.Managers.Member
 {
@@ -24,6 +29,11 @@ namespace DataInfo.Service.Managers.Member
     /// </summary>
     public class RideService : IRideService
     {
+        /// <summary>
+        /// serverService
+        /// </summary>
+        private readonly IServerService serverService;
+
         /// <summary>
         /// uploadService
         /// </summary>
@@ -49,86 +59,58 @@ namespace DataInfo.Service.Managers.Member
         /// </summary>
         /// <param name="mapper">mapper</param>
         /// <param name="uploadService">uploadService</param>
+        /// <param name="serverService">serverService</param>
         /// <param name="redisRepository">redisRepository</param>
-        public RideService(IMapper mapper, IUploadService uploadService, IRideRepository rideRepository)
+        public RideService(IMapper mapper, IUploadService uploadService, IServerService serverService, IRideRepository rideRepository)
         {
             this.mapper = mapper;
             this.uploadService = uploadService;
+            this.serverService = serverService;
             this.rideRepository = rideRepository;
         }
 
         #region 騎乘資料
 
-        /// <summary>
-        /// 騎乘資料更新處理
-        /// </summary>
-        /// <param name="content">content</param>
-        /// <param name="rideModel">rideModel</param>
-        /// <returns>string</returns>
-        private async Task<string> UpdateInfoHandler(RideUpdateInfoContent content, RideModel rideModel)
-        {
-            if (content.CountyID != (int)CountyType.None)
-            {
-                rideModel.CountyID = content.CountyID;
-            }
+        ///// <summary>
+        ///// 騎乘資料更新處理
+        ///// </summary>
+        ///// <param name="content">content</param>
+        ///// <param name="rideModel">rideModel</param>
+        ///// <returns>string</returns>
+        //private async Task<string> UpdateInfoHandler(RideUpdateInfoContent content, RideModel rideModel)
+        //{
+        //    if (content.CountyID != (int)CountyType.None)
+        //    {
+        //        rideModel.CountyID = content.CountyID;
+        //    }
 
-            if (content.Level != (int)RideLevelType.None)
-            {
-                rideModel.Level = content.Level;
-            }
+        // if (content.Level != (int)RideLevelType.None) { rideModel.Level = content.Level; }
 
-            if (content.Route != null && content.Route.Any())
-            {
-                rideModel.Route = JsonConvert.SerializeObject(content.Route);
-            }
+        // if (content.Route != null && content.Route.Any()) { rideModel.Route =
+        // JsonConvert.SerializeObject(content.Route); }
 
-            if (content.ShareContent != null || !string.IsNullOrEmpty(content.Photo))
-            {
-                List<string> imgBase64s = new List<string>();
-                if (content.ShareContent != null)
-                {
-                    imgBase64s.AddRange(content.ShareContent.Select(data => data.ElementAt(1)));
-                }
+        // if (content.ShareContent != null || !string.IsNullOrEmpty(content.Photo)) { List<string>
+        // imgBase64s = new List<string>(); if (content.ShareContent != null) {
+        // imgBase64s.AddRange(content.ShareContent.Select(data => data.ElementAt(1))); }
 
-                if (!string.IsNullOrEmpty(content.Photo))
-                {
-                    imgBase64s.Add(content.Photo);
-                }
+        // if (!string.IsNullOrEmpty(content.Photo)) { imgBase64s.Add(content.Photo); }
 
-                ResponseResult uploadResponseResult = await this.uploadService.UploadImages(imgBase64s).ConfigureAwait(false);
-                if (!uploadResponseResult.Result)
-                {
-                    return "上傳圖片失敗.";
-                }
+        // ResponseResult uploadResponseResult = await
+        // this.uploadService.UploadImages(imgBase64s).ConfigureAwait(false); if
+        // (!uploadResponseResult.Result) { return "上傳圖片失敗."; }
 
-                IEnumerable<string> imgUrls = uploadResponseResult.Content;
-                if (content.ShareContent != null && content.ShareContent.Any())
-                {
-                    content.ShareContent = content.ShareContent.Select((data, index) =>
-                    {
-                        string imgUrl = imgUrls.ElementAt(index);
-                        return new List<string>()
-                        {
-                            data.ElementAt(0),
-                            imgUrls.ElementAt(index)
-                        };
-                    });
-                    rideModel.ShareContent = JsonConvert.SerializeObject(content.ShareContent);
-                }
+        // IEnumerable<string> imgUrls = uploadResponseResult.Content; if (content.ShareContent !=
+        // null && content.ShareContent.Any()) { content.ShareContent =
+        // content.ShareContent.Select((data, index) => { string imgUrl = imgUrls.ElementAt(index);
+        // return new List<string>() { data.ElementAt(0), imgUrls.ElementAt(index) }; });
+        // rideModel.ShareContent = JsonConvert.SerializeObject(content.ShareContent); }
 
-                if (!string.IsNullOrEmpty(content.Photo))
-                {
-                    rideModel.Photo = imgUrls.LastOrDefault();
-                }
-            }
+        // if (!string.IsNullOrEmpty(content.Photo)) { rideModel.Photo = imgUrls.LastOrDefault(); } }
 
-            if (!string.IsNullOrEmpty(content.Title))
-            {
-                rideModel.Title = content.Title;
-            }
+        // if (!string.IsNullOrEmpty(content.Title)) { rideModel.Title = content.Title; }
 
-            return string.Empty;
-        }
+        //    return string.Empty;
+        //}
 
         /// <summary>
         /// 新增騎乘資料
@@ -136,14 +118,14 @@ namespace DataInfo.Service.Managers.Member
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> AddRideData(string memberID, RideInfoContent content)
+        public async Task<ResponseResult> AddRideData(string memberID, AddRideInfoContent content)
         {
             try
             {
                 #region 驗證騎乘資料
 
-                RideInfoContentValidator rideInfoContentValidator = new RideInfoContentValidator();
-                ValidationResult validationResult = rideInfoContentValidator.Validate(content);
+                AddRideInfoContentValidator addRideInfoContentValidator = new AddRideInfoContentValidator();
+                ValidationResult validationResult = addRideInfoContentValidator.Validate(content);
                 if (!validationResult.IsValid)
                 {
                     string errorMessgae = validationResult.Errors[0].ErrorMessage;
@@ -172,22 +154,21 @@ namespace DataInfo.Service.Managers.Member
 
                 List<string> imgBase64s = content.ShareContent.Select(data => data.ElementAt(1)).ToList();
                 imgBase64s.Add(content.Photo);
-                ResponseResult uploadResponseResult = await this.uploadService.UploadImages(imgBase64s).ConfigureAwait(false);
-                if (!uploadResponseResult.Result)
+                IEnumerable<string> imgUris = await this.uploadService.UploadRideImages(imgBase64s, true).ConfigureAwait(false);
+                if (imgUris == null || !imgUris.Any())
                 {
                     this.logger.LogWarn("新增騎乘資料結果", $"Result: 上傳圖片失敗 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                     return new ResponseResult()
                     {
                         Result = false,
                         ResultCode = (int)ResponseResultType.InputError,
-                        Content = "上傳圖片失敗."
+                        Content = MessageHelper.Message.ResponseMessage.Upload.PhotoFail
                     };
                 }
 
-                IEnumerable<string> imgUrls = uploadResponseResult.Content;
                 content.ShareContent = content.ShareContent.Select((data, index) =>
                 {
-                    string imgUrl = imgUrls.ElementAt(index);
+                    string imgUrl = imgUris.ElementAt(index);
                     if (string.IsNullOrEmpty(imgUrl))
                     {
                         this.logger.LogWarn("新增騎乘資料結果", $"Result: 騎乘分享內容圖片轉換失敗 MemberID: {memberID} Data: {JsonConvert.SerializeObject(data)}", null);
@@ -196,38 +177,46 @@ namespace DataInfo.Service.Managers.Member
                     return new List<string>()
                     {
                         data.ElementAt(0),
-                        imgUrls.ElementAt(index)
+                        imgUrl
                     };
                 });
-                content.Photo = imgUrls.LastOrDefault();
+                content.Photo = imgUris.LastOrDefault();
 
                 #endregion 上傳圖片
 
                 #region 新增資料
 
-                RideModel rideModel = this.mapper.Map<RideModel>(content);
-                DateTime createDate = DateTime.UtcNow;
-                rideModel.MemberID = memberID;
-                rideModel.CreateDate = createDate;
-                rideModel.RideID = Utility.GetSerialID(createDate);
-                bool isSuccess = await this.rideRepository.Create(rideModel).ConfigureAwait(false);
-                this.logger.LogInfo("新增騎乘資料結果", $"Result: {isSuccess} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} RideModel: {JsonConvert.SerializeObject(rideModel)}", null);
-                if (!isSuccess)
-                {
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.CreateFail,
-                        Content = "新增資料失敗."
-                    };
-                }
+                AddRideInfoRequest request = this.mapper.Map<AddRideInfoRequest>(content);
+                request.MemberID = memberID;
+                CommandData<AddRideInfoResponse> response = await this.serverService.DoAction<AddRideInfoResponse>((int)RideCommandIDType.CreateRideRecord, CommandType.Ride, request).ConfigureAwait(false);
+                this.logger.LogInfo("新增騎乘資料結果", $"Result: {response.Data.Result} MemberID: {memberID} Request: {JsonConvert.SerializeObject(request)} Content: {JsonConvert.SerializeObject(content)}", null);
 
-                return new ResponseResult()
+                switch (response.Data.Result)
                 {
-                    Result = true,
-                    ResultCode = (int)ResponseResultType.Success,
-                    Content = "新增資料成功."
-                };
+                    case (int)CreateRideRecordResultType.Success:
+                        return new ResponseResult()
+                        {
+                            Result = true,
+                            ResultCode = (int)ResponseResultType.Success,
+                            Content = MessageHelper.Message.ResponseMessage.Add.Success
+                        };
+
+                    case (int)CreateRideRecordResultType.Fail:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.CreateFail,
+                            Content = MessageHelper.Message.ResponseMessage.Add.Fail
+                        };
+
+                    default:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.UnknownError,
+                            Content = MessageHelper.Message.ResponseMessage.Add.Fail
+                        };
+                }
 
                 #endregion 新增資料
             }
@@ -238,97 +227,90 @@ namespace DataInfo.Service.Managers.Member
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = "新增資料發生錯誤."
+                    Content = MessageHelper.Message.ResponseMessage.Add.Fail
                 };
             }
         }
 
-        /// <summary>
-        /// 取得騎乘資料
-        /// </summary>
-        /// <param name="rideID">rideID</param>
-        /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> GetRideData(string rideID)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(rideID))
-                {
-                    this.logger.LogWarn("取得騎乘資料失敗", $"Result: 騎乘編號無效", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        Content = "騎乘編號無效."
-                    };
-                }
+        ///// <summary>
+        ///// 取得騎乘資料
+        ///// </summary>
+        ///// <param name="rideID">rideID</param>
+        ///// <returns>ResponseResult</returns>
+        //public async Task<ResponseResult> GetRideData(string rideID)
+        //{
+        //    try
+        //    {
+        //        if (string.IsNullOrEmpty(rideID))
+        //        {
+        //            this.logger.LogWarn("取得騎乘資料失敗", $"Result: 騎乘編號無效", null);
+        //            return new ResponseResult()
+        //            {
+        //                Result = false,
+        //                Content = "騎乘編號無效."
+        //            };
+        //        }
 
-                RideModel rideModel = await this.rideRepository.Get(rideID);
-                if (rideModel == null)
-                {
-                    this.logger.LogWarn("取得騎乘資料失敗", $"Result: 無騎乘資料 RideID: {rideID}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        Content = "無騎乘資料."
-                    };
-                }
+        // RideModel rideModel = await this.rideRepository.Get(rideID); if (rideModel == null) {
+        // this.logger.LogWarn("取得騎乘資料失敗", $"Result: 無騎乘資料 RideID: {rideID}", null); return new
+        // ResponseResult() { Result = false, Content = "無騎乘資料." }; }
 
-                return new ResponseResult()
-                {
-                    Result = true,
-                    Content = this.mapper.Map<RideInfoView>(rideModel) //// TODO 待轉換客端所需資料
-                };
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("取得騎乘資料發生錯誤", $"RideID: {rideID}", ex);
-                return new ResponseResult()
-                {
-                    Result = false,
-                    Content = "取得資料發生錯誤."
-                };
-            }
-        }
+        //        return new ResponseResult()
+        //        {
+        //            Result = true,
+        //            Content = this.mapper.Map<RideInfoView>(rideModel) //// TODO 待轉換客端所需資料
+        //        };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        this.logger.LogError("取得騎乘資料發生錯誤", $"RideID: {rideID}", ex);
+        //        return new ResponseResult()
+        //        {
+        //            Result = false,
+        //            Content = "取得資料發生錯誤."
+        //        };
+        //    }
+        //}
 
-        /// <summary>
-        /// 取得會員的騎乘資料列表
-        /// </summary>
-        /// <param name="memberID">memberID</param>
-        /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> GetRideDataListOfMember(string memberID)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(memberID))
-                {
-                    this.logger.LogWarn("取得會員的騎乘資料列表失敗", $"Result: 會員編號無效", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = "會員編號無效."
-                    };
-                }
+        ///// <summary>
+        ///// 取得會員的騎乘資料列表
+        ///// </summary>
+        ///// <param name="memberID">memberID</param>
+        ///// <returns>ResponseResult</returns>
+        //public async Task<ResponseResult> GetRideDataListOfMember(string memberID)
+        //{
+        //    try
+        //    {
+        //        if (string.IsNullOrEmpty(memberID))
+        //        {
+        //            this.logger.LogWarn("取得會員的騎乘資料列表失敗", $"Result: 會員編號無效", null);
+        //            return new ResponseResult()
+        //            {
+        //                Result = false,
+        //                ResultCode = (int)ResponseResultType.InputError,
+        //                Content = "會員編號無效."
+        //            };
+        //        }
 
-                IEnumerable<RideModel> rideModels = await this.rideRepository.GetListOfMember(memberID);
-                return new ResponseResult()
-                {
-                    Result = true,
-                    ResultCode = (int)ResponseResultType.Success,
-                    Content = this.mapper.Map<IEnumerable<RideInfoView>>(rideModels) //// TODO 待轉換客端所需資料
-                };
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("取得會員的騎乘資料列表發生錯誤", $"MemberID: {memberID}", ex);
-                return new ResponseResult()
-                {
-                    Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = "取得資料發生錯誤."
-                };
-            }
-        }
+        //        IEnumerable<RideModel> rideModels = await this.rideRepository.GetListOfMember(memberID);
+        //        return new ResponseResult()
+        //        {
+        //            Result = true,
+        //            ResultCode = (int)ResponseResultType.Success,
+        //            Content = this.mapper.Map<IEnumerable<RideInfoView>>(rideModels) //// TODO 待轉換客端所需資料
+        //        };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        this.logger.LogError("取得會員的騎乘資料列表發生錯誤", $"MemberID: {memberID}", ex);
+        //        return new ResponseResult()
+        //        {
+        //            Result = false,
+        //            ResultCode = (int)ResponseResultType.UnknownError,
+        //            Content = "取得資料發生錯誤."
+        //        };
+        //    }
+        //}
 
         ///// <summary>
         ///// 更新騎乘資料 (TODO)

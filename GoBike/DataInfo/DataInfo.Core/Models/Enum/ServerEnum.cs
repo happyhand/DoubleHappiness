@@ -16,6 +16,11 @@
         User = 1,
 
         /// <summary>
+        /// 騎乘
+        /// </summary>
+        Ride = 2,
+
+        /// <summary>
         /// 車隊
         /// </summary>
         Team = 3
@@ -144,6 +149,37 @@
     }
 
     #endregion 會員
+
+    #region 騎乘
+
+    /// <summary>
+    /// 建立騎乘紀錄結果
+    /// </summary>
+    public enum CreateRideRecordResultType
+    {
+        /// <summary>
+        /// 建立失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 建立成功
+        /// </summary>
+        Success = 1
+    }
+
+    /// <summary>
+    /// 騎乘後端封包編號類別資料
+    /// </summary>
+    public enum RideCommandIDType
+    {
+        /// <summary>
+        /// 建立騎乘紀錄
+        /// </summary>
+        CreateRideRecord = 1001,
+    }
+
+    #endregion 騎乘
 
     #region 車隊
 

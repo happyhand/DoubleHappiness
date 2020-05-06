@@ -38,7 +38,39 @@ namespace DataInfo.Core.Applibs
         public UploadServerSetting UploadServer { get; set; }
 
         /// <summary>
-        /// ServiceDomainSetting
+        /// MemberImageSetting
+        /// </summary>
+        public class MemberImageSetting
+        {
+            /// <summary>
+            /// Gets or sets Api
+            /// </summary>
+            public string Api { get; set; }
+
+            /// <summary>
+            /// Gets or sets Uri
+            /// </summary>
+            public string Uri { get; set; }
+        }
+
+        /// <summary>
+        /// RideImageSetting
+        /// </summary>
+        public class RideImageSetting
+        {
+            /// <summary>
+            /// Gets or sets Api
+            /// </summary>
+            public string Api { get; set; }
+
+            /// <summary>
+            /// Gets or sets Uri
+            /// </summary>
+            public string Uri { get; set; }
+        }
+
+        /// <summary>
+        /// UploadServerSetting
         /// </summary>
         public class UploadServerSetting
         {
@@ -48,9 +80,16 @@ namespace DataInfo.Core.Applibs
             public string Domain { get; set; }
 
             /// <summary>
-            /// Gets or sets ImageApi
+            /// Gets or sets ImageFileExtension
             /// </summary>
-            public string ImageApi { get; set; }
+            public string ImageFileExtension { get; set; }
+
+            /// <summary>
+            /// Gets or sets MemberBase
+            /// </summary>
+            public MemberImageSetting Member { get; set; }
+
+            public RideImageSetting Ride { get; set; }
         }
 
         #endregion Upload Server 設定資料
@@ -278,14 +317,41 @@ namespace DataInfo.Core.Applibs
         public class CommandServerSetting
         {
             /// <summary>
-            /// Gets or sets ConnectionStrings
+            /// Gets or sets Ride
             /// </summary>
-            public string ConnectionStrings { get; set; }
+            public RideServerSetting Ride { get; set; }
 
             /// <summary>
             /// Gets or sets TimeOut
             /// </summary>
             public int TimeOut { get; set; }
+
+            /// <summary>
+            /// Gets or sets User
+            /// </summary>
+            public UserServerSetting User { get; set; }
+        }
+
+        /// <summary>
+        /// RideServerSetting
+        /// </summary>
+        public class RideServerSetting
+        {
+            /// <summary>
+            /// Gets or sets ConnectionStrings
+            /// </summary>
+            public string ConnectionStrings { get; set; }
+        }
+
+        /// <summary>
+        /// UserServerSetting
+        /// </summary>
+        public class UserServerSetting
+        {
+            /// <summary>
+            /// Gets or sets ConnectionStrings
+            /// </summary>
+            public string ConnectionStrings { get; set; }
         }
 
         #endregion Command Server 設定資料

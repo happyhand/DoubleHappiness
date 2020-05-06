@@ -36,10 +36,5 @@ namespace DataInfo.Core.Models.Dto.Member.View
         /// Gets or sets 手機
         /// </summary>
         public string Mobile { get; set; }
-
-        ///// <summary>
-        ///// Gets or sets RideDtoList
-        ///// </summary>
-        //public IEnumerable<RideSimpleInfoViewDto> RideDtoList { get; set; }
     }
 }

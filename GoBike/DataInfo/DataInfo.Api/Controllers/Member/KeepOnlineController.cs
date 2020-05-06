@@ -22,7 +22,7 @@ namespace DataInfo.Api.Controllers.Member
         /// <summary>
         /// logger
         /// </summary>
-        private readonly ILogger logger = LogManager.GetLogger("KeepOnlineController");
+        private readonly ILogger logger = LogManager.GetLogger("MemberKeepOnlineController");
 
         /// <summary>
         /// memberService

@@ -1,5 +1,5 @@
-﻿using DataInfo.Core.Models.Dao.Member;
-using System.Collections.Generic;
+﻿using DataInfo.Core.Models.Dao.Ride;
+using System;
 using System.Threading.Tasks;
 
 namespace DataInfo.Repository.Interfaces
@@ -10,31 +10,19 @@ namespace DataInfo.Repository.Interfaces
     public interface IRideRepository
     {
         /// <summary>
-        /// 建立騎乘資料
-        /// </summary>
-        /// <param name="rideModel">rideModel</param>
-        /// <returns>bool</returns>
-        Task<bool> Create(RideModel rideModel);
-
-        /// <summary>
-        /// 取得騎乘資料
+        /// 取得總里程
         /// </summary>
         /// <param name="memberID">memberID</param>
-        /// <returns>RideModel</returns>
-        Task<RideModel> Get(string rideID);
+        /// <returns>RideDistanceDao</returns>
+        Task<RideDistanceDao> GetTotalDistance(string memberID);
 
         /// <summary>
-        /// 取得會員的騎乘資料列表
+        /// 取得週里程
         /// </summary>
         /// <param name="memberID">memberID</param>
-        /// <returns>RideModel list</returns>
-        Task<List<RideModel>> GetListOfMember(string memberID);
-
-        /// <summary>
-        /// 更新騎乘資料
-        /// </summary>
-        /// <param name="rideModel">rideModel</param>
-        /// <returns>bool</returns>
-        Task<bool> Update(RideModel rideModel);
+        /// <param name="startDate">startDate</param>
+        /// <param name="endDate">endDate</param>
+        /// <returns>RideDistanceDao</returns>
+        Task<RideDistanceDao> GetWeekDistance(string memberID, DateTime startDate, DateTime endDate);
     }
 }

@@ -10,8 +10,8 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <OutputPath>D:\DoubleHappiness\dh.uploadfile.com\</OutputPath>
-    <DocumentationFile>D:\DoubleHappiness\dh.uploadfile.com\UploadFiles.API.Swagger.xml</DocumentationFile>
+    <OutputPath>D:\DoubleHappiness\dblha.uploadfile.com\</OutputPath>
+    <DocumentationFile>D:\DoubleHappiness\dblha.uploadfile.com\UploadFiles.API.Swagger.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

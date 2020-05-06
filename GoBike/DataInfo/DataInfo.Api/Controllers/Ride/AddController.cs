@@ -10,21 +10,22 @@ using NLog;
 using System;
 using System.Threading.Tasks;
 using DataInfo.Core.Applibs;
+using DataInfo.Core.Models.Dto.Ride.Content;
 
-namespace DataInfo.Api.Controllers.Member
+namespace DataInfo.Api.Controllers.Ride
 {
     /// <summary>
-    /// 會員騎乘
+    /// 新增騎乘資料
     /// </summary>
     [ApiController]
     [Authorize]
-    [Route("api/Member/[controller]")]
-    public class RideController : JwtController
+    [Route("api/Ride/[controller]")]
+    public class AddController : JwtController
     {
         /// <summary>
         /// logger
         /// </summary>
-        private readonly ILogger logger = LogManager.GetLogger("RideController");
+        private readonly ILogger logger = LogManager.GetLogger("RideAddController");
 
         /// <summary>
         /// rideService
@@ -36,35 +37,55 @@ namespace DataInfo.Api.Controllers.Member
         /// </summary>
         /// <param name="jwtService">jwtService</param>
         /// <param name="rideService">rideService</param>
-        public RideController(IJwtService jwtService, IRideService rideService) : base(jwtService)
+        public AddController(IJwtService jwtService, IRideService rideService) : base(jwtService)
         {
             this.rideService = rideService;
         }
 
-        /// <summary>
-        /// 會員騎乘 - 取得騎乘資料列表
-        /// </summary>
-        /// <returns>IActionResult</returns>
-        [HttpGet]
-        public async Task<IActionResult> Get()
-        {
-            string memberID = this.GetMemberID();
-            try
-            {
-                ResponseResult responseResult = await this.rideService.GetRideDataListOfMember(memberID).ConfigureAwait(false);
-                return Ok(responseResult);
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("會員請求取得騎乘資料列表發生錯誤", $"MemberID: {memberID}", ex);
-                return Ok(new ResponseResult()
-                {
-                    Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Get.Error
-                });
-            }
-        }
+        ///// <summary>
+        ///// 會員騎乘 - 取得騎乘資料列表
+        ///// </summary>
+        ///// <param name="memberID"></param>
+        ///// <returns></returns>
+        //private async Task<IActionResult> GetData(string memberID)
+        //{
+        //    try
+        //    {
+        //        ResponseResult responseResult = await this.rideService.GetRideDataListOfMember(memberID).ConfigureAwait(false);
+        //        return Ok(responseResult);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        this.logger.LogError("會員請求取得騎乘資料列表發生錯誤", $"MemberID: {memberID}", ex);
+        //        return Ok(new ResponseResult()
+        //        {
+        //            Result = false,
+        //            ResultCode = (int)ResponseResultType.UnknownError,
+        //            Content = MessageHelper.Message.ResponseMessage.Get.Error
+        //        });
+        //    }
+        //}
+
+        ///// <summary>
+        ///// 會員騎乘 - 取得騎乘資料列表
+        ///// </summary>
+        ///// <returns>IActionResult</returns>
+        //[HttpGet]
+        //public async Task<IActionResult> Get()
+        //{
+        //    string memberID = this.GetMemberID();
+        //    return await this.GetData(memberID).ConfigureAwait(false);
+        //}
+
+        ///// <summary>
+        ///// 會員騎乘 - 取得騎乘資料列表
+        ///// </summary>
+        ///// <returns>IActionResult</returns>
+        //[HttpGet("{memberID:string}")]
+        //public async Task<IActionResult> Get(string memberID)
+        //{
+        //    return await this.GetData(memberID).ConfigureAwait(false);
+        //}
 
         ///// <summary>
         ///// 會員騎乘 - 更新騎乘資料 (TODO)
@@ -105,12 +126,12 @@ namespace DataInfo.Api.Controllers.Member
         //}
 
         /// <summary>
-        /// 會員騎乘 - 新增騎乘資料
+        /// 新增騎乘資料
         /// </summary>
         /// <param name="content">content</param>
         /// <returns>IActionResult</returns>
         [HttpPost]
-        public async Task<IActionResult> Post(RideInfoContent content)
+        public async Task<IActionResult> Post(AddRideInfoContent content)
         {
             string memberID = this.GetMemberID();
             try

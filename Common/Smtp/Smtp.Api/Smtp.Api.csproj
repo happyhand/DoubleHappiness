@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <OutputPath>D:\DoubleHappiness\dh.smtp.com\</OutputPath>
-    <DocumentationFile>D:\DoubleHappiness\dh.smtp.com\Smtp.API.Swagger.xml</DocumentationFile>
+    <OutputPath>D:\DoubleHappiness\dblha.smtp.com\</OutputPath>
+    <DocumentationFile>D:\DoubleHappiness\dblha.smtp.com\Smtp.API.Swagger.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

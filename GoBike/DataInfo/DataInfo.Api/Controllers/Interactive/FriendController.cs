@@ -18,7 +18,7 @@ namespace DataInfo.Api.Controllers.Interactive
     /// </summary>
     [ApiController]
     [Authorize]
-    [Route("api/[controller]")]
+    [Route("api/Interactive/[controller]")]
     public class FriendController : JwtController
     {
         /// <summary>
@@ -29,7 +29,7 @@ namespace DataInfo.Api.Controllers.Interactive
         /// <summary>
         /// logger
         /// </summary>
-        private readonly ILogger logger = LogManager.GetLogger("FriendController");
+        private readonly ILogger logger = LogManager.GetLogger("InteractiveFriendController");
 
         /// <summary>
         /// 建構式

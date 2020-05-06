@@ -10,16 +10,16 @@ using UploadFiles.Service.Interfaces;
 namespace UploadFiles.Api.Controllers.GoBike
 {
     /// <summary>
-    /// 上傳檔案功能
+    /// 會員圖像
     /// </summary>
-    [Route("api/gobike/[controller]/[action]")]
+    [Route("api/gobike/[controller]")]
     [ApiController]
-    public class UploadFileController : ControllerBase
+    public class MemberImageController : ControllerBase
     {
         /// <summary>
         /// logger
         /// </summary>
-        private readonly ILogger logger = LogManager.GetLogger("UploadFileController");
+        private readonly ILogger logger = LogManager.GetLogger("MemberImageController");
 
         /// <summary>
         /// uploadFileService
@@ -30,7 +30,7 @@ namespace UploadFiles.Api.Controllers.GoBike
         /// 建構式
         /// </summary>
         /// <param name="uploadFileService">uploadFileService</param>
-        public UploadFileController(IUploadFileService uploadFileService)
+        public MemberImageController(IUploadFileService uploadFileService)
         {
             this.uploadFileService = uploadFileService;
         }
@@ -61,11 +61,11 @@ namespace UploadFiles.Api.Controllers.GoBike
         //}
 
         /// <summary>
-        /// 上傳檔案 - 上傳會員圖像
+        /// 會員圖像
         /// </summary>
         /// <returns>IActionResult</returns>
         [HttpPost]
-        public async Task<IActionResult> MemberImages(IEnumerable<string> imgBase64s)
+        public async Task<IActionResult> Post(IEnumerable<string> imgBase64s)
         {
             try
             {

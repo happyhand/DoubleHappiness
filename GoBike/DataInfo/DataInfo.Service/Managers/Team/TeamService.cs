@@ -104,7 +104,7 @@ namespace DataInfo.Service.Managers.Team
 
                 TeamCreateRequest request = new TeamCreateRequest();
 
-                CommandData<TeamCreateResponse> response = await this.serverService.DoAction<TeamCreateResponse>((int)TeamCommandIDType.CreateNewTeam, CommandType.User.ToString(), request).ConfigureAwait(false);
+                CommandData<TeamCreateResponse> response = await this.serverService.DoAction<TeamCreateResponse>((int)TeamCommandIDType.CreateNewTeam, CommandType.User, request).ConfigureAwait(false);
                 this.logger.LogInfo("建立車隊結果", $"Result: {response.Data.Result} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                 switch (response.Data.Result)
                 {

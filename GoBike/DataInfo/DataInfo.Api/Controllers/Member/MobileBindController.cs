@@ -24,7 +24,7 @@ namespace DataInfo.Api.Controllers.Member
         /// <summary>
         /// logger
         /// </summary>
-        private readonly ILogger logger = LogManager.GetLogger("MobileBindController");
+        private readonly ILogger logger = LogManager.GetLogger("MemberMobileBindController");
 
         /// <summary>
         /// memberService
