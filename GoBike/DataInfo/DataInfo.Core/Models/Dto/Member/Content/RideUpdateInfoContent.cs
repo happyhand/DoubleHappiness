@@ -8,9 +8,9 @@ namespace DataInfo.Core.Models.Dto.Member.Content
     public class RideUpdateInfoContent
     {
         /// <summary>
-        /// Gets or sets CountyID
+        /// Gets or sets County
         /// </summary>
-        public int CountyID { get; set; }
+        public int County { get; set; }
 
         /// <summary>
         /// Gets or sets Level

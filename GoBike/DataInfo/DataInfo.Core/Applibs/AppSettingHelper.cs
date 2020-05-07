@@ -24,9 +24,9 @@ namespace DataInfo.Core.Applibs
         #region 縣市對照表
 
         /// <summary>
-        /// Gets or sets CountryMap
+        /// Gets or sets CountyMap
         /// </summary>
-        public Dictionary<string, string> CountryMap { get; set; }
+        public Dictionary<string, string> CountyMap { get; set; }
 
         #endregion 縣市對照表
 

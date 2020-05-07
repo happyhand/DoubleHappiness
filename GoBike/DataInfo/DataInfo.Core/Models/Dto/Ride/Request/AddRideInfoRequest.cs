@@ -11,9 +11,9 @@
         public float Altitude { get; set; }
 
         /// <summary>
-        /// Gets or sets 鄉鎮地區
+        /// Gets or sets 居住地
         /// </summary>
-        public int CountyID { get; set; }
+        public int County { get; set; }
 
         /// <summary>
         /// Gets or sets 騎乘距離

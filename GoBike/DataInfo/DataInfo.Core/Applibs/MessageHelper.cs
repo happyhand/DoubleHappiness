@@ -60,6 +60,17 @@
         }
 
         /// <summary>
+        /// InteractiveMessageSetting
+        /// </summary>
+        public class InteractiveMessageSetting
+        {
+            /// <summary>
+            /// Gets or sets TargetError
+            /// </summary>
+            public string TargetError { get; set; }
+        }
+
+        /// <summary>
         /// LoginMessageSetting
         /// </summary>
         public class LoginMessageSetting
@@ -198,12 +209,17 @@
             public GetMessageSetting Get { get; set; }
 
             /// <summary>
+            /// Gets or sets Interactive
+            /// </summary>
+            public InteractiveMessageSetting Interactive { get; set; }
+
+            /// <summary>
             /// Gets or sets Login
             /// </summary>
             public LoginMessageSetting Login { get; set; }
 
             /// <summary>
-            /// Gets or sets Common
+            /// Gets or sets Member
             /// </summary>
             public MemberMessageSetting Member { get; set; }
 
@@ -213,12 +229,12 @@
             public RegisterMessageSetting Register { get; set; }
 
             /// <summary>
-            /// Gets or sets Common
+            /// Gets or sets Ride
             /// </summary>
             public RideMessageSetting Ride { get; set; }
 
             /// <summary>
-            /// Gets or sets Common
+            /// Gets or sets Smtp
             /// </summary>
             public SmtpMessageSetting Smtp { get; set; }
 
@@ -238,7 +254,7 @@
             public UploadMessageSetting Upload { get; set; }
 
             /// <summary>
-            /// Gets or sets Common
+            /// Gets or sets VerifyCode
             /// </summary>
             public VerifyCodeMessageSetting VerifyCode { get; set; }
         }
@@ -254,9 +270,9 @@
             public string AltitudeEmpty { get; set; }
 
             /// <summary>
-            /// Gets or sets CountyIDEmpty
+            /// Gets or sets CountyEmpty
             /// </summary>
-            public string CountyIDEmpty { get; set; }
+            public string CountyEmpty { get; set; }
 
             /// <summary>
             /// Gets or sets DistanceEmpty
@@ -306,9 +322,9 @@
             public string AvatarEmpty { get; set; }
 
             /// <summary>
-            /// Gets or sets CountyIDEmpty
+            /// Gets or sets CountyEmpty
             /// </summary>
-            public string CountyIDEmpty { get; set; }
+            public string CountyEmpty { get; set; }
 
             /// <summary>
             /// Gets or sets ExamineStatusEmpty
@@ -376,6 +392,11 @@
             /// Gets or sets FrontCoverFail
             /// </summary>
             public string FrontCoverFail { get; set; }
+
+            /// <summary>
+            /// Gets or sets HomePhotoFail
+            /// </summary>
+            public string HomePhotoFail { get; set; }
 
             /// <summary>
             /// Gets or sets PhotoFail

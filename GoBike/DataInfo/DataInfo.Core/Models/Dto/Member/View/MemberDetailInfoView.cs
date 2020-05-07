@@ -23,7 +23,7 @@ namespace DataInfo.Core.Models.Dto.Member.View
         public double BodyWeight { get; set; }
 
         /// <summary>
-        /// Gets or sets 封面路徑
+        /// Gets or sets 封面圖片路徑
         /// </summary>
         public string FrontCover { get; set; }
 

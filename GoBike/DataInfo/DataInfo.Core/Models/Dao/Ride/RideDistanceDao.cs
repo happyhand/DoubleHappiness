@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DataInfo.Core.Models.Dao.Ride
+﻿namespace DataInfo.Core.Models.Dao.Ride
 {
     /// <summary>
     /// 騎乘距離資料

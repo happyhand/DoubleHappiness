@@ -1,5 +1,5 @@
 ﻿using DataInfo.Core.Models.Dao.Ride;
-using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace DataInfo.Repository.Interfaces
@@ -20,9 +20,14 @@ namespace DataInfo.Repository.Interfaces
         /// 取得週里程
         /// </summary>
         /// <param name="memberID">memberID</param>
-        /// <param name="startDate">startDate</param>
-        /// <param name="endDate">endDate</param>
         /// <returns>RideDistanceDao</returns>
-        Task<RideDistanceDao> GetWeekDistance(string memberID, DateTime startDate, DateTime endDate);
+        Task<RideDistanceDao> GetWeekDistance(string memberID);
+
+        /// <summary>
+        /// 取得週里程
+        /// </summary>
+        /// <param name="memberIDs">memberIDs</param>
+        /// <returns>RideDistanceDao</returns>
+        Task<IEnumerable<RideDistanceDao>> GetWeekDistance(IEnumerable<string> memberIDs);
     }
 }

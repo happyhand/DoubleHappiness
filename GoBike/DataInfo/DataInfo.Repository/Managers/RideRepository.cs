@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using DataInfo.Core.Models.Dao.Ride;
 using DataInfo.Core.Models.Dao.Ride.Table;
 using DataInfo.Core.Applibs;
+using System.Linq;
 
 namespace DataInfo.Repository.Managers
 {
@@ -33,7 +34,7 @@ namespace DataInfo.Repository.Managers
         {
             try
             {
-                RideData rideData = await this.Db.Queryable<RideData>().Where(data => data.MemberID.Equals(memberID)).SingleAsync().ConfigureAwait(false);
+                RideData rideData = await this.Db.Queryable<RideData>().Where(data => data.MemberID.Equals(memberID)).FirstAsync().ConfigureAwait(false);
                 if (rideData == null)
                 {
                     this.logger.LogWarn("取得總里程失敗", $"Result: 無騎乘資料 MemberID: {memberID}", null);
@@ -57,20 +58,21 @@ namespace DataInfo.Repository.Managers
         /// 取得週里程
         /// </summary>
         /// <param name="memberID">memberID</param>
-        /// <param name="startDate">startDate</param>
-        /// <param name="endDate">endDate</param>
         /// <returns>RideDistanceDao</returns>
-        public async Task<RideDistanceDao> GetWeekDistance(string memberID, DateTime startDate, DateTime endDate)
+        public async Task<RideDistanceDao> GetWeekDistance(string memberID)
         {
+            DateTime nowDate = DateTime.UtcNow;
             try
             {
-                string weekFirstDay = Utility.GetWeekFirstDay(startDate);
-                string weekLastDay = Utility.GetWeekLastDay(endDate);
-                WeekRideData weekRideData = await this.Db.Queryable<WeekRideData>().Where(data => data.MemberID.Equals(memberID))
-                                                                           .Where(data => data.WeekFirstDay.Equals(weekFirstDay) && data.WeekLastDay.Equals(weekLastDay)).SingleAsync().ConfigureAwait(false);
+                string weekFirstDay = Utility.GetWeekFirstDay(nowDate);
+                string weekLastDay = Utility.GetWeekLastDay(nowDate);
+                WeekRideData weekRideData = await this.Db.Queryable<WeekRideData>()
+                                                         .Where(data => data.MemberID.Equals(memberID))
+                                                         .Where(data => data.WeekFirstDay.Equals(weekFirstDay) && data.WeekLastDay.Equals(weekLastDay))
+                                                         .FirstAsync().ConfigureAwait(false);
                 if (weekRideData == null)
                 {
-                    this.logger.LogWarn("取得週里程失敗", $"Result: 無騎乘資料 MemberID: {memberID} StartDate: {startDate} EndDate: {endDate}", null);
+                    this.logger.LogWarn("取得週里程失敗", $"Result: 無騎乘資料 MemberID: {memberID} NowDate: {nowDate}", null);
                     return null;
                 }
 
@@ -82,8 +84,38 @@ namespace DataInfo.Repository.Managers
             }
             catch (Exception ex)
             {
-                this.logger.LogError("取得週里程發生錯誤", $"MemberID: {memberID} StartDate: {startDate} EndDate: {endDate}", ex);
+                this.logger.LogError("取得週里程發生錯誤", $"MemberID: {memberID} NowDate: {nowDate}", ex);
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// 取得週里程
+        /// </summary>
+        /// <param name="memberIDs">memberIDs</param>
+        /// <returns>RideDistanceDao</returns>
+        public async Task<IEnumerable<RideDistanceDao>> GetWeekDistance(IEnumerable<string> memberIDs)
+        {
+            DateTime nowDate = DateTime.UtcNow;
+            try
+            {
+                string weekFirstDay = Utility.GetWeekFirstDay(nowDate);
+                string weekLastDay = Utility.GetWeekLastDay(nowDate);
+                IEnumerable<WeekRideData> weekRideDatas = await this.Db.Queryable<WeekRideData>()
+                                                         .Where(data => memberIDs.Contains(data.MemberID))
+                                                         .Where(data => data.WeekFirstDay.Equals(weekFirstDay) && data.WeekLastDay.Equals(weekLastDay))
+                                                         .ToListAsync().ConfigureAwait(false);
+
+                return weekRideDatas.Select(data => new RideDistanceDao()
+                {
+                    MemberID = data.MemberID,
+                    WeekDistance = data.WeekDistance
+                });
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得週里程發生錯誤", $"MemberIDs: {JsonConvert.SerializeObject(memberIDs)} NowDate: {nowDate}", ex);
+                return new List<RideDistanceDao>();
             }
         }
 

@@ -1,14 +1,19 @@
 ﻿using AutoMapper;
 using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
-using DataInfo.Repository.Interfaces;
 using DataInfo.Core.Models.Dao.Member;
-using DataInfo.Core.Models.Enum;
-using DataInfo.Service.Interfaces.Common;
-using DataInfo.Service.Interfaces.Member;
-using DataInfo.Core.Models.Dto.Member.Content;
-using DataInfo.Core.Models.Dto.Member.View;
+using DataInfo.Core.Models.Dao.Ride;
 using DataInfo.Core.Models.Dto.Response;
+using DataInfo.Core.Models.Dto.Ride.Content;
+using DataInfo.Core.Models.Dto.Ride.Request;
+using DataInfo.Core.Models.Dto.Ride.Response;
+using DataInfo.Core.Models.Dto.Ride.View;
+using DataInfo.Core.Models.Dto.Server;
+using DataInfo.Core.Models.Enum;
+using DataInfo.Repository.Interfaces;
+using DataInfo.Service.Interfaces.Common;
+using DataInfo.Service.Interfaces.Ride;
+using DataInfo.Service.Interfaces.Server;
 using FluentValidation.Results;
 using Newtonsoft.Json;
 using NLog;
@@ -16,13 +21,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using DataInfo.Core.Models.Dto.Ride.Content;
-using DataInfo.Core.Models.Dto.Ride.Request;
-using DataInfo.Core.Models.Dto.Server;
-using DataInfo.Core.Models.Dto.Ride.Response;
-using DataInfo.Service.Interfaces.Server;
 
-namespace DataInfo.Service.Managers.Member
+namespace DataInfo.Service.Managers.Ride
 {
     /// <summary>
     /// 騎乘服務
@@ -40,6 +40,11 @@ namespace DataInfo.Service.Managers.Member
         private readonly IUploadService uploadService;
 
         /// <summary>
+        /// interactiveRepository
+        /// </summary>
+        protected readonly IInteractiveRepository interactiveRepository;
+
+        /// <summary>
         /// logger
         /// </summary>
         protected readonly ILogger logger = LogManager.GetLogger("RideService");
@@ -48,6 +53,11 @@ namespace DataInfo.Service.Managers.Member
         /// mapper
         /// </summary>
         protected readonly IMapper mapper;
+
+        /// <summary>
+        /// memberRepository
+        /// </summary>
+        protected readonly IMemberRepository memberRepository;
 
         /// <summary>
         /// rideRepository
@@ -60,12 +70,16 @@ namespace DataInfo.Service.Managers.Member
         /// <param name="mapper">mapper</param>
         /// <param name="uploadService">uploadService</param>
         /// <param name="serverService">serverService</param>
+        /// <param name="memberRepository">memberRepository</param>
+        /// <param name="interactiveRepository">interactiveRepository</param>
         /// <param name="redisRepository">redisRepository</param>
-        public RideService(IMapper mapper, IUploadService uploadService, IServerService serverService, IRideRepository rideRepository)
+        public RideService(IMapper mapper, IUploadService uploadService, IServerService serverService, IMemberRepository memberRepository, IInteractiveRepository interactiveRepository, IRideRepository rideRepository)
         {
             this.mapper = mapper;
             this.uploadService = uploadService;
             this.serverService = serverService;
+            this.memberRepository = memberRepository;
+            this.interactiveRepository = interactiveRepository;
             this.rideRepository = rideRepository;
         }
 
@@ -79,9 +93,9 @@ namespace DataInfo.Service.Managers.Member
         ///// <returns>string</returns>
         //private async Task<string> UpdateInfoHandler(RideUpdateInfoContent content, RideModel rideModel)
         //{
-        //    if (content.CountyID != (int)CountyType.None)
+        //    if (content.County != (int)CountyType.None)
         //    {
-        //        rideModel.CountyID = content.CountyID;
+        //        rideModel.County = content.County;
         //    }
 
         // if (content.Level != (int)RideLevelType.None) { rideModel.Level = content.Level; }
@@ -184,7 +198,7 @@ namespace DataInfo.Service.Managers.Member
 
                 #endregion 上傳圖片
 
-                #region 新增資料
+                #region 發送【建立騎乘紀錄】指令至後端
 
                 AddRideInfoRequest request = this.mapper.Map<AddRideInfoRequest>(content);
                 request.MemberID = memberID;
@@ -218,7 +232,7 @@ namespace DataInfo.Service.Managers.Member
                         };
                 }
 
-                #endregion 新增資料
+                #endregion 發送【建立騎乘紀錄】指令至後端
             }
             catch (Exception ex)
             {
@@ -228,6 +242,56 @@ namespace DataInfo.Service.Managers.Member
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
                     Content = MessageHelper.Message.ResponseMessage.Add.Fail
+                };
+            }
+        }
+
+        /// <summary>
+        /// 取得好友週里程排名
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> GetFriendWeekRank(string memberID)
+        {
+            try
+            {
+                IEnumerable<string> friendIDList = await this.interactiveRepository.GetFriendList(memberID).ConfigureAwait(false);
+                Task<IEnumerable<RideDistanceDao>> rideDistanceDaosTask = this.rideRepository.GetWeekDistance(friendIDList);
+                Task<IEnumerable<MemberDao>> friendDaosTask = this.memberRepository.Get(friendIDList, null);
+
+                Dictionary<string, RideDistanceDao> rideDistanceMap = (await rideDistanceDaosTask.ConfigureAwait(false)).ToDictionary(data => data.MemberID);
+                IEnumerable<MemberDao> friendDaos = await friendDaosTask.ConfigureAwait(false);
+                IEnumerable<RideFriendWeekRankView> rideFriendWeekRankViews = friendDaos.Select(data =>
+                {
+                    rideDistanceMap.TryGetValue(data.MemberID, out RideDistanceDao rideDistanceDao);
+                    RideFriendWeekRankView rideFriendWeekRankView = new RideFriendWeekRankView()
+                    {
+                        Avatar = data.Avatar,
+                        Nickname = data.Nickname
+                    };
+                    if (rideDistanceDao != null)
+                    {
+                        rideFriendWeekRankView.WeekDistance = rideDistanceDao.WeekDistance;
+                    }
+
+                    return rideFriendWeekRankView;
+                });
+
+                return new ResponseResult()
+                {
+                    Result = true,
+                    ResultCode = (int)ResponseResultType.Success,
+                    Content = rideFriendWeekRankViews.OrderByDescending(data => data.WeekDistance)
+                };
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得好友週里程排名發生錯誤", $"MemberID: {memberID}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = MessageHelper.Message.ResponseMessage.Get.Error
                 };
             }
         }

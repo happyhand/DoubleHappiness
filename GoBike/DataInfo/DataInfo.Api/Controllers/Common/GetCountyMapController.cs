@@ -11,12 +11,12 @@ namespace DataInfo.Api.Controllers.Common
     /// </summary>
     [Route("api/Common/[controller]")]
     [ApiController]
-    public class GetCountryMapController : ApiController
+    public class GetCountyMapController : ApiController
     {
         /// <summary>
         /// logger
         /// </summary>
-        private readonly ILogger logger = LogManager.GetLogger("GetCountryMapController");
+        private readonly ILogger logger = LogManager.GetLogger("GetCountyMapController");
 
         /// <summary>
         /// 取得市區資料列表
@@ -27,7 +27,7 @@ namespace DataInfo.Api.Controllers.Common
         {
             try
             {
-                return Ok(AppSettingHelper.Appsetting.CountryMap);
+                return Ok(AppSettingHelper.Appsetting.CountyMap);
             }
             catch (Exception ex)
             {

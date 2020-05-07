@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SqlSugar;
+using System;
 
 namespace DataInfo.Core.Models.Dao.Ride.Table
 {
@@ -13,9 +14,9 @@ namespace DataInfo.Core.Models.Dao.Ride.Table
         public float Altitude { get; set; }
 
         /// <summary>
-        /// Gets or sets CountyID
+        /// Gets or sets County
         /// </summary>
-        public int CountyID { get; set; }
+        public int County { get; set; }
 
         /// <summary>
         /// Gets or sets CreateDate
@@ -45,6 +46,7 @@ namespace DataInfo.Core.Models.Dao.Ride.Table
         /// <summary>
         /// Gets or sets RideID
         /// </summary>
+        [SugarColumn(IsPrimaryKey = true)]
         public string RideID { get; set; }
 
         /// <summary>

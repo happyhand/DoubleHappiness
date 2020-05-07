@@ -1,9 +1,10 @@
-﻿using DataInfo.Core.Models.Enum;
+﻿using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
-using DataInfo.Service.Interfaces.Common;
-using DataInfo.Service.Interfaces.Member;
-using DataInfo.Core.Models.Dto.Member.Content;
+using DataInfo.Core.Models.Dto.Interactive.Content;
 using DataInfo.Core.Models.Dto.Response;
+using DataInfo.Core.Models.Enum;
+using DataInfo.Service.Interfaces.Common;
+using DataInfo.Service.Interfaces.Interactive;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -53,7 +54,7 @@ namespace DataInfo.Api.Controllers.Interactive
             try
             {
                 this.logger.LogInfo("會員請求移除黑名單", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await this.InteractiveService.DeleteInteractive(memberID, content).ConfigureAwait(false);
+                ResponseResult responseResult = await this.InteractiveService.UpdateInteractive(memberID, content, InteractiveType.Black, InteractiveActionType.Delete).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
@@ -63,7 +64,7 @@ namespace DataInfo.Api.Controllers.Interactive
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = "更新資料發生錯誤."
+                    Content = MessageHelper.Message.ResponseMessage.Update.Error
                 });
             }
         }
@@ -88,13 +89,13 @@ namespace DataInfo.Api.Controllers.Interactive
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = "取得資料發生錯誤."
+                    Content = MessageHelper.Message.ResponseMessage.Get.Error
                 });
             }
         }
 
         /// <summary>
-        /// 會員黑名單 - 更新互動資料
+        /// 會員黑名單 - 新增黑名單
         /// </summary>
         /// <param name="content">content</param>
         /// <returns>IActionResult</returns>
@@ -104,18 +105,18 @@ namespace DataInfo.Api.Controllers.Interactive
             string memberID = this.GetMemberID();
             try
             {
-                this.logger.LogInfo("會員請求更新互動資料", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await this.InteractiveService.UpdateInteractive(memberID, content, (int)InteractiveType.Black).ConfigureAwait(false);
+                this.logger.LogInfo("會員請求新增黑名單", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                ResponseResult responseResult = await this.InteractiveService.UpdateInteractive(memberID, content, InteractiveType.Black, InteractiveActionType.Add).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員請求更新互動資料發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                this.logger.LogError("會員請求新增黑名單發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
                 return Ok(new ResponseResult()
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = "更新資料發生錯誤."
+                    Content = MessageHelper.Message.ResponseMessage.Update.Error
                 });
             }
         }

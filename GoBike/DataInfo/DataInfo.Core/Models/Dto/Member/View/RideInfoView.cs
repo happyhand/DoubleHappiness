@@ -13,9 +13,9 @@ namespace DataInfo.Core.Models.Dto.Member.View
         public string Altitude { get; set; }
 
         /// <summary>
-        /// Gets or sets CountyID
+        /// Gets or sets County
         /// </summary>
-        public string CountyID { get; set; }
+        public string County { get; set; }
 
         /// <summary>
         /// Gets or sets Distance

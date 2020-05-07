@@ -29,6 +29,22 @@
     #region 會員
 
     /// <summary>
+    /// 更新互動結果
+    /// </summary>
+    public enum UpdateInteractiveResultType
+    {
+        /// <summary>
+        /// 更新失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 更新成功
+        /// </summary>
+        Success = 1,
+    }
+
+    /// <summary>
     /// 更新使用者資訊密碼結果
     /// </summary>
     public enum UpdatePasswordResultType
@@ -88,7 +104,17 @@
         /// <summary>
         /// 更新密碼
         /// </summary>
-        UpdatePassword = 1004
+        UpdatePassword = 1004,
+
+        /// <summary>
+        /// 更新朋友列表
+        /// </summary>
+        UpdateFriendList = 1006,
+
+        /// <summary>
+        /// 更新黑名單列表
+        /// </summary>
+        UpdateBlackList = 1007
     }
 
     /// <summary>

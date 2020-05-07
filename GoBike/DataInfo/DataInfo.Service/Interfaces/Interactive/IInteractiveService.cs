@@ -1,22 +1,15 @@
-﻿using DataInfo.Core.Models.Dto.Member.Content;
+﻿using DataInfo.Core.Models.Dto.Interactive.Content;
 using DataInfo.Core.Models.Dto.Response;
+using DataInfo.Core.Models.Enum;
 using System.Threading.Tasks;
 
-namespace DataInfo.Service.Interfaces.Member
+namespace DataInfo.Service.Interfaces.Interactive
 {
     /// <summary>
     /// 互動服務
     /// </summary>
     public interface IInteractiveService
     {
-        /// <summary>
-        /// 刪除互動資料
-        /// </summary>
-        /// <param name="memberID">memberID</param>
-        /// <param name="content">content</param>
-        /// <returns>ResponseResult</returns>
-        Task<ResponseResult> DeleteInteractive(string memberID, InteractiveContent content);
-
         /// <summary>
         /// 取得黑名單列表
         /// </summary>
@@ -37,7 +30,8 @@ namespace DataInfo.Service.Interfaces.Member
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
         /// <param name="status">status</param>
+        /// <param name="action">action</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> UpdateInteractive(string memberID, InteractiveContent content, int status);
+        Task<ResponseResult> UpdateInteractive(string memberID, InteractiveContent content, InteractiveType status, InteractiveActionType action);
     }
 }

@@ -1,8 +1,7 @@
-﻿using DataInfo.Core.Models.Enum;
-using DataInfo.Core.Extensions;
+﻿using DataInfo.Core.Extensions;
+using DataInfo.Core.Models.Dao.Member.Table;
 using DataInfo.Repository.Interfaces;
 using DataInfo.Repository.Managers.Base;
-using DataInfo.Core.Models.Dao.Member;
 using Newtonsoft.Json;
 using NLog;
 using SqlSugar;
@@ -23,181 +22,70 @@ namespace DataInfo.Repository.Managers
         private readonly ILogger logger = LogManager.GetLogger("InteractiveRepository");
 
         /// <summary>
-        /// 建立互動資料
-        /// </summary>
-        /// <param name="interactiveModel">interactiveModel</param>
-        /// <returns>bool</returns>
-        public async Task<bool> Create(InteractiveModel interactiveModel)
-        {
-            try
-            {
-                bool isSuccess = await this.Db.Insertable(interactiveModel)
-                                              .With(SqlWith.UpdLock)
-                                              .ExecuteCommandAsync() > 0;
-                this.logger.LogInfo("建立互動資料結果", $"Result: {isSuccess} InteractiveModel: {JsonConvert.SerializeObject(interactiveModel)}", null);
-                return isSuccess;
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("建立互動資料發生錯誤", $"InteractiveModel: {JsonConvert.SerializeObject(interactiveModel)}", ex);
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// 刪除互動資料
+        /// 取得被加入好友列表
         /// </summary>
         /// <param name="memberID">memberID</param>
-        /// <param name="targetID">targetID</param>
-        /// <returns>bool</returns>
-        public async Task<bool> Delete(string memberID, string targetID)
+        /// <returns>MemberDaos</returns>
+        public async Task<IEnumerable<string>> GetBeFriendList(string memberID)
         {
             try
             {
-                bool isSuccess = await this.Db.Deleteable<InteractiveModel>()
-                                              .Where(data => data.CreatorID.Equals(memberID) && data.TargetID.Equals(targetID))
-                                              .With(SqlWith.RowLock)
-                                              .ExecuteCommandAsync() > 0;
-                this.logger.LogInfo("刪除互動資料結果", $"Result: {isSuccess} MemberID: {memberID} TargetID: {targetID}", null);
-                return isSuccess;
+                return await this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => new object[] {
+                        JoinType.Left,ua.MemberID.Equals(ui.MemberID)})
+                         .Where((ua, ui) => !ua.MemberID.Equals(memberID))
+                         .Where((ua, ui) => ui.FriendList.Contains(memberID))
+                         .Select(ua => ua.MemberID).ToListAsync().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("刪除互動資料發生錯誤", $"MemberID: {memberID} TargetID: {targetID}", ex);
-                return false;
+                this.logger.LogError("取得被加入好友列表發生錯誤", $"MemberID: {memberID}", ex);
+                return new List<string>();
             }
         }
 
         /// <summary>
-        /// 取得會員的互動資料列表
+        /// 取得黑名單列表
         /// </summary>
         /// <param name="memberID">memberID</param>
-        /// <param name="isCreator">isCreator</param>
-        /// <returns>InteractiveModel list</returns>
-        public async Task<List<InteractiveModel>> Get(string memberID, bool isCreator)
+        /// <returns>MemberDaos</returns>
+        public async Task<IEnumerable<string>> GetBlackList(string memberID)
         {
             try
             {
-                if (isCreator)
-                {
-                    return await this.Db.Queryable<InteractiveModel>().Where(data => data.CreatorID.Equals(memberID)).ToListAsync();
-                }
-                else
-                {
-                    return await this.Db.Queryable<InteractiveModel>().Where(data => data.TargetID.Equals(memberID)).ToListAsync();
-                }
+                string blackListDataJson = await this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => new object[] {
+                        JoinType.Left,ua.MemberID.Equals(ui.MemberID)})
+                         .Where((ua, ui) => ua.MemberID.Equals(memberID))
+                         .Select((ua, ui) => ui.BlackList).FirstAsync().ConfigureAwait(false);
+
+                return JsonConvert.DeserializeObject<IEnumerable<string>>(blackListDataJson);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("取得會員的互動資料列表發生錯誤", $"MemberID: {memberID} IsCreator: {isCreator}", ex);
-                return new List<InteractiveModel>();
+                this.logger.LogError("取得黑名單列表發生錯誤", $"MemberID: {memberID}", ex);
+                return new List<string>();
             }
         }
 
         /// <summary>
-        /// 取得指定的互動資料列表
+        /// 取得好友列表
         /// </summary>
         /// <param name="memberID">memberID</param>
-        /// <param name="targetID">targetID</param>
-        /// <returns>InteractiveModel list</returns>
-        public async Task<InteractiveModel> Get(string memberID, string targetID)
+        /// <returns>MemberDaos</returns>
+        public async Task<IEnumerable<string>> GetFriendList(string memberID)
         {
             try
             {
-                return await this.Db.Queryable<InteractiveModel>().Where(data => data.CreatorID.Equals(memberID))
-                                                                  .Where(data => data.TargetID.Equals(targetID))
-                                                                  .SingleAsync();
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("取得指定的互動資料列表發生錯誤", $"MemberID: {memberID} TargetID: {targetID}", ex);
-                return null;
-            }
-        }
+                string friendListDataJson = await this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => new object[] {
+                        JoinType.Left,ua.MemberID.Equals(ui.MemberID)})
+                         .Where((ua, ui) => ua.MemberID.Equals(memberID))
+                         .Select((ua, ui) => ui.FriendList).FirstAsync().ConfigureAwait(false);
 
-        /// <summary>
-        /// 取得被加入好友資料列表
-        /// </summary>
-        /// <param name="memberID">memberID</param>
-        /// <returns>InteractiveModel list</returns>
-        public async Task<List<InteractiveModel>> GetBeFriendList(string memberID)
-        {
-            try
-            {
-                return await this.Db.Queryable<InteractiveModel>()
-                    .Where(data => data.TargetID.Equals(memberID))
-                    .Where(data => data.Status.Equals(InteractiveType.Friend))
-                    .ToListAsync();
+                return JsonConvert.DeserializeObject<IEnumerable<string>>(friendListDataJson);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("取得被加入好友資料列表發生錯誤", $"MemberID: {memberID}", ex);
-                return new List<InteractiveModel>();
-            }
-        }
-
-        /// <summary>
-        /// 取得黑名單資料列表
-        /// </summary>
-        /// <param name="memberID">memberID</param>
-        /// <returns>InteractiveModel list</returns>
-        public async Task<List<InteractiveModel>> GetBlackList(string memberID)
-        {
-            try
-            {
-                return await this.Db.Queryable<InteractiveModel>()
-                    .Where(data => data.CreatorID.Equals(memberID))
-                    .Where(data => data.Status.Equals(InteractiveType.Black))
-                    .ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("取得黑名單資料列表發生錯誤", $"MemberID: {memberID}", ex);
-                return new List<InteractiveModel>();
-            }
-        }
-
-        /// <summary>
-        /// 取得好友資料列表
-        /// </summary>
-        /// <param name="memberID">memberID</param>
-        /// <returns>InteractiveModel list</returns>
-        public async Task<List<InteractiveModel>> GetFriendList(string memberID)
-        {
-            try
-            {
-                return await this.Db.Queryable<InteractiveModel>()
-                    .Where(data => data.CreatorID.Equals(memberID))
-                    .Where(data => data.Status.Equals(InteractiveType.Friend))
-                    .ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("取得好友資料列表發生錯誤", $"MemberID: {memberID}", ex);
-                return new List<InteractiveModel>();
-            }
-        }
-
-        /// <summary>
-        /// 更新互動資料
-        /// </summary>
-        /// <param name="interactiveModel">interactiveModel</param>
-        /// <returns>bool</returns>
-        public async Task<bool> Update(InteractiveModel interactiveModel)
-        {
-            try
-            {
-                bool isSuccess = await this.Db.Updateable(interactiveModel)
-                                              .With(SqlWith.RowLock)
-                                              .With(SqlWith.UpdLock)
-                                              .ExecuteCommandAsync() > 0;
-                this.logger.LogInfo("更新互動資料結果", $"Result: {isSuccess} InteractiveModel: {JsonConvert.SerializeObject(interactiveModel)}", null);
-                return isSuccess;
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("更新互動資料發生錯誤", $"InteractiveModel: {JsonConvert.SerializeObject(interactiveModel)}", ex);
-                return false;
+                this.logger.LogError("取得好友列表發生錯誤", $"MemberID: {memberID}", ex);
+                return new List<string>();
             }
         }
     }

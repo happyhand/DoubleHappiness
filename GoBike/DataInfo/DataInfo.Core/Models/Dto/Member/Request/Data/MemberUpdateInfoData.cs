@@ -30,7 +30,7 @@ namespace DataInfo.Core.Models.Dto.Member.Request.Data
         public double BodyWeight { get; set; }
 
         /// <summary>
-        /// Gets or sets 封面
+        /// Gets or sets 封面圖片
         /// </summary>
         public string FrontCover { get; set; }
 
@@ -48,5 +48,10 @@ namespace DataInfo.Core.Models.Dto.Member.Request.Data
         /// Gets or sets 暱稱
         /// </summary>
         public string NickName { get; set; }
+
+        /// <summary>
+        /// Gets or sets 首頁圖片
+        /// </summary>
+        public string Photo { get; set; }
     }
 }

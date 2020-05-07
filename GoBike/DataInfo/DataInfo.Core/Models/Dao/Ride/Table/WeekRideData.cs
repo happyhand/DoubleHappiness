@@ -1,4 +1,6 @@
-﻿namespace DataInfo.Core.Models.Dao.Ride.Table
+﻿using SqlSugar;
+
+namespace DataInfo.Core.Models.Dao.Ride.Table
 {
     /// <summary>
     /// 騎乘週資料

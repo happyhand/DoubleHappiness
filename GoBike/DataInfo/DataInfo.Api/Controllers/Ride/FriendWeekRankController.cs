@@ -1,66 +1,68 @@
 ﻿using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dto.Response;
+using DataInfo.Core.Models.Dto.Ride.Content;
 using DataInfo.Service.Interfaces.Common;
-using DataInfo.Service.Interfaces.Member;
+using DataInfo.Service.Interfaces.Ride;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Threading.Tasks;
 
-namespace DataInfo.Api.Controllers.Member
+namespace DataInfo.Api.Controllers.Ride
 {
     /// <summary>
-    /// 會員首頁
+    /// 好友週里程排名
     /// </summary>
-    [Route("api/Member/[controller]")]
-    [Authorize]
     [ApiController]
-    public class HomeController : JwtController
+    [Authorize]
+    [Route("api/Ride/[controller]")]
+    public class FriendWeekRankController : JwtController
     {
         /// <summary>
         /// logger
         /// </summary>
-        private readonly ILogger logger = LogManager.GetLogger("MemberHomeController");
+        private readonly ILogger logger = LogManager.GetLogger("RideFriendWeekRankController");
 
         /// <summary>
-        /// memberService
+        /// rideService
         /// </summary>
-        private readonly IMemberService memberService;
+        private readonly IRideService rideService;
 
         /// <summary>
         /// 建構式
         /// </summary>
         /// <param name="jwtService">jwtService</param>
-        /// <param name="memberService">memberService</param>
-        public HomeController(IJwtService jwtService, IMemberService memberService) : base(jwtService)
+        /// <param name="rideService">rideService</param>
+        public FriendWeekRankController(IJwtService jwtService, IRideService rideService) : base(jwtService)
         {
-            this.memberService = memberService;
+            this.rideService = rideService;
         }
 
         /// <summary>
-        /// 首頁資訊
+        /// 好友週里程排名
         /// </summary>
         /// <returns>IActionResult</returns>
-        [HttpGet]
+        [HttpPost]
         public async Task<IActionResult> Get()
         {
             string memberID = this.GetMemberID();
             try
             {
-                this.logger.LogInfo("會員請求首頁資訊", $"MemberID: {memberID}", null);
-                ResponseResult responseResult = await memberService.HomeInfo(memberID).ConfigureAwait(false);
+                this.logger.LogInfo("會員請求好友週里程排名", $"MemberID: {memberID}", null);
+                ResponseResult responseResult = await rideService.GetFriendWeekRank(memberID).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員請求首頁資訊發生錯誤", $"MemberID: {memberID}", ex);
+                this.logger.LogError("會員請求好友週里程排名發生錯誤", $"MemberID: {memberID}", ex);
                 return Ok(new ResponseResult()
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Login.Error
+                    Content = MessageHelper.Message.ResponseMessage.Get.Error
                 });
             }
         }

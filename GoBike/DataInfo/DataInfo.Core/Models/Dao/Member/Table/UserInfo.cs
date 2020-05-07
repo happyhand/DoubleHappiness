@@ -16,6 +16,11 @@
         public string Birthday { get; set; }
 
         /// <summary>
+        /// Gets or sets BlackList
+        /// </summary>
+        public string BlackList { get; set; }
+
+        /// <summary>
         /// Gets or sets BodyHeight
         /// </summary>
         public float BodyHeight { get; set; }
@@ -26,9 +31,14 @@
         public float BodyWeight { get; set; }
 
         /// <summary>
-        /// Gets or sets Country
+        /// Gets or sets County
         /// </summary>
-        public int Country { get; set; }
+        public int County { get; set; }
+
+        /// <summary>
+        /// Gets or sets FriendList
+        /// </summary>
+        public string FriendList { get; set; }
 
         /// <summary>
         /// Gets or sets FrontCover
@@ -41,18 +51,28 @@
         public int Gender { get; set; }
 
         /// <summary>
-        /// Gets or sets 頭像路徑
+        /// Gets or sets MemberID
         /// </summary>
         public string MemberID { get; set; }
 
         /// <summary>
-        /// Gets or sets 頭像路徑
+        /// Gets or sets Mobile
         /// </summary>
         public string Mobile { get; set; }
 
         /// <summary>
-        /// Gets or sets 頭像路徑
+        /// Gets or sets NickName
         /// </summary>
         public string NickName { get; set; }
+
+        /// <summary>
+        /// Gets or sets Photo
+        /// </summary>
+        public string Photo { get; set; }
+
+        /// <summary>
+        /// Gets or sets TeamList
+        /// </summary>
+        public string TeamList { get; set; }
     }
 }

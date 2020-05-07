@@ -28,7 +28,7 @@ namespace DataInfo.Core.Models.Dto.Member.Content
         public double BodyWeight { get; set; }
 
         /// <summary>
-        /// Gets or sets FrontCover
+        /// Gets or sets 封面圖片路徑
         /// </summary>
         public string FrontCover { get; set; }
 
@@ -41,5 +41,10 @@ namespace DataInfo.Core.Models.Dto.Member.Content
         /// Gets or sets 暱稱
         /// </summary>
         public string Nickname { get; set; }
+
+        /// <summary>
+        /// Gets or sets 首頁圖片路徑
+        /// </summary>
+        public string Photo { get; set; }
     }
 }

@@ -31,7 +31,7 @@ namespace DataInfo.Core.Models.Dao.Member
         /// <summary>
         /// Gets or sets 居住地
         /// </summary>
-        public int Country { get; set; }
+        public int County { get; set; }
 
         /// <summary>
         /// Gets or sets 信箱
@@ -44,7 +44,7 @@ namespace DataInfo.Core.Models.Dao.Member
         public string FBToken { get; set; }
 
         /// <summary>
-        /// Gets or sets 封面路徑
+        /// Gets or sets 封面圖片路徑
         /// </summary>
         public string FrontCover { get; set; }
 
@@ -72,6 +72,11 @@ namespace DataInfo.Core.Models.Dao.Member
         /// Gets or sets 暱稱
         /// </summary>
         public string Nickname { get; set; }
+
+        /// <summary>
+        /// Gets or sets 首頁圖片路徑
+        /// </summary>
+        public string Photo { get; set; }
 
         /// <summary>
         /// Gets or sets 註冊日期

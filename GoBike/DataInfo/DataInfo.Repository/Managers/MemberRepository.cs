@@ -38,7 +38,7 @@ namespace DataInfo.Repository.Managers
                 Birthday = Convert.ToDateTime(ui.Birthday),
                 BodyHeight = ui.BodyHeight,
                 BodyWeight = ui.BodyWeight,
-                Country = ui.Country,
+                County = ui.County,
                 Email = ua.Email,
                 FBToken = ua.FBToken,
                 FrontCover = ui.FrontCover,
@@ -48,7 +48,8 @@ namespace DataInfo.Repository.Managers
                 Mobile = ui.Mobile,
                 Nickname = ui.NickName,
                 RegisterDate = Convert.ToDateTime(ua.RegisterDate),
-                RegisterSource = ua.RegisterSource
+                RegisterSource = ua.RegisterSource,
+                Photo = ui.Photo
             }).ToListAsync().ConfigureAwait(false);
         }
 

@@ -1,4 +1,6 @@
-﻿namespace DataInfo.Core.Models.Dao.Member.Table
+﻿using SqlSugar;
+
+namespace DataInfo.Core.Models.Dao.Member.Table
 {
     /// <summary>
     /// 使用者帳戶
@@ -23,6 +25,7 @@
         /// <summary>
         /// Gets or sets MemberID
         /// </summary>
+        [SugarColumn(IsPrimaryKey = true)]
         public string MemberID { get; set; }
 
         /// <summary>

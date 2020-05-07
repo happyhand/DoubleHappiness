@@ -15,9 +15,9 @@ namespace DataInfo.Core.Models.Dto.Team.Content
         public string Avatar { get; set; }
 
         /// <summary>
-        /// Gets or sets CountyID
+        /// Gets or sets County
         /// </summary>
-        public int CountyID { get; set; }
+        public int County { get; set; }
 
         /// <summary>
         /// Gets or sets ExamineStatus
@@ -25,7 +25,7 @@ namespace DataInfo.Core.Models.Dto.Team.Content
         public int ExamineStatus { get; set; }
 
         /// <summary>
-        /// Gets or sets 車隊封面路徑
+        /// Gets or sets 車隊封面圖片路徑
         /// </summary>
         public string FrontCover { get; set; }
 
@@ -61,11 +61,11 @@ namespace DataInfo.Core.Models.Dto.Team.Content
             .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.FrontCoverEmpty)
             .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Team.FrontCoverEmpty);
 
-            RuleFor(content => content.CountyID)
-            .Must(countyID =>
+            RuleFor(content => content.County)
+            .Must(County =>
             {
-                return countyID != (int)CountyType.None;
-            }).WithMessage(MessageHelper.Message.ResponseMessage.Team.CountyIDEmpty);
+                return County != (int)CountyType.None;
+            }).WithMessage(MessageHelper.Message.ResponseMessage.Team.CountyEmpty);
 
             RuleFor(content => content.ExamineStatus)
            .Must(examineStatus =>

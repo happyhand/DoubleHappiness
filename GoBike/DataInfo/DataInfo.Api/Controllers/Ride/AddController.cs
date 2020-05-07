@@ -1,16 +1,15 @@
-﻿using DataInfo.Core.Extensions;
-using DataInfo.Service.Interfaces.Common;
-using DataInfo.Service.Interfaces.Member;
-using DataInfo.Core.Models.Dto.Member.Content;
+﻿using DataInfo.Core.Applibs;
+using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dto.Response;
+using DataInfo.Core.Models.Dto.Ride.Content;
+using DataInfo.Service.Interfaces.Common;
+using DataInfo.Service.Interfaces.Ride;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Threading.Tasks;
-using DataInfo.Core.Applibs;
-using DataInfo.Core.Models.Dto.Ride.Content;
 
 namespace DataInfo.Api.Controllers.Ride
 {

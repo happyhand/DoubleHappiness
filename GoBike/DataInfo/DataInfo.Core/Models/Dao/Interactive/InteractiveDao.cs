@@ -1,17 +1,14 @@
-﻿using SqlSugar;
-
-namespace DataInfo.Core.Models.Dao.Member
+﻿namespace DataInfo.Core.Models.Dao.Interactive
 {
     /// <summary>
     /// 互動資料
     /// </summary>
-    public class InteractiveModel
+    public class InteractiveDao
     {
         /// <summary>
-        /// Gets or sets 建立者會員ID
+        /// Gets or sets 會員 ID
         /// </summary>
-        [SugarColumn(IsPrimaryKey = true)]
-        public string CreatorID { get; set; }
+        public string MemberID { get; set; }
 
         /// <summary>
         /// Gets or sets 狀態
@@ -19,7 +16,7 @@ namespace DataInfo.Core.Models.Dao.Member
         public int Status { get; set; }
 
         /// <summary>
-        /// Gets or sets 目標會員ID
+        /// Gets or sets 目標會員 ID
         /// </summary>
         public string TargetID { get; set; }
     }

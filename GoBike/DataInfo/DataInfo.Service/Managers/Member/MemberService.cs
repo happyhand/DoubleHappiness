@@ -206,7 +206,7 @@ namespace DataInfo.Service.Managers.Member
 
                 #endregion 驗證資料
 
-                #region 發送【會員登入】指令至後端
+                #region 發送【使用者登入】指令至後端
 
                 MemberLoginRequest request = new MemberLoginRequest()
                 {
@@ -260,7 +260,7 @@ namespace DataInfo.Service.Managers.Member
                         };
                 }
 
-                #endregion 發送【會員登入】指令至後端
+                #endregion 發送【使用者登入】指令至後端
             }
             catch (Exception ex)
             {
@@ -304,7 +304,7 @@ namespace DataInfo.Service.Managers.Member
 
                 #endregion 驗證資料
 
-                #region 發送【會員註冊】指令至後端
+                #region 發送【使用者註冊】指令至後端
 
                 MemberRegisterRequest request = new MemberRegisterRequest()
                 {
@@ -362,7 +362,7 @@ namespace DataInfo.Service.Managers.Member
                         };
                 }
 
-                #endregion 發送【會員註冊】指令至後端
+                #endregion 發送【使用者註冊】指令至後端
             }
             catch (Exception ex)
             {
@@ -559,9 +559,9 @@ namespace DataInfo.Service.Managers.Member
         private async Task<Tuple<string, MemberEditInfoRequest>> UpdateInfoHandler(string memberID, MemberEditInfoContent content)
         {
             MemberUpdateInfoData memberUpdateInfoData = new MemberUpdateInfoData();
-            if (!string.IsNullOrEmpty(content.Avatar) || !string.IsNullOrEmpty(content.FrontCover))
+            if (!string.IsNullOrEmpty(content.Avatar) || !string.IsNullOrEmpty(content.FrontCover) || !string.IsNullOrEmpty(content.Photo))
             {
-                List<string> imgBase64s = new List<string>() { content.Avatar, content.FrontCover };
+                List<string> imgBase64s = new List<string>() { content.Avatar, content.FrontCover, content.Photo };
                 IEnumerable<string> imgUris = await this.uploadService.UploadMemberImages(imgBase64s, true).ConfigureAwait(false);
                 if (imgUris == null || !imgUris.Any())
                 {
@@ -588,6 +588,17 @@ namespace DataInfo.Service.Managers.Member
                     }
 
                     memberUpdateInfoData.FrontCover = frontCover;
+                }
+
+                if (!string.IsNullOrEmpty(content.Photo))
+                {
+                    string photo = imgUris.ElementAt(2);
+                    if (string.IsNullOrEmpty(photo))
+                    {
+                        return Tuple.Create<string, MemberEditInfoRequest>(MessageHelper.Message.ResponseMessage.Upload.HomePhotoFail, null);
+                    }
+
+                    memberUpdateInfoData.Photo = photo;
                 }
             }
 
@@ -648,7 +659,7 @@ namespace DataInfo.Service.Managers.Member
 
                 #endregion 處理更新資料
 
-                #region 發送【會員編輯】指令至後端
+                #region 發送【更新使用者資訊】指令至後端
 
                 CommandData<MemberEditInfoResponse> response = await this.serverService.DoAction<MemberEditInfoResponse>((int)UserCommandIDType.UpdateUserInfo, CommandType.User, request).ConfigureAwait(false);
                 this.logger.LogInfo("會員編輯資訊結果", $"Result: {response.Data.Result} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
@@ -680,7 +691,7 @@ namespace DataInfo.Service.Managers.Member
                         };
                 }
 
-                #endregion 發送【會員編輯】指令至後端
+                #endregion 發送【更新使用者資訊】指令至後端
             }
             catch (Exception ex)
             {
@@ -848,7 +859,7 @@ namespace DataInfo.Service.Managers.Member
 
                 #endregion 檢查手機是否已被綁定
 
-                #region 發送【會員編輯】指令至後端
+                #region 發送【更新使用者資訊】指令至後端
 
                 memberDao.Mobile = content.Mobile;
                 MemberEditInfoRequest request = new MemberEditInfoRequest()
@@ -895,7 +906,7 @@ namespace DataInfo.Service.Managers.Member
                         };
                 }
 
-                #endregion 發送【會員編輯】指令至後端
+                #endregion 發送【更新使用者資訊】指令至後端
             }
             catch (Exception ex)
             {

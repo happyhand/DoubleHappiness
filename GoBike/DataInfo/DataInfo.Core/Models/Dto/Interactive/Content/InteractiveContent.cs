@@ -1,7 +1,7 @@
 ﻿using DataInfo.Core.Applibs;
 using FluentValidation;
 
-namespace DataInfo.Core.Models.Dto.Member.Content
+namespace DataInfo.Core.Models.Dto.Interactive.Content
 {
     /// <summary>
     /// 互動內容
@@ -19,12 +19,17 @@ namespace DataInfo.Core.Models.Dto.Member.Content
     /// </summary>
     public class InteractiveContentValidator : AbstractValidator<InteractiveContent>
     {
-        public InteractiveContentValidator()
+        /// <summary>
+        /// 建構式
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        public InteractiveContentValidator(string memberID)
         {
             ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
             RuleFor(content => content.TargetID)
             .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Member.MemberIDEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Member.MemberIDEmpty);
+            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Member.MemberIDEmpty)
+            .NotEqual(memberID).WithMessage(MessageHelper.Message.ResponseMessage.Interactive.TargetError);
         }
     }
 }

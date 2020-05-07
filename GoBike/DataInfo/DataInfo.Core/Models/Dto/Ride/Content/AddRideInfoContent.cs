@@ -16,9 +16,9 @@ namespace DataInfo.Core.Models.Dto.Ride.Content
         public string Altitude { get; set; }
 
         /// <summary>
-        /// Gets or sets CountyID
+        /// Gets or sets County
         /// </summary>
-        public int CountyID { get; set; }
+        public int County { get; set; }
 
         /// <summary>
         /// Gets or sets Distance
@@ -93,11 +93,11 @@ namespace DataInfo.Core.Models.Dto.Ride.Content
                 return decimal.TryParse(altitude, out decimal value) && value > 0;
             }).WithMessage(MessageHelper.Message.ResponseMessage.Ride.AltitudeEmpty);
 
-            RuleFor(content => content.CountyID)
-            .Must(countyID =>
+            RuleFor(content => content.County)
+            .Must(County =>
             {
-                return countyID != (int)CountyType.None;
-            }).WithMessage(MessageHelper.Message.ResponseMessage.Ride.CountyIDEmpty);
+                return County != (int)CountyType.None;
+            }).WithMessage(MessageHelper.Message.ResponseMessage.Ride.CountyEmpty);
 
             RuleFor(content => content.Level)
             .Must(level =>
