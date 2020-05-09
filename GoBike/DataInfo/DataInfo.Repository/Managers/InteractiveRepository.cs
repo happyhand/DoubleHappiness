@@ -1,4 +1,5 @@
 ﻿using DataInfo.Core.Extensions;
+using DataInfo.Core.Models.Dao.Interactive;
 using DataInfo.Core.Models.Dao.Member.Table;
 using DataInfo.Repository.Interfaces;
 using DataInfo.Repository.Managers.Base;
@@ -56,8 +57,8 @@ namespace DataInfo.Repository.Managers
                         JoinType.Left,ua.MemberID.Equals(ui.MemberID)})
                          .Where((ua, ui) => ua.MemberID.Equals(memberID))
                          .Select((ua, ui) => ui.BlackList).FirstAsync().ConfigureAwait(false);
-
-                return JsonConvert.DeserializeObject<IEnumerable<string>>(blackListDataJson);
+                BlackListDao blackListDao = JsonConvert.DeserializeObject<BlackListDao>(blackListDataJson);
+                return blackListDao.BlackList;
             }
             catch (Exception ex)
             {
@@ -79,8 +80,8 @@ namespace DataInfo.Repository.Managers
                         JoinType.Left,ua.MemberID.Equals(ui.MemberID)})
                          .Where((ua, ui) => ua.MemberID.Equals(memberID))
                          .Select((ua, ui) => ui.FriendList).FirstAsync().ConfigureAwait(false);
-
-                return JsonConvert.DeserializeObject<IEnumerable<string>>(friendListDataJson);
+                FriendListDao friendListDao = JsonConvert.DeserializeObject<FriendListDao>(friendListDataJson);
+                return friendListDao.FriendList;
             }
             catch (Exception ex)
             {

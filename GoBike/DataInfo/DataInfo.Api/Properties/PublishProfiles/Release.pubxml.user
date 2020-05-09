@@ -13,7 +13,7 @@
       <publishTime>02/16/2020 14:43:39</publishTime>
     </File>
     <File Include="appsettings.json">
-      <publishTime>03/12/2020 00:55:34</publishTime>
+      <publishTime>05/07/2020 13:48:33</publishTime>
     </File>
     <File Include="AutoMapper.dll">
       <publishTime>08/12/2019 12:42:04</publishTime>
@@ -34,37 +34,37 @@
       <publishTime>09/12/2019 17:08:36</publishTime>
     </File>
     <File Include="DataInfo.Api.deps.json">
-      <publishTime>03/16/2020 00:42:35</publishTime>
+      <publishTime>05/08/2020 17:17:22</publishTime>
     </File>
     <File Include="DataInfo.Api.dll">
-      <publishTime>03/16/2020 00:42:34</publishTime>
+      <publishTime>05/08/2020 17:17:20</publishTime>
     </File>
     <File Include="DataInfo.Api.exe">
-      <publishTime>03/16/2020 00:42:34</publishTime>
+      <publishTime>05/08/2020 17:17:21</publishTime>
     </File>
     <File Include="DataInfo.Api.pdb">
-      <publishTime>03/16/2020 00:42:34</publishTime>
+      <publishTime>05/08/2020 17:17:20</publishTime>
     </File>
     <File Include="DataInfo.Api.runtimeconfig.json">
-      <publishTime>03/04/2020 23:37:15</publishTime>
+      <publishTime>04/29/2020 21:24:31</publishTime>
     </File>
     <File Include="DataInfo.Core.dll">
-      <publishTime>03/12/2020 23:42:37</publishTime>
+      <publishTime>05/08/2020 17:17:19</publishTime>
     </File>
     <File Include="DataInfo.Core.pdb">
-      <publishTime>03/12/2020 23:42:37</publishTime>
+      <publishTime>05/08/2020 17:17:19</publishTime>
     </File>
     <File Include="DataInfo.Repository.dll">
-      <publishTime>03/16/2020 00:32:41</publishTime>
+      <publishTime>05/08/2020 17:17:19</publishTime>
     </File>
     <File Include="DataInfo.Repository.pdb">
-      <publishTime>03/16/2020 00:32:41</publishTime>
+      <publishTime>05/08/2020 17:17:19</publishTime>
     </File>
     <File Include="DataInfo.Service.dll">
-      <publishTime>03/16/2020 00:42:33</publishTime>
+      <publishTime>05/08/2020 17:17:20</publishTime>
     </File>
     <File Include="DataInfo.Service.pdb">
-      <publishTime>03/16/2020 00:42:33</publishTime>
+      <publishTime>05/08/2020 17:17:20</publishTime>
     </File>
     <File Include="de/Microsoft.CodeAnalysis.CSharp.resources.dll">
       <publishTime>09/12/2019 17:08:58</publishTime>
@@ -79,7 +79,7 @@
       <publishTime>09/12/2019 17:08:36</publishTime>
     </File>
     <File Include="dotnet-aspnet-codegenerator-design.dll">
-      <publishTime>01/24/2020 22:47:12</publishTime>
+      <publishTime>03/27/2020 20:10:02</publishTime>
     </File>
     <File Include="es/Microsoft.CodeAnalysis.CSharp.resources.dll">
       <publishTime>09/12/2019 17:09:00</publishTime>
@@ -92,6 +92,15 @@
     </File>
     <File Include="es/Microsoft.CodeAnalysis.Workspaces.resources.dll">
       <publishTime>09/12/2019 17:08:36</publishTime>
+    </File>
+    <File Include="FluentValidation.AspNetCore.dll">
+      <publishTime>02/29/2020 16:10:48</publishTime>
+    </File>
+    <File Include="FluentValidation.DependencyInjectionExtensions.dll">
+      <publishTime>02/29/2020 16:10:46</publishTime>
+    </File>
+    <File Include="FluentValidation.dll">
+      <publishTime>02/29/2020 16:10:46</publishTime>
     </File>
     <File Include="fr/Microsoft.CodeAnalysis.CSharp.resources.dll">
       <publishTime>09/12/2019 17:09:00</publishTime>
@@ -143,6 +152,12 @@
     </File>
     <File Include="ko/Microsoft.CodeAnalysis.Workspaces.resources.dll">
       <publishTime>09/12/2019 17:08:36</publishTime>
+    </File>
+    <File Include="message.Development.json">
+      <publishTime>02/16/2020 14:43:39</publishTime>
+    </File>
+    <File Include="message.json">
+      <publishTime>05/07/2020 15:24:19</publishTime>
     </File>
     <File Include="Microsoft.AspNetCore.Authentication.JwtBearer.dll">
       <publishTime>01/18/2020 17:35:30</publishTime>
@@ -295,25 +310,25 @@
       <publishTime>09/15/2019 16:25:40</publishTime>
     </File>
     <File Include="Microsoft.VisualStudio.Web.CodeGeneration.Contracts.dll">
-      <publishTime>01/24/2020 22:46:58</publishTime>
+      <publishTime>03/27/2020 20:09:46</publishTime>
     </File>
     <File Include="Microsoft.VisualStudio.Web.CodeGeneration.Core.dll">
-      <publishTime>01/24/2020 22:47:06</publishTime>
+      <publishTime>03/27/2020 20:09:54</publishTime>
     </File>
     <File Include="Microsoft.VisualStudio.Web.CodeGeneration.dll">
-      <publishTime>01/24/2020 22:47:10</publishTime>
+      <publishTime>03/27/2020 20:09:56</publishTime>
     </File>
     <File Include="Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore.dll">
-      <publishTime>01/24/2020 22:47:08</publishTime>
+      <publishTime>03/27/2020 20:09:56</publishTime>
     </File>
     <File Include="Microsoft.VisualStudio.Web.CodeGeneration.Templating.dll">
-      <publishTime>01/24/2020 22:47:04</publishTime>
+      <publishTime>03/27/2020 20:09:50</publishTime>
     </File>
     <File Include="Microsoft.VisualStudio.Web.CodeGeneration.Utils.dll">
-      <publishTime>01/24/2020 22:47:00</publishTime>
+      <publishTime>03/27/2020 20:09:48</publishTime>
     </File>
     <File Include="Microsoft.VisualStudio.Web.CodeGenerators.Mvc.dll">
-      <publishTime>01/24/2020 22:47:10</publishTime>
+      <publishTime>03/27/2020 20:09:58</publishTime>
     </File>
     <File Include="MySql.Data.dll">
       <publishTime>01/28/2019 07:41:10</publishTime>
@@ -520,7 +535,7 @@
       <publishTime>09/12/2019 17:08:36</publishTime>
     </File>
     <File Include="web.config">
-      <publishTime>03/16/2020 00:42:35</publishTime>
+      <publishTime>05/08/2020 17:17:22</publishTime>
     </File>
     <File Include="zh-Hans/Microsoft.CodeAnalysis.CSharp.resources.dll">
       <publishTime>09/12/2019 17:09:00</publishTime>

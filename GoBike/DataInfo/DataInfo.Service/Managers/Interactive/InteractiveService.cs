@@ -129,7 +129,7 @@ namespace DataInfo.Service.Managers.Interactive
                 beFriendIDList = beFriendIDList.Where(id => !friendIDList.Contains(id));
 
                 Task<IEnumerable<MemberDao>> friendDaoListTask = this.memberRepository.Get(friendIDList, null);
-                Task<IEnumerable<MemberDao>> beFriendDaoListTask = this.memberRepository.Get(friendIDList, null);
+                Task<IEnumerable<MemberDao>> beFriendDaoListTask = this.memberRepository.Get(beFriendIDList, null);
 
                 IEnumerable<MemberDao> friendDaoList = await friendDaoListTask.ConfigureAwait(false);
                 IEnumerable<MemberDao> beFriendDaoList = await beFriendDaoListTask.ConfigureAwait(false);

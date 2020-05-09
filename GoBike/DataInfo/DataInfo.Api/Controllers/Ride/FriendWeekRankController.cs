@@ -45,7 +45,7 @@ namespace DataInfo.Api.Controllers.Ride
         /// 好友週里程排名
         /// </summary>
         /// <returns>IActionResult</returns>
-        [HttpPost]
+        [HttpGet]
         public async Task<IActionResult> Get()
         {
             string memberID = this.GetMemberID();
