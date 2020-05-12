@@ -14,7 +14,7 @@
             "MobileEmpty": "手機號碼無效.",
             "MobileFormatError": "手機號碼格式錯誤.",
             "MobileBind": "該手機已被綁定.",
-            "SearchEmpty": "未提供搜尋內容"
+            "SearchEmpty": "未提供搜尋內容."
         },
         "Update": {
             "Success": "更新資料成功.",
@@ -63,23 +63,23 @@
             "TimeEmpty": "騎乘時間無效."
         },
         "smtp": {
-            "SendEmailFail": "發送郵件失敗"
+            "SendEmailFail": "發送郵件失敗."
         },
         "Upload": {
-            "PhotoFail": "上傳圖片失敗",
-            "AvatarFail": "上傳頭像失敗",
-            "FrontCoverFail": "上傳封面失敗",
-            "HomePhotoFail": "上傳首頁圖片失敗"
+            "PhotoFail": "上傳圖片失敗.",
+            "AvatarFail": "上傳頭像失敗.",
+            "FrontCoverFail": "上傳封面失敗.",
+            "HomePhotoFail": "上傳首頁圖片失敗."
         },
         "Team": {
-            "AvatarEmpty": "車隊頭像無效",
-            "FrontCoverEmpty": "車隊封面無效",
-            "CountyEmpty": "未設定車隊所在地",
-            "ExamineStatusEmpty": "車隊審核狀態無效",
-            "SearchStatusEmpty": "車隊搜尋狀態無效",
-            "TeamInfoEmpty": "車隊簡介無效",
-            "TeamNameEmpty": "車隊名稱無效",
-            "TeamNameRepeat": "車隊名稱重複"
+            "AvatarEmpty": "車隊頭像無效.",
+            "FrontCoverEmpty": "車隊封面無效.",
+            "CountyEmpty": "未設定車隊所在地.",
+            "ExamineStatusEmpty": "車隊審核狀態無效.",
+            "SearchStatusEmpty": "車隊搜尋狀態無效.",
+            "TeamInfoEmpty": "車隊簡介無效.",
+            "TeamNameEmpty": "車隊名稱無效.",
+            "TeamNameRepeat": "車隊名稱重複."
         }
     }
 }

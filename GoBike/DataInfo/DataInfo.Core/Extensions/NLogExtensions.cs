@@ -4,9 +4,9 @@ using System;
 namespace DataInfo.Core.Extensions
 {
     /// <summary>
-    /// ILog 擴充方法
+    /// NLog 擴充方法
     /// </summary>
-    public static class ILogExtensions
+    public static class NLogExtensions
     {
         /// <summary>
         /// Debug

@@ -1,8 +1,7 @@
 ﻿using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
-using DataInfo.Service.Interfaces.Common;
 using DataInfo.Core.Models.Dto.Common;
-using DataInfo.Core.Models.Dto.Response;
+using DataInfo.Service.Interfaces.Common;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using NLog;
@@ -10,10 +9,8 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace DataInfo.Service.Managers.Common
 {
