@@ -46,3 +46,15 @@
 /dblha.cdn.com
 /dblha.uploadfile.com
 /dblha.smtp.com
+/TianguangCrystal/DataInfo/.vs
+/TianguangCrystal/DataInfo/DataInfo.Api/bin
+/TianguangCrystal/DataInfo/DataInfo.Api/obj
+/TianguangCrystal/DataInfo/DataInfo.Api/Properties
+/TianguangCrystal/DataInfo/DataInfo.Api/.config
+/TianguangCrystal/DataInfo/DataInfo.Core/obj
+/TianguangCrystal/DataInfo/DataInfo.Core/bin
+/TianguangCrystal/DataInfo/DataInfo.Repository/bin
+/TianguangCrystal/DataInfo/DataInfo.Repository/obj
+/TianguangCrystal/DataInfo/DataInfo.Service/obj
+/TianguangCrystal/DataInfo/DataInfo.Service/bin
+/TianguangCrystal/web

@@ -1,0 +1,42 @@
+﻿{
+    "ResponseMessage": {
+        "User": {
+            "EmailEmpty": "使用者信箱未設定.",
+            "EmailFormatError": "使用者信箱格式錯誤.",
+            "PasswordEmpty": "使用者密碼未設定.",
+            "PasswordFormatError": "使用者密碼格式錯誤.",
+            "NameEmpty": "使用者名稱未設定.",
+            "GenderEmpty": "使用者性別未設定.",
+            "BirthdayEmpty": "使用者生日無效.",
+            "MobileEmpty": "使用者手機號碼未設定.",
+            "MobileFormatError": "使用者手機號碼格式錯誤."
+        },
+        "Login": {
+            "Success": "登入成功.",
+            "Fail": "登入失敗.",
+            "Error": "登入發生錯誤."
+        },
+        "Register": {
+            "Success": "註冊成功.",
+            "Fail": "註冊失敗.",
+            "Error": "註冊發生錯誤.",
+            "EmailExist": "此信箱已經被註冊.",
+            "MobileExist": "此手機號碼已經被綁定."
+        },
+        "Add": {
+            "Success": "建立資料成功.",
+            "Fail": "建立資料失敗.",
+            "Error": "建立資料發生錯誤."
+        },
+        "Get": {
+            "Success": "取得資料成功.",
+            "Fail": "取得資料失敗.",
+            "Error": "取得資料發生錯誤."
+        },
+        "Update": {
+            "Success": "更新資料成功.",
+            "Fail": "更新資料失敗.",
+            "Error": "更新資料發生錯誤."
+        }
+    }
+}
