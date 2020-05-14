@@ -11,6 +11,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DataInfo.Core.Models.Dao.Member.Table;
+using DataInfo.Core.Models.Dao.Team;
+using DataInfo.Core.Models.Dao.Interactive;
 
 namespace DataInfo.Repository.Managers
 {
@@ -32,7 +34,8 @@ namespace DataInfo.Repository.Managers
         /// <returns>MemberDaos</returns>
         private async Task<IEnumerable<MemberDao>> TransformMemberDao(ISugarQueryable<UserAccount, UserInfo> query)
         {
-            return await query.Select((ua, ui) => new MemberDao()
+            return await query.Select((ua, ui) =>
+            new MemberDao()
             {
                 Avatar = ui.Avatar,
                 Birthday = Convert.ToDateTime(ui.Birthday),
@@ -49,8 +52,33 @@ namespace DataInfo.Repository.Managers
                 Nickname = ui.NickName,
                 RegisterDate = Convert.ToDateTime(ua.RegisterDate),
                 RegisterSource = ua.RegisterSource,
-                Photo = ui.Photo
+                Photo = ui.Photo,
+                TeamListDataJson = ui.TeamList,
+                FriendListDataJson = ui.FriendList,
+                BlackListDataJson = ui.TeamList,
             }).ToListAsync().ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// 取得會員資料
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>MemberDaos</returns>
+        public async Task<MemberDao> Get(string memberID)
+        {
+            try
+            {
+                ISugarQueryable<UserAccount, UserInfo> query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => new object[] {
+                        JoinType.Left,ua.MemberID.Equals(ui.MemberID)})
+                          .Where((ua, ui) => ua.MemberID.Equals(memberID));
+
+                return (await this.TransformMemberDao(query).ConfigureAwait(false)).FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得會員資料發生錯誤", $"MemberID: {memberID}", ex);
+                return null;
+            }
         }
 
         /// <summary>

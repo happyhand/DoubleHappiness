@@ -219,7 +219,7 @@ namespace DataInfo.Service.Managers.Member
                 switch (response.Data.Result)
                 {
                     case (int)UserLoginResultType.Success:
-                        MemberDao memberDao = (await this.memberRepository.Get(response.Data.MemberID, false, null).ConfigureAwait(false)).FirstOrDefault();
+                        MemberDao memberDao = (await this.memberRepository.Get(response.Data.MemberID).ConfigureAwait(false));
 
                         #region 更新最新登入時間
 
@@ -750,7 +750,63 @@ namespace DataInfo.Service.Managers.Member
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.DenyAccess,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                };
+            }
+        }
+
+        /// <summary>
+        /// 取得會員名片資訊
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="searchMemberID">searchMemberID</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> GetCardInfo(string memberID, string searchMemberID = null)
+        {
+            try
+            {
+                #region 驗證資料
+
+                if (string.IsNullOrEmpty(memberID))
+                {
+                    this.logger.LogWarn("取得會員名片資訊結果", $"Result: 驗證失敗，會員編號無效 MemberID: {memberID} SearchMemberID: {searchMemberID}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.DenyAccess,
+                        Content = MessageHelper.Message.ResponseMessage.Member.MemberIDEmpty
+                    };
+                }
+
+                #endregion 驗證資料
+
+                MemberDao memberDao = await this.memberRepository.Get(memberID).ConfigureAwait(false);
+                if (memberDao == null)
+                {
+                    this.logger.LogWarn("取得會員名片資訊結果", $"Result: 無會員資料 MemberID: {memberID} SearchMemberID: {searchMemberID}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.Missed,
+                        Content = MessageHelper.Message.ResponseMessage.Member.MemberNotExist
+                    };
+                }
+
+                return new ResponseResult()
+                {
+                    Result = true,
+                    ResultCode = (int)ResponseResultType.Success,
+                    Content = this.mapper.Map<MemberCardInfoView>(memberDao)
+                };
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得會員名片資訊發生錯誤", $"MemberID: {memberID} SearchMemberID: {searchMemberID}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
                     Content = MessageHelper.Message.ResponseMessage.Get.Error
                 };
             }
@@ -1083,7 +1139,7 @@ namespace DataInfo.Service.Managers.Member
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.DenyAccess,
+                    ResultCode = (int)ResponseResultType.UnknownError,
                     Content = MessageHelper.Message.ResponseMessage.VerifyCode.SendVerifyCodeError
                 };
             }

@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using DataInfo.Core.Models.Dao.Ride;
+using DataInfo.Core.Models.Dao.Ride.Table;
 using DataInfo.Core.Models.Dto.Ride.Content;
 using DataInfo.Core.Models.Dto.Ride.Request;
+using DataInfo.Core.Models.Dto.Ride.View;
 using Newtonsoft.Json;
 
 namespace DataInfo.AutoMapperProfiles
@@ -19,6 +21,9 @@ namespace DataInfo.AutoMapperProfiles
             CreateMap<AddRideInfoContent, AddRideInfoRequest>()
             .ForMember(data => data.ShareContent, options => options.MapFrom(dto => JsonConvert.SerializeObject(dto.ShareContent)))
             .ForMember(data => data.Route, options => options.MapFrom(dto => JsonConvert.SerializeObject(dto.Route)));
+
+            CreateMap<RideRecord, RideDao>();
+            CreateMap<RideDao, RideSimpleRecordView>();
         }
     }
 }

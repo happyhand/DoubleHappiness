@@ -128,7 +128,7 @@ namespace DataInfo.Service.Managers.Team
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.DenyAccess,
+                            ResultCode = (int)ResponseResultType.UnknownError,
                             Content = MessageHelper.Message.ResponseMessage.Add.Fail
                         };
                 }

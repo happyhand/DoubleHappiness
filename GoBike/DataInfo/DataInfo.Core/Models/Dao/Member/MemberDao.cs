@@ -1,5 +1,9 @@
-﻿using SqlSugar;
+﻿using DataInfo.Core.Models.Dao.Interactive;
+using DataInfo.Core.Models.Dao.Team;
+using Newtonsoft.Json;
+using SqlSugar;
 using System;
+using System.Collections.Generic;
 
 namespace DataInfo.Core.Models.Dao.Member
 {
@@ -17,6 +21,16 @@ namespace DataInfo.Core.Models.Dao.Member
         /// Gets or sets 生日
         /// </summary>
         public DateTime Birthday { get; set; }
+
+        /// <summary>
+        /// Gets or sets 黑名單列表
+        /// </summary>
+        public IEnumerable<string> BlackList { get { return JsonConvert.DeserializeObject<BlackListDao>(this.BlackListDataJson)?.BlackList; } }
+
+        /// <summary>
+        /// Gets or sets 黑名單列表 Json
+        /// </summary>
+        public string BlackListDataJson { get; set; }
 
         /// <summary>
         /// Gets or sets 身高
@@ -42,6 +56,16 @@ namespace DataInfo.Core.Models.Dao.Member
         /// Gets or sets FB認證碼
         /// </summary>
         public string FBToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets 好友列表
+        /// </summary>
+        public IEnumerable<string> FriendList { get { return JsonConvert.DeserializeObject<FriendListDao>(this.FriendListDataJson)?.FriendList; } }
+
+        /// <summary>
+        /// Gets or sets 好友列表 Json
+        /// </summary>
+        public string FriendListDataJson { get; set; }
 
         /// <summary>
         /// Gets or sets 封面圖片路徑
@@ -87,5 +111,15 @@ namespace DataInfo.Core.Models.Dao.Member
         /// Gets or sets 註冊來源
         /// </summary>
         public int RegisterSource { get; set; }
+
+        /// <summary>
+        /// Gets or sets 車隊列表
+        /// </summary>
+        public IEnumerable<string> TeamList { get { return JsonConvert.DeserializeObject<TeamListDao>(this.TeamListDataJson)?.TeamList; } }
+
+        /// <summary>
+        /// Gets or sets 車隊列表 Json
+        /// </summary>
+        public string TeamListDataJson { get; set; }
     }
 }

@@ -12,6 +12,13 @@ namespace DataInfo.Repository.Interfaces
         /// <summary>
         /// 取得會員資料
         /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>MemberDaos</returns>
+        Task<MemberDao> Get(string memberID);
+
+        /// <summary>
+        /// 取得會員資料
+        /// </summary>
         /// <param name="searchKey">searchKey</param>
         /// <param name="isFuzzy">isFuzzy</param>
         /// <param name="ignoreMemberIDs">ignoreMemberIDs</param>

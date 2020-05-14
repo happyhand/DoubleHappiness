@@ -8,19 +8,19 @@ using System;
 namespace DataInfo.Api.Controllers.Common
 {
     /// <summary>
-    /// 取得市區資料列表
+    /// 取得版本號
     /// </summary>
     [Route("api/Common/[controller]")]
     [ApiController]
-    public class GetCountyMapController : ApiController
+    public class VersionController : ApiController
     {
         /// <summary>
         /// logger
         /// </summary>
-        private readonly ILogger logger = LogManager.GetLogger("GetCountyMapController");
+        private readonly ILogger logger = LogManager.GetLogger("VersionController");
 
         /// <summary>
-        /// 取得市區資料列表
+        /// 取得版本號
         /// </summary>
         /// <returns>IActionResult</returns>
         [HttpGet]
@@ -32,12 +32,12 @@ namespace DataInfo.Api.Controllers.Common
                 {
                     Result = true,
                     ResultCode = (int)ResponseResultType.Success,
-                    Content = AppSettingHelper.Appsetting.CountyMap
+                    Content = "1.0.0.0" //// 大版本、Hotfix、Bug、develop
                 });
             }
             catch (Exception ex)
             {
-                this.logger.LogError("取得市區資料列表發生錯誤", string.Empty, ex);
+                this.logger.LogError("取得版本號發生錯誤", string.Empty, ex);
                 return Ok(new ResponseResult()
                 {
                     Result = false,

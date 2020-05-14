@@ -10,6 +10,13 @@ namespace DataInfo.Repository.Interfaces
     public interface IRideRepository
     {
         /// <summary>
+        /// 取得騎乘記錄列表
+        /// </summary>
+        /// <param name="memberIDs">memberIDs</param>
+        /// <returns>RideDistanceDao</returns>
+        Task<IEnumerable<RideDao>> GetRecordList(string memberID);
+
+        /// <summary>
         /// 取得總里程
         /// </summary>
         /// <param name="memberID">memberID</param>

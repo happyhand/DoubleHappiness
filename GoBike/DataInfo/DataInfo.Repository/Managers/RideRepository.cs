@@ -12,6 +12,7 @@ using DataInfo.Core.Models.Dao.Ride;
 using DataInfo.Core.Models.Dao.Ride.Table;
 using DataInfo.Core.Applibs;
 using System.Linq;
+using AutoMapper;
 
 namespace DataInfo.Repository.Managers
 {
@@ -24,6 +25,42 @@ namespace DataInfo.Repository.Managers
         /// logger
         /// </summary>
         private readonly ILogger logger = LogManager.GetLogger("RideRepository");
+
+        /// <summary>
+        /// mapper
+        /// </summary>
+        private readonly IMapper mapper;
+
+        /// <summary>
+        /// 建構式
+        /// </summary>
+        /// <param name="mapper">mapper</param>
+        public RideRepository(IMapper mapper)
+        {
+            this.mapper = mapper;
+        }
+
+        /// <summary>
+        /// 取得騎乘記錄列表
+        /// </summary>
+        /// <param name="memberIDs">memberIDs</param>
+        /// <returns>RideDistanceDao</returns>
+        public async Task<IEnumerable<RideDao>> GetRecordList(string memberID)
+        {
+            try
+            {
+                IEnumerable<RideRecord> rideRecords = await this.Db.Queryable<RideRecord>()
+                                                         .Where(data => data.MemberID.Equals(memberID))
+                                                         .ToListAsync().ConfigureAwait(false);
+
+                return this.mapper.Map<IEnumerable<RideDao>>(rideRecords);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得騎乘記錄列表發生錯誤", $"MemberID: {memberID}", ex);
+                return new List<RideDao>();
+            }
+        }
 
         /// <summary>
         /// 取得總里程
@@ -118,64 +155,5 @@ namespace DataInfo.Repository.Managers
                 return new List<RideDistanceDao>();
             }
         }
-
-        ///// <summary>
-        ///// 取得騎乘資料
-        ///// </summary>
-        ///// <param name="memberID">memberID</param>
-        ///// <returns>RideModel</returns>
-        //public async Task<RideModel> Get(string rideID)
-        //{
-        //    try
-        //    {
-        //        return await this.Db.Queryable<RideModel>().Where(data => data.RideID.Equals(rideID)).SingleAsync();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        this.logger.LogError("取得騎乘資料發生錯誤", $"RideID: {rideID}", ex);
-        //        return null;
-        //    }
-        //}
-
-        ///// <summary>
-        ///// 取得會員的騎乘資料列表
-        ///// </summary>
-        ///// <param name="memberID">memberID</param>
-        ///// <returns>RideModel list</returns>
-        //public async Task<List<RideModel>> GetListOfMember(string memberID)
-        //{
-        //    try
-        //    {
-        //        return await this.Db.Queryable<RideModel>().Where(data => data.MemberID.Equals(memberID)).ToListAsync();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        this.logger.LogError("取得會員的騎乘資料列表發生錯誤", $"MemberID: {memberID}", ex);
-        //        return new List<RideModel>();
-        //    }
-        //}
-
-        ///// <summary>
-        ///// 更新騎乘資料
-        ///// </summary>
-        ///// <param name="rideModel">rideModel</param>
-        ///// <returns>bool</returns>
-        //public async Task<bool> Update(RideModel rideModel)
-        //{
-        //    try
-        //    {
-        //        bool isSuccess = await this.Db.Updateable(rideModel)
-        //                                      .With(SqlWith.HoldLock)
-        //                                      .With(SqlWith.UpdLock)
-        //                                      .ExecuteCommandAsync() > 0;
-        //        this.logger.LogInfo("更新騎乘資料結果", $"Result: {isSuccess} RideModel: {JsonConvert.SerializeObject(rideModel)}", null);
-        //        return isSuccess;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        this.logger.LogError("更新騎乘資料發生錯誤", $"RideModel: {JsonConvert.SerializeObject(rideModel)}", ex);
-        //        return false;
-        //    }
-        //}
     }
 }

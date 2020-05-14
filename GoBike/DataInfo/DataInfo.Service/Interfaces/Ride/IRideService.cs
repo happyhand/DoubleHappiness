@@ -23,5 +23,12 @@ namespace DataInfo.Service.Interfaces.Ride
         /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>
         Task<ResponseResult> GetFriendWeekRank(string memberID);
+
+        /// <summary>
+        /// 取得騎乘記錄
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>ResponseResult</returns>
+        Task<ResponseResult> GetRideRecord(string memberID);
     }
 }

@@ -66,6 +66,14 @@ namespace DataInfo.Service.Interfaces.Member
         Task<ResponseResult> FuzzySearch(MemberSearchContent content, string searchMemberID);
 
         /// <summary>
+        /// 取得會員名片資訊
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="searchMemberID">searchMemberID</param>
+        /// <returns>ResponseResult</returns>
+        Task<ResponseResult> GetCardInfo(string memberID, string searchMemberID = null);
+
+        /// <summary>
         /// 取得首頁資訊
         /// </summary>
         /// <param name="memberID">memberID</param>
