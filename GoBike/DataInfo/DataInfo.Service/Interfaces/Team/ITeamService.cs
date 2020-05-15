@@ -16,5 +16,12 @@ namespace DataInfo.Service.Interfaces.Team
         /// <param name="content">content</param>
         /// <returns>ResponseResult</returns>
         Task<ResponseResult> Create(string memberID, TeamCreateContent content);
+
+        /// <summary>
+        /// 取得車隊下拉選單
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>ResponseResult</returns>
+        Task<ResponseResult> GetTeamDropMenu(string memberID);
     }
 }

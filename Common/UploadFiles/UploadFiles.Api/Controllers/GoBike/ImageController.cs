@@ -1,25 +1,27 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UploadFiles.Core.Extensions;
+using UploadFiles.Core.Models.Dto.Image.Content;
 using UploadFiles.Service.Interfaces;
 
 namespace UploadFiles.Api.Controllers.GoBike
 {
     /// <summary>
-    /// 騎乘圖像
+    /// 圖像上傳
     /// </summary>
     [Route("api/gobike/[controller]")]
     [ApiController]
-    public class RideImageController : ControllerBase
+    public class ImageController : ControllerBase
     {
         /// <summary>
         /// logger
         /// </summary>
-        private readonly ILogger logger = LogManager.GetLogger("RideImageController");
+        private readonly ILogger logger = LogManager.GetLogger("ImageController");
 
         /// <summary>
         /// uploadFileService
@@ -30,32 +32,32 @@ namespace UploadFiles.Api.Controllers.GoBike
         /// 建構式
         /// </summary>
         /// <param name="uploadFileService">uploadFileService</param>
-        public RideImageController(IUploadFileService uploadFileService)
+        public ImageController(IUploadFileService uploadFileService)
         {
             this.uploadFileService = uploadFileService;
         }
 
         /// <summary>
-        /// 騎乘圖像
+        /// 車隊圖像
         /// </summary>
         /// <returns>IActionResult</returns>
         [HttpPost]
-        public async Task<IActionResult> Post(IEnumerable<string> imgBase64s)
+        public async Task<IActionResult> Post(ImageContent content)
         {
             try
             {
-                IEnumerable<string> imgUrls = this.uploadFileService.UploadImages("gobike", "ride", imgBase64s);
+                IEnumerable<string> imgUrls = this.uploadFileService.UploadImages(content);
                 if (!imgUrls.Any())
                 {
-                    return BadRequest("上傳騎乘圖像失敗.");
+                    return BadRequest("圖像上傳失敗.");
                 }
 
                 return Ok(imgUrls);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("上傳騎乘圖像發生錯誤", string.Empty, ex);
-                return BadRequest("上傳騎乘圖像發生錯誤.");
+                this.logger.LogError("圖像上傳發生錯誤", $"Content: {JsonConvert.SerializeObject(content)}", ex);
+                return BadRequest("圖像上傳發生錯誤.");
             }
         }
     }

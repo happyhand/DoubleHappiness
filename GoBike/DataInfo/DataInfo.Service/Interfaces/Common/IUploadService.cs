@@ -24,5 +24,13 @@ namespace DataInfo.Service.Interfaces.Common
         /// <param name="isIgnoreUri">isIgnoreUri</param>
         /// <returns>strings</returns>
         Task<IEnumerable<string>> UploadRideImages(IEnumerable<string> imgBase64s, bool isIgnoreUri);
+
+        /// <summary>
+        /// 上傳車隊圖片
+        /// </summary>
+        /// <param name="imgBase64s">imgBase64s</param>
+        /// <param name="isIgnoreUri">isIgnoreUri</param>
+        /// <returns>strings</returns>
+        Task<IEnumerable<string>> UploadTeamImages(IEnumerable<string> imgBase64s, bool isIgnoreUri);
     }
 }

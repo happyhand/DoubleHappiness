@@ -27,7 +27,7 @@ namespace DataInfo.Service.Managers.Common
         /// <summary>
         /// logger
         /// </summary>
-        protected readonly ILogger logger = LogManager.GetLogger("JwtService");
+        private readonly ILogger logger = LogManager.GetLogger("JwtService");
 
         /// <summary>
         /// 生產 Token

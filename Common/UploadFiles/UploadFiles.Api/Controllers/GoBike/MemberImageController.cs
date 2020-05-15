@@ -60,28 +60,28 @@ namespace UploadFiles.Api.Controllers.GoBike
         //    }
         //}
 
-        /// <summary>
-        /// 會員圖像
-        /// </summary>
-        /// <returns>IActionResult</returns>
-        [HttpPost]
-        public async Task<IActionResult> Post(IEnumerable<string> imgBase64s)
-        {
-            try
-            {
-                IEnumerable<string> imgUrls = this.uploadFileService.UploadImages("gobike", "member", imgBase64s);
-                if (!imgUrls.Any())
-                {
-                    return BadRequest("上傳會員圖像失敗.");
-                }
+        ///// <summary>
+        ///// 會員圖像
+        ///// </summary>
+        ///// <returns>IActionResult</returns>
+        //[HttpPost]
+        //public async Task<IActionResult> Post(IEnumerable<string> imgBase64s)
+        //{
+        //    try
+        //    {
+        //        IEnumerable<string> imgUrls = this.uploadFileService.UploadImages("gobike", "member", imgBase64s);
+        //        if (!imgUrls.Any())
+        //        {
+        //            return BadRequest("上傳會員圖像失敗.");
+        //        }
 
-                return Ok(imgUrls);
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("上傳會員圖像發生錯誤", string.Empty, ex);
-                return BadRequest("上傳會員圖像發生錯誤.");
-            }
-        }
+        //        return Ok(imgUrls);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        this.logger.LogError("上傳會員圖像發生錯誤", string.Empty, ex);
+        //        return BadRequest("上傳會員圖像發生錯誤.");
+        //    }
+        //}
     }
 }

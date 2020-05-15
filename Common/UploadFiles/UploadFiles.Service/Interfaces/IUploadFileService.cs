@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using UploadFiles.Core.Models.Dto.Image.Content;
 
 namespace UploadFiles.Service.Interfaces
 
@@ -22,10 +23,8 @@ namespace UploadFiles.Service.Interfaces
         /// <summary>
         /// 上傳圖像
         /// </summary>
-        /// <param name="projectName">projectName</param>
-        /// <param name="typeName">typeName</param>
-        /// <param name="imgBase64s">imgs</param>
+        /// <param name="content">content</param>
         /// <returns>imgUrls</returns>
-        IEnumerable<string> UploadImages(string projectName, string typeName, IEnumerable<string> imgBase64s);
+        IEnumerable<string> UploadImages(ImageContent content);
     }
 }

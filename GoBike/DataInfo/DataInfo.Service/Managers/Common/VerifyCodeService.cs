@@ -18,14 +18,14 @@ namespace DataInfo.Service.Managers.Common
     public class VerifyCodeService : IVerifyCodeService
     {
         /// <summary>
+        /// logger
+        /// </summary>
+        private readonly ILogger logger = LogManager.GetLogger("VerifyCodeService");
+
+        /// <summary>
         /// redisRepository
         /// </summary>
         private readonly IRedisRepository redisRepository;
-
-        /// <summary>
-        /// logger
-        /// </summary>
-        protected readonly ILogger logger = LogManager.GetLogger("VerifyCodeService");
 
         /// <summary>
         /// 建構式

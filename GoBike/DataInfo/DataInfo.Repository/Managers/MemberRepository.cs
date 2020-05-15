@@ -1,8 +1,9 @@
 ﻿using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
+using DataInfo.Core.Models.Dao.Member;
+using DataInfo.Core.Models.Dao.Member.Table;
 using DataInfo.Repository.Interfaces;
 using DataInfo.Repository.Managers.Base;
-using DataInfo.Core.Models.Dao.Member;
 using Newtonsoft.Json;
 using NLog;
 using SqlSugar;
@@ -10,9 +11,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using DataInfo.Core.Models.Dao.Member.Table;
-using DataInfo.Core.Models.Dao.Team;
-using DataInfo.Core.Models.Dao.Interactive;
 
 namespace DataInfo.Repository.Managers
 {

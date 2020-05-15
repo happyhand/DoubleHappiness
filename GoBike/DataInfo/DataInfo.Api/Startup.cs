@@ -7,11 +7,13 @@ using DataInfo.Service.Interfaces.Interactive;
 using DataInfo.Service.Interfaces.Member;
 using DataInfo.Service.Interfaces.Ride;
 using DataInfo.Service.Interfaces.Server;
+using DataInfo.Service.Interfaces.Team;
 using DataInfo.Service.Managers.Common;
 using DataInfo.Service.Managers.Interactive;
 using DataInfo.Service.Managers.Member;
 using DataInfo.Service.Managers.Ride;
 using DataInfo.Service.Managers.Server;
+using DataInfo.Service.Managers.Team;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -89,6 +91,7 @@ namespace DataInfo.Api
             services.AddSingleton<IMemberService, MemberService>();
             services.AddSingleton<IRideService, RideService>();
             services.AddSingleton<IInteractiveService, InteractiveService>();
+            services.AddSingleton<ITeamService, TeamService>();
             services.AddSingleton<IUploadService, UploadService>();
             services.AddSingleton<IVerifyCodeService, VerifyCodeService>();
             services.AddSingleton<IServerService, ServerService>();
@@ -100,6 +103,7 @@ namespace DataInfo.Api
             services.AddSingleton<IMemberRepository, MemberRepository>();
             services.AddSingleton<IRideRepository, RideRepository>();
             services.AddSingleton<IInteractiveRepository, InteractiveRepository>();
+            services.AddSingleton<ITeamRepository, TeamRepository>();
             services.AddSingleton<IRedisRepository, RedisRepository>();
 
             #endregion Repository

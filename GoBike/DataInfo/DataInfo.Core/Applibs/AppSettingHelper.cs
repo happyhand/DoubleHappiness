@@ -43,11 +43,6 @@ namespace DataInfo.Core.Applibs
         public class MemberImageSetting
         {
             /// <summary>
-            /// Gets or sets Api
-            /// </summary>
-            public string Api { get; set; }
-
-            /// <summary>
             /// Gets or sets Uri
             /// </summary>
             public string Uri { get; set; }
@@ -59,10 +54,16 @@ namespace DataInfo.Core.Applibs
         public class RideImageSetting
         {
             /// <summary>
-            /// Gets or sets Api
+            /// Gets or sets Uri
             /// </summary>
-            public string Api { get; set; }
+            public string Uri { get; set; }
+        }
 
+        /// <summary>
+        /// TeamImageSetting
+        /// </summary>
+        public class TeamImageSetting
+        {
             /// <summary>
             /// Gets or sets Uri
             /// </summary>
@@ -85,11 +86,19 @@ namespace DataInfo.Core.Applibs
             public string ImageFileExtension { get; set; }
 
             /// <summary>
-            /// Gets or sets MemberBase
+            /// Gets or sets Member
             /// </summary>
             public MemberImageSetting Member { get; set; }
 
+            /// <summary>
+            /// Gets or sets Ride
+            /// </summary>
             public RideImageSetting Ride { get; set; }
+
+            /// <summary>
+            /// Gets or sets Team
+            /// </summary>
+            public TeamImageSetting Team { get; set; }
         }
 
         #endregion Upload Server 設定資料
@@ -322,6 +331,11 @@ namespace DataInfo.Core.Applibs
             public RideServerSetting Ride { get; set; }
 
             /// <summary>
+            /// Gets or sets Team
+            /// </summary>
+            public TeamServerSetting Team { get; set; }
+
+            /// <summary>
             /// Gets or sets TimeOut
             /// </summary>
             public int TimeOut { get; set; }
@@ -336,6 +350,17 @@ namespace DataInfo.Core.Applibs
         /// RideServerSetting
         /// </summary>
         public class RideServerSetting
+        {
+            /// <summary>
+            /// Gets or sets ConnectionStrings
+            /// </summary>
+            public string ConnectionStrings { get; set; }
+        }
+
+        /// <summary>
+        /// TeamServerSetting
+        /// </summary>
+        public class TeamServerSetting
         {
             /// <summary>
             /// Gets or sets ConnectionStrings

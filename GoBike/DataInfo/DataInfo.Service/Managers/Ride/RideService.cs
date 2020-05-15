@@ -30,6 +30,31 @@ namespace DataInfo.Service.Managers.Ride
     public class RideService : IRideService
     {
         /// <summary>
+        /// interactiveRepository
+        /// </summary>
+        private readonly IInteractiveRepository interactiveRepository;
+
+        /// <summary>
+        /// logger
+        /// </summary>
+        private readonly ILogger logger = LogManager.GetLogger("RideService");
+
+        /// <summary>
+        /// mapper
+        /// </summary>
+        private readonly IMapper mapper;
+
+        /// <summary>
+        /// memberRepository
+        /// </summary>
+        private readonly IMemberRepository memberRepository;
+
+        /// <summary>
+        /// rideRepository
+        /// </summary>
+        private readonly IRideRepository rideRepository;
+
+        /// <summary>
         /// serverService
         /// </summary>
         private readonly IServerService serverService;
@@ -38,31 +63,6 @@ namespace DataInfo.Service.Managers.Ride
         /// uploadService
         /// </summary>
         private readonly IUploadService uploadService;
-
-        /// <summary>
-        /// interactiveRepository
-        /// </summary>
-        protected readonly IInteractiveRepository interactiveRepository;
-
-        /// <summary>
-        /// logger
-        /// </summary>
-        protected readonly ILogger logger = LogManager.GetLogger("RideService");
-
-        /// <summary>
-        /// mapper
-        /// </summary>
-        protected readonly IMapper mapper;
-
-        /// <summary>
-        /// memberRepository
-        /// </summary>
-        protected readonly IMemberRepository memberRepository;
-
-        /// <summary>
-        /// rideRepository
-        /// </summary>
-        protected readonly IRideRepository rideRepository;
 
         /// <summary>
         /// 建構式

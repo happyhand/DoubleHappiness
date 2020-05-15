@@ -89,13 +89,13 @@ namespace DataInfo.Service.Managers.Server
                             connectionStrings = AppSettingHelper.Appsetting.CommandServer.Ride.ConnectionStrings;
                             break;
 
-                            //case CommandType.Team:
-                            //    connectionStrings = AppSettingHelper.Appsetting.CommandServer.Team.ConnectionStrings;
-                            //    break;
+                        case CommandType.Team:
+                            connectionStrings = AppSettingHelper.Appsetting.CommandServer.Team.ConnectionStrings;
+                            break;
                     }
 
                     //// 連線後端
-                    await client.ConnectAsync(new Uri($"ws://{connectionStrings}/{commandType.ToString()}"), CancellationToken.None).ConfigureAwait(false);
+                    await client.ConnectAsync(new Uri($"ws://{connectionStrings}/{commandType}"), CancellationToken.None).ConfigureAwait(false);
                     //// 訂閱後端回覆
                     Task<string> result = this.Receive(client);
                     //// 發送後端指令

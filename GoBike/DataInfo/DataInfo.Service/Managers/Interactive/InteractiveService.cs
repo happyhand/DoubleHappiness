@@ -28,39 +28,39 @@ namespace DataInfo.Service.Managers.Interactive
     public class InteractiveService : IInteractiveService
     {
         /// <summary>
-        /// serverService
-        /// </summary>
-        private readonly IServerService serverService;
-
-        /// <summary>
         /// rideRepository
         /// </summary>
-        protected readonly IInteractiveRepository interactiveRepository;
+        private readonly IInteractiveRepository interactiveRepository;
 
         /// <summary>
         /// logger
         /// </summary>
-        protected readonly ILogger logger = LogManager.GetLogger("InteractiveService");
+        private readonly ILogger logger = LogManager.GetLogger("InteractiveService");
 
         /// <summary>
         /// mapper
         /// </summary>
-        protected readonly IMapper mapper;
+        private readonly IMapper mapper;
 
         /// <summary>
         /// memberRepository
         /// </summary>
-        protected readonly IMemberRepository memberRepository;
+        private readonly IMemberRepository memberRepository;
 
         /// <summary>
         /// memberService
         /// </summary>
-        protected readonly IMemberService memberService;
+        private readonly IMemberService memberService;
 
         /// <summary>
         /// redisRepository
         /// </summary>
-        protected readonly IRedisRepository redisRepository;
+        private readonly IRedisRepository redisRepository;
+
+        /// <summary>
+        /// serverService
+        /// </summary>
+        private readonly IServerService serverService;
 
         /// <summary>
         /// 建構式

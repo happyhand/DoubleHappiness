@@ -1,17 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using SqlSugar;
+using System;
 
-namespace DataInfo.Core.Models.Dao.Team
+namespace DataInfo.Core.Models.Dao.Team.Table
 {
     /// <summary>
     /// 車隊資料
     /// </summary>
-    public class TeamDao
+    public class TeamData
     {
         /// <summary>
         /// Gets or sets 申請列表
         /// </summary>
-        public IEnumerable<string> ApplyJoinList { get; set; }
+        public string ApplyJoinList { get; set; }
 
         /// <summary>
         /// Gets or sets 車隊頭像
@@ -41,7 +41,7 @@ namespace DataInfo.Core.Models.Dao.Team
         /// <summary>
         /// Gets or sets 邀請列表
         /// </summary>
-        public IEnumerable<string> InviteJoinList { get; set; }
+        public string InviteJoinList { get; set; }
 
         /// <summary>
         /// Gets or sets 車隊隊長 ID
@@ -56,6 +56,7 @@ namespace DataInfo.Core.Models.Dao.Team
         /// <summary>
         /// Gets or sets 車隊 ID
         /// </summary>
+        [SugarColumn(IsPrimaryKey = true)]
         public string TeamID { get; set; }
 
         /// <summary>
@@ -66,7 +67,7 @@ namespace DataInfo.Core.Models.Dao.Team
         /// <summary>
         /// Gets or sets 車隊隊員列表
         /// </summary>
-        public IEnumerable<string> TeamMemberIDs { get; set; }
+        public string TeamMemberIDs { get; set; }
 
         /// <summary>
         /// Gets or sets 車隊名稱
@@ -76,6 +77,6 @@ namespace DataInfo.Core.Models.Dao.Team
         /// <summary>
         /// Gets or sets 車隊副隊長列表
         /// </summary>
-        public IEnumerable<string> TeamViceLeaderIDs { get; set; }
+        public string TeamViceLeaderIDs { get; set; }
     }
 }

@@ -1,20 +1,25 @@
 ﻿using AutoMapper;
 using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
+using DataInfo.Core.Models.Dao.Member;
 using DataInfo.Core.Models.Dao.Team;
 using DataInfo.Core.Models.Dto.Response;
 using DataInfo.Core.Models.Dto.Server;
 using DataInfo.Core.Models.Dto.Team.Content;
 using DataInfo.Core.Models.Dto.Team.Request;
 using DataInfo.Core.Models.Dto.Team.Response;
+using DataInfo.Core.Models.Dto.Team.View;
 using DataInfo.Core.Models.Enum;
 using DataInfo.Repository.Interfaces;
+using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Server;
 using DataInfo.Service.Interfaces.Team;
 using FluentValidation.Results;
 using Newtonsoft.Json;
 using NLog;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -26,6 +31,21 @@ namespace DataInfo.Service.Managers.Team
     public class TeamService : ITeamService
     {
         /// <summary>
+        /// logger
+        /// </summary>
+        private readonly ILogger logger = LogManager.GetLogger("TeamService");
+
+        /// <summary>
+        /// mapper
+        /// </summary>
+        private readonly IMapper mapper;
+
+        /// <summary>
+        /// memberRepository
+        /// </summary>
+        private readonly IMemberRepository memberRepository;
+
+        /// <summary>
         /// serverService
         /// </summary>
         private readonly IServerService serverService;
@@ -36,25 +56,23 @@ namespace DataInfo.Service.Managers.Team
         private readonly ITeamRepository teamRepository;
 
         /// <summary>
-        /// logger
+        /// uploadService
         /// </summary>
-        protected readonly ILogger logger = LogManager.GetLogger("TeamService");
-
-        /// <summary>
-        /// mapper
-        /// </summary>
-        protected readonly IMapper mapper;
+        private readonly IUploadService uploadService;
 
         /// <summary>
         /// 建構式
         /// </summary>
         /// <param name="mapper">mapper</param>
+        /// <param name="uploadService">uploadService</param>
         /// <param name="serverService">serverService</param>
         /// <param name="teamRepository">teamRepository</param>
-        public TeamService(IMapper mapper, IServerService serverService, ITeamRepository teamRepository)
+        public TeamService(IMapper mapper, IUploadService uploadService, IServerService serverService, IMemberRepository memberRepository, ITeamRepository teamRepository)
         {
             this.mapper = mapper;
+            this.uploadService = uploadService;
             this.serverService = serverService;
+            this.memberRepository = memberRepository;
             this.teamRepository = teamRepository;
         }
 
@@ -86,25 +104,38 @@ namespace DataInfo.Service.Managers.Team
                     };
                 }
 
-                TeamDao teamDao = (await this.teamRepository.Get(content.TeamName, TeamSearchType.TeamName, false).ConfigureAwait(false)).FirstOrDefault();
-                if (teamDao != null)
+                #endregion 驗證資料
+
+                #region 上傳圖片
+
+                List<string> imgBase64s = new List<string>() { content.Avatar, content.FrontCover };
+                IEnumerable<string> imgUris = await this.uploadService.UploadTeamImages(imgBase64s, true).ConfigureAwait(false);
+                if (imgUris == null || !imgUris.Any())
                 {
-                    this.logger.LogWarn("建立車隊結果", $"Result: 車隊名稱重複 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    this.logger.LogWarn("建立車隊結果", $"Result: 上傳圖片失敗 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.CreateFail,
-                        Content = MessageHelper.Message.ResponseMessage.Team.TeamNameRepeat
+                        ResultCode = (int)ResponseResultType.InputError,
+                        Content = MessageHelper.Message.ResponseMessage.Upload.PhotoFail
                     };
                 }
 
-                #endregion 驗證資料
+                content.Avatar = imgUris.ElementAtOrDefault(0);
+                content.FrontCover = imgUris.ElementAtOrDefault(1);
+                if (string.IsNullOrEmpty(content.Avatar) || string.IsNullOrEmpty(content.FrontCover))
+                {
+                    this.logger.LogWarn("建立車隊結果", $"Result: 車隊圖片轉換失敗 MemberID: {memberID} Avatar: {content.Avatar} FrontCover: {content.FrontCover}", null);
+                }
+
+                #endregion 上傳圖片
 
                 #region 發送【建立車隊】指令至後端
 
-                TeamCreateRequest request = new TeamCreateRequest();
+                TeamCreateRequest request = this.mapper.Map<TeamCreateRequest>(content);
+                request.MemberID = memberID;
 
-                CommandData<TeamCreateResponse> response = await this.serverService.DoAction<TeamCreateResponse>((int)TeamCommandIDType.CreateNewTeam, CommandType.User, request).ConfigureAwait(false);
+                CommandData<TeamCreateResponse> response = await this.serverService.DoAction<TeamCreateResponse>((int)TeamCommandIDType.CreateNewTeam, CommandType.Team, request).ConfigureAwait(false);
                 this.logger.LogInfo("建立車隊結果", $"Result: {response.Data.Result} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                 switch (response.Data.Result)
                 {
@@ -147,32 +178,77 @@ namespace DataInfo.Service.Managers.Team
             }
         }
 
-        ///// <summary>
-        ///// 建立車隊
-        ///// </summary>
-        ///// <param name="teamDto">teamDto</param>
-        ///// <returns>string</returns>
-        //public async Task<string> CreateTeam(TeamDto teamDto)
-        //{
-        //    try
-        //    {
-        //        string verifyCreateTeamResult = await this.VerifyCreateTeam(teamDto);
-        //        if (!string.IsNullOrEmpty(verifyCreateTeamResult))
-        //        {
-        //            return verifyCreateTeamResult;
-        //        }
+        /// <summary>
+        /// 取得車隊下拉選單
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> GetTeamDropMenu(string memberID)
+        {
+            try
+            {
+                #region 驗證資料
 
-        // TeamData teamData = this.CreateTeamData(teamDto); bool isSuccess = await
-        // this.teamRepository.CreateTeamData(teamData); if (!isSuccess) { return "建立車隊失敗."; }
+                if (string.IsNullOrEmpty(memberID))
+                {
+                    this.logger.LogWarn("取得車隊下拉選單結果", $"Result: 驗證失敗，會員編號無效 MemberID: {memberID}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.DenyAccess,
+                        Content = MessageHelper.Message.ResponseMessage.Member.MemberIDEmpty
+                    };
+                }
 
-        //        return string.Empty;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        this.logger.LogError($"Create Team Error >>> Data:{JsonConvert.SerializeObject(teamDto)}\n{ex}");
-        //        return "建立車隊發生錯誤.";
-        //    }
-        //}
+                #endregion 驗證資料
+
+                #region 取得資料
+
+                MemberDao memberDao = await this.memberRepository.Get(memberID).ConfigureAwait(false);
+                if (memberDao == null)
+                {
+                    this.logger.LogWarn("取得車隊下拉選單結果", $"Result: 無會員資料 MemberID: {memberID}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.Missed,
+                        Content = MessageHelper.Message.ResponseMessage.Member.MemberNotExist
+                    };
+                }
+
+                Task<IEnumerable<TeamDao>> joinTeamDaosTask = this.teamRepository.Get(memberDao.TeamList);
+                Task<IEnumerable<TeamDao>> applyTeamDaosTask = this.teamRepository.GetApplyTeamList(memberID);
+                Task<IEnumerable<TeamDao>> inviteTeamDaosTask = this.teamRepository.GetInviteTeamList(memberID);
+                IEnumerable<TeamDropMenuView> joinTeamDropMenuView = this.mapper.Map<IEnumerable<TeamDropMenuView>>(await joinTeamDaosTask.ConfigureAwait(false));
+                IEnumerable<TeamDropMenuView> applyTeamDropMenuView = this.mapper.Map<IEnumerable<TeamDropMenuView>>(await applyTeamDaosTask.ConfigureAwait(false));
+                IEnumerable<TeamDropMenuView> inviteTeamDropMenuView = this.mapper.Map<IEnumerable<TeamDropMenuView>>(await inviteTeamDaosTask.ConfigureAwait(false));
+
+                //// TODO 已加入的車隊需顯示是否有新的訊息
+
+                return new ResponseResult()
+                {
+                    Result = true,
+                    ResultCode = (int)ResponseResultType.Success,
+                    Content = new List<IEnumerable<TeamDropMenuView>>() {
+                    joinTeamDropMenuView,
+                    applyTeamDropMenuView,
+                    inviteTeamDropMenuView
+                    }
+                };
+
+                #endregion 取得資料
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得車隊下拉選單發生錯誤", $"MemberID: {memberID}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                };
+            }
+        }
 
         ///// <summary>
         ///// 解散車隊

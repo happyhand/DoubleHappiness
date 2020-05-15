@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using UploadFiles.Core.Applibs;
 using UploadFiles.Core.Extensions;
+using UploadFiles.Core.Models.Dto.Image.Content;
 using UploadFiles.Service.Interfaces;
 
 namespace UploadFiles.Service.Managers
@@ -83,16 +84,15 @@ namespace UploadFiles.Service.Managers
         /// <summary>
         /// 上傳圖像
         /// </summary>
-        /// <param name="projectName">projectName</param>
-        /// <param name="typeName">typeName</param>
-        /// <param name="imgBase64s">imgBase64s</param>
+        /// <param name="content">content</param>
         /// <returns>imgUrls</returns>
-        public IEnumerable<string> UploadImages(string projectName, string typeName, IEnumerable<string> imgBase64s)
+        public IEnumerable<string> UploadImages(ImageContent content)
         {
             try
             {
-                var cdnPath = AppSettingHelper.Appsetting.CdnPath;
-                string fileDirectoryName = $"{cdnPath}/{projectName}/images/{typeName}/{DateTime.UtcNow:yyyyMMdd}/";
+                IEnumerable<string> imgBase64s = content.ImgBase64s;
+                string cdnPath = AppSettingHelper.Appsetting.CdnPath;
+                string fileDirectoryName = $"{cdnPath}/{content.Project}/images/{content.Type}/{DateTime.UtcNow:yyyyMMdd}/";
                 if (!Directory.Exists(fileDirectoryName))
                 {
                     Directory.CreateDirectory(fileDirectoryName);
@@ -134,7 +134,7 @@ namespace UploadFiles.Service.Managers
             }
             catch (Exception ex)
             {
-                this.logger.LogError("上傳圖像發生錯誤", $"ProjectName: {projectName} TypeName: {typeName} ImgBase64s: {JsonConvert.SerializeObject(imgBase64s)}", ex);
+                this.logger.LogError("上傳圖像發生錯誤", $"Content: {JsonConvert.SerializeObject(content)}", ex);
                 return new List<string>();
             }
         }
