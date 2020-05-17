@@ -5,6 +5,7 @@ using DataInfo.Core.Models.Dto.Ride.Content;
 using DataInfo.Core.Models.Dto.Ride.Request;
 using DataInfo.Core.Models.Dto.Ride.View;
 using Newtonsoft.Json;
+using System;
 
 namespace DataInfo.AutoMapperProfiles
 {
@@ -22,7 +23,8 @@ namespace DataInfo.AutoMapperProfiles
             .ForMember(data => data.ShareContent, options => options.MapFrom(dto => JsonConvert.SerializeObject(dto.ShareContent)))
             .ForMember(data => data.Route, options => options.MapFrom(dto => JsonConvert.SerializeObject(dto.Route)));
 
-            CreateMap<RideRecord, RideDao>();
+            CreateMap<RideRecord, RideDao>()
+                .ForMember(dao => dao.CreateDate, options => options.MapFrom(table => Convert.ToDateTime(table.CreateDate)));
             CreateMap<RideDao, RideSimpleRecordView>();
         }
     }

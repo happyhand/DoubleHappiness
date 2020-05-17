@@ -21,7 +21,7 @@ namespace DataInfo.Core.Models.Dao.Ride.Table
         /// <summary>
         /// Gets or sets CreateDate
         /// </summary>
-        public DateTime CreateDate { get; set; }
+        public string CreateDate { get; set; }
 
         /// <summary>
         /// Gets or sets Distance

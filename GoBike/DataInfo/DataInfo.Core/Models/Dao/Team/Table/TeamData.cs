@@ -1,5 +1,4 @@
 ﻿using SqlSugar;
-using System;
 
 namespace DataInfo.Core.Models.Dao.Team.Table
 {
@@ -26,7 +25,7 @@ namespace DataInfo.Core.Models.Dao.Team.Table
         /// <summary>
         /// Gets or sets 建立時間
         /// </summary>
-        public DateTime CreateDate { get; set; }
+        public string CreateDate { get; set; }
 
         /// <summary>
         /// Gets or sets 審核狀態(1:開，-1:關)

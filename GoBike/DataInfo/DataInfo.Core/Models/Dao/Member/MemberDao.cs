@@ -25,7 +25,7 @@ namespace DataInfo.Core.Models.Dao.Member
         /// <summary>
         /// Gets or sets 黑名單列表
         /// </summary>
-        public IEnumerable<string> BlackList { get { return JsonConvert.DeserializeObject<BlackListDao>(this.BlackListDataJson)?.BlackList; } }
+        public IEnumerable<string> BlackList { get { return JsonConvert.DeserializeObject<IEnumerable<string>>(this.BlackListDataJson); } }
 
         /// <summary>
         /// Gets or sets 黑名單列表 Json
@@ -60,7 +60,7 @@ namespace DataInfo.Core.Models.Dao.Member
         /// <summary>
         /// Gets or sets 好友列表
         /// </summary>
-        public IEnumerable<string> FriendList { get { return JsonConvert.DeserializeObject<FriendListDao>(this.FriendListDataJson)?.FriendList; } }
+        public IEnumerable<string> FriendList { get { return JsonConvert.DeserializeObject<IEnumerable<string>>(this.FriendListDataJson); } }
 
         /// <summary>
         /// Gets or sets 好友列表 Json
@@ -115,7 +115,7 @@ namespace DataInfo.Core.Models.Dao.Member
         /// <summary>
         /// Gets or sets 車隊列表
         /// </summary>
-        public IEnumerable<string> TeamList { get { return JsonConvert.DeserializeObject<TeamListDao>(this.TeamListDataJson)?.TeamList; } }
+        public IEnumerable<string> TeamList { get { return JsonConvert.DeserializeObject<IEnumerable<string>>(this.TeamListDataJson); } }
 
         /// <summary>
         /// Gets or sets 車隊列表 Json
