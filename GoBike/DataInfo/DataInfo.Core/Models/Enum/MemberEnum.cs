@@ -38,27 +38,6 @@
     }
 
     /// <summary>
-    /// 會員互動動作類別資料
-    /// </summary>
-    public enum InteractiveActionType
-    {
-        /// <summary>
-        /// 刪除
-        /// </summary>
-        Delete = -1,
-
-        /// <summary>
-        /// 無動作
-        /// </summary>
-        None = 0,
-
-        /// <summary>
-        /// 新增
-        /// </summary>
-        Add = 1,
-    }
-
-    /// <summary>
     /// 會員互動類別資料
     /// </summary>
     public enum InteractiveType

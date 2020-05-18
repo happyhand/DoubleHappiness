@@ -32,19 +32,40 @@
         None = 0,
 
         /// <summary>
-        /// 申請
+        /// 申請加入
         /// </summary>
-        ApplyFor = 1,
+        ApplyJoin = 1,
 
         /// <summary>
-        /// 邀請
+        /// 邀請加入
         /// </summary>
-        Invite = 2,
+        InviteJoin = 2,
 
         /// <summary>
         /// 成員
         /// </summary>
         Member = 3
+    }
+
+    /// <summary>
+    /// 車隊回覆類別資料
+    /// </summary>
+    public enum TeamResponseType
+    {
+        /// <summary>
+        /// 拒絕
+        /// </summary>
+        Reject = -1,
+
+        /// <summary>
+        /// 無設定
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// 允許
+        /// </summary>
+        Allow = 1
     }
 
     /// <summary>

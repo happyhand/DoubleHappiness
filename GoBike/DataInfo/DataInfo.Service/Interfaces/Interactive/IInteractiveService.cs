@@ -32,6 +32,6 @@ namespace DataInfo.Service.Interfaces.Interactive
         /// <param name="status">status</param>
         /// <param name="action">action</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> UpdateInteractive(string memberID, InteractiveContent content, InteractiveType status, InteractiveActionType action);
+        Task<ResponseResult> UpdateInteractive(string memberID, InteractiveContent content, InteractiveType status, ActionType action);
     }
 }

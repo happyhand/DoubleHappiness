@@ -337,9 +337,19 @@
             public string FrontCoverEmpty { get; set; }
 
             /// <summary>
+            /// Gets or sets ResponseStatusEmpty
+            /// </summary>
+            public string ResponseStatusEmpty { get; set; }
+
+            /// <summary>
             /// Gets or sets SearchStatusEmpty
             /// </summary>
             public string SearchStatusEmpty { get; set; }
+
+            /// <summary>
+            /// Gets or sets TeamAuthorityNotEnough
+            /// </summary>
+            public string TeamAuthorityNotEnough { get; set; }
 
             /// <summary>
             /// Gets or sets TeamIDEmpty

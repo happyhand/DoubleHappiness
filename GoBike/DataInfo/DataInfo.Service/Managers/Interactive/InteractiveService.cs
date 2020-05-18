@@ -166,7 +166,7 @@ namespace DataInfo.Service.Managers.Interactive
         /// <param name="status">status</param>
         /// <param name="action">action</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> UpdateInteractive(string memberID, InteractiveContent content, InteractiveType status, InteractiveActionType action)
+        public async Task<ResponseResult> UpdateInteractive(string memberID, InteractiveContent content, InteractiveType status, ActionType action)
         {
             try
             {

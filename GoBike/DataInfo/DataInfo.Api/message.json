@@ -78,9 +78,10 @@
             "CountyEmpty": "未設定車隊所在地.",
             "ExamineStatusEmpty": "車隊審核狀態無效.",
             "SearchStatusEmpty": "車隊搜尋狀態無效.",
+            "ResponseStatusEmpty": "回覆狀態無效.",
             "TeamInfoEmpty": "車隊簡介無效.",
             "TeamNameEmpty": "車隊名稱無效.",
-            "TeamNameRepeat": "車隊名稱重複."
+            "TeamAuthorityNotEnough": "權限不足."
         }
     }
 }

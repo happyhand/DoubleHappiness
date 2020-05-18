@@ -54,7 +54,7 @@ namespace DataInfo.Api.Controllers.Interactive
             try
             {
                 this.logger.LogInfo("會員請求移除黑名單", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await this.InteractiveService.UpdateInteractive(memberID, content, InteractiveType.Black, InteractiveActionType.Delete).ConfigureAwait(false);
+                ResponseResult responseResult = await this.InteractiveService.UpdateInteractive(memberID, content, InteractiveType.Black, ActionType.Delete).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
@@ -106,7 +106,7 @@ namespace DataInfo.Api.Controllers.Interactive
             try
             {
                 this.logger.LogInfo("會員請求新增黑名單", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await this.InteractiveService.UpdateInteractive(memberID, content, InteractiveType.Black, InteractiveActionType.Add).ConfigureAwait(false);
+                ResponseResult responseResult = await this.InteractiveService.UpdateInteractive(memberID, content, InteractiveType.Black, ActionType.Add).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)

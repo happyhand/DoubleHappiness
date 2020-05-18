@@ -234,6 +234,48 @@
         /// 建立新車隊
         /// </summary>
         CreateNewTeam = 1001,
+
+        /// <summary>
+        /// 更新隊員列表
+        /// </summary>
+        UpdateTeamMemberList = 1005,
+
+        /// <summary>
+        /// 更新申請加入車隊列表
+        /// </summary>
+        UpdateApplyJoinList = 1006
+    }
+
+    /// <summary>
+    /// 更新申請加入車隊列表結果
+    /// </summary>
+    public enum UpdateApplyJoinListResultType
+    {
+        /// <summary>
+        /// 更新失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 更新成功
+        /// </summary>
+        Success = 1,
+    }
+
+    /// <summary>
+    /// 更新隊員列表結果
+    /// </summary>
+    public enum UpdateTeamMemberListResultType
+    {
+        /// <summary>
+        /// 更新失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 更新成功
+        /// </summary>
+        Success = 1,
     }
 
     #endregion 車隊

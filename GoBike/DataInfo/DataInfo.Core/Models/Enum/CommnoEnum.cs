@@ -1,6 +1,27 @@
 ﻿namespace DataInfo.Core.Models.Enum
 {
     /// <summary>
+    /// 動作類別資料
+    /// </summary>
+    public enum ActionType
+    {
+        /// <summary>
+        /// 刪除
+        /// </summary>
+        Delete = -1,
+
+        /// <summary>
+        /// 無動作
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// 新增
+        /// </summary>
+        Add = 1,
+    }
+
+    /// <summary>
     /// 市區類別資料
     /// </summary>
     public enum CountyType
