@@ -32,5 +32,12 @@ namespace DataInfo.Repository.Interfaces
         /// <param name="ignoreMemberIDs">ignoreMemberIDs</param>
         /// <returns>MemberDaos</returns>
         Task<IEnumerable<MemberDao>> Get(IEnumerable<string> memberIDs, IEnumerable<string> ignoreMemberIDs);
+
+        /// <summary>
+        /// 取得會員的在線狀態
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>int</returns>
+        Task<int> GetOnlineType(string memberID);
     }
 }

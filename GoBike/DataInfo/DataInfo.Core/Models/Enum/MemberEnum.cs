@@ -82,7 +82,12 @@
         /// <summary>
         /// 未上線
         /// </summary>
-        Offline = 0,
+        Offline = -1,
+
+        /// <summary>
+        /// 未設定
+        /// </summary>
+        None = 0,
 
         /// <summary>
         /// 在線

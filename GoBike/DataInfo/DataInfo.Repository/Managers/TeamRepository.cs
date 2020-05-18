@@ -61,6 +61,28 @@ namespace DataInfo.Repository.Managers
         }
 
         /// <summary>
+        /// 取得車隊資料
+        /// </summary>
+        /// <param name="teamID">teamID</param>
+        /// <returns>TeamDao</returns>
+        public async Task<TeamDao> Get(string teamID)
+        {
+            try
+            {
+                TeamData teamData = await this.Db.Queryable<TeamData>()
+                                              .Where(data => data.TeamID.Equals(teamID))
+                                              .FirstAsync().ConfigureAwait(false);
+
+                return this.mapper.Map<TeamDao>(teamData);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得車隊資料發生錯誤", $"TeamID: {teamID}", ex);
+                return null;
+            }
+        }
+
+        /// <summary>
         /// 取得車隊資料列表
         /// </summary>
         /// <param name="searchKey">searchKey</param>

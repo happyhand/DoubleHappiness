@@ -2,6 +2,7 @@
 using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dao.Member;
 using DataInfo.Core.Models.Dao.Member.Table;
+using DataInfo.Core.Models.Enum;
 using DataInfo.Repository.Interfaces;
 using DataInfo.Repository.Managers.Base;
 using Newtonsoft.Json;
@@ -23,6 +24,20 @@ namespace DataInfo.Repository.Managers
         /// logger
         /// </summary>
         private readonly ILogger logger = LogManager.GetLogger("MemberRepository");
+
+        /// <summary>
+        /// redisRepository
+        /// </summary>
+        private readonly IRedisRepository redisRepository;
+
+        /// <summary>
+        /// 建構式
+        /// </summary>
+        /// <param name="redisRepository">redisRepository</param>
+        public MemberRepository(IRedisRepository redisRepository)
+        {
+            this.redisRepository = redisRepository;
+        }
 
         /// <summary>
         /// 轉換 MemberDao
@@ -162,6 +177,17 @@ namespace DataInfo.Repository.Managers
                 this.logger.LogError("取得會員資料列表發生錯誤", $"MemberIDs: {JsonConvert.SerializeObject(memberIDs)}", ex);
                 return new List<MemberDao>();
             }
+        }
+
+        /// <summary>
+        /// 取得會員的在線狀態
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>int</returns>
+        public async Task<int> GetOnlineType(string memberID)
+        {
+            string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{AppSettingHelper.Appsetting.Redis.Flag.LastLogin}-{memberID}";
+            return await this.redisRepository.IsExist(cacheKey).ConfigureAwait(false) ? (int)OnlineStatusType.Online : (int)OnlineStatusType.Offline;
         }
     }
 }

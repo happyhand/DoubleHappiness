@@ -1,12 +1,10 @@
 ﻿using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dto.Response;
-using DataInfo.Core.Models.Dto.Team.Content;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Team;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Threading.Tasks;
@@ -46,27 +44,26 @@ namespace DataInfo.Api.Controllers.Team
         /// </summary>
         /// <param name="teamID">teamID</param>
         /// <returns>IActionResult</returns>
-        [HttpGet("{TeamID}")]
+        [HttpGet("{teamID}")]
         public async Task<IActionResult> Get(string teamID)
         {
-            //try
-            //{
-            //    this.logger.LogInfo("會員請求取得車隊資訊", $"TeamID: {teamID}", null);
-            //    ResponseResult responseResult = await teamService.Create(memberID, content).ConfigureAwait(false);
-            //    return Ok(responseResult);
-            //}
-            //catch (Exception ex)
-            //{
-            //    this.logger.LogError("會員請求取得車隊資訊發生錯誤", $"TeamID: {teamID}", ex);
-            //    return Ok(new ResponseResult()
-            //    {
-            //        Result = false,
-            //        ResultCode = (int)ResponseResultType.UnknownError,
-            //        Content = MessageHelper.Message.ResponseMessage.Get.Error
-            //    });
-            //}
-
-            return null;
+            string memberID = this.GetMemberID();
+            try
+            {
+                this.logger.LogInfo("會員請求取得車隊資訊", $"MemberID: {memberID} TeamID: {teamID}", null);
+                ResponseResult responseResult = await teamService.GetTeamInfo(memberID, teamID).ConfigureAwait(false);
+                return Ok(responseResult);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("會員請求取得車隊資訊發生錯誤", $"MemberID: {memberID} TeamID: {teamID}", ex);
+                return Ok(new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                });
+            }
         }
     }
 }

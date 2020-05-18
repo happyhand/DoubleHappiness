@@ -342,6 +342,11 @@
             public string SearchStatusEmpty { get; set; }
 
             /// <summary>
+            /// Gets or sets TeamIDEmpty
+            /// </summary>
+            public string TeamIDEmpty { get; set; }
+
+            /// <summary>
             /// Gets or sets TeamInfoEmpty
             /// </summary>
             public string TeamInfoEmpty { get; set; }

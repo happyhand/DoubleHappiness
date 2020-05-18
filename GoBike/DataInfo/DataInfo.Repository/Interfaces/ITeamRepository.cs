@@ -21,6 +21,13 @@ namespace DataInfo.Repository.Interfaces
         Task<IEnumerable<TeamDao>> Get(string searchKey, TeamSearchType type, bool isFuzzy);
 
         /// <summary>
+        /// 取得車隊資料
+        /// </summary>
+        /// <param name="teamID">teamID</param>
+        /// <returns>TeamDao</returns>
+        Task<TeamDao> Get(string teamID);
+
+        /// <summary>
         /// 取得車隊資料列表
         /// </summary>
         /// <param name="teamIDs">teamIDs</param>

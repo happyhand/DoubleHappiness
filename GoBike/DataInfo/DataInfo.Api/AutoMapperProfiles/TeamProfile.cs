@@ -30,6 +30,7 @@ namespace DataInfo.AutoMapperProfiles
              .ForMember(dao => dao.InviteJoinList, options => options.MapFrom(table => JsonConvert.DeserializeObject<IEnumerable<string>>(table.InviteJoinList)));
 
             CreateMap<TeamDao, TeamDropMenuView>();
+            CreateMap<TeamDao, TeamInfoView>();
         }
     }
 }

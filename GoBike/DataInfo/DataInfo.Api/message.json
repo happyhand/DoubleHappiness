@@ -72,6 +72,7 @@
             "HomePhotoFail": "上傳首頁圖片失敗."
         },
         "Team": {
+            "TeamIDEmpty": "車隊編號無效.",
             "AvatarEmpty": "車隊頭像無效.",
             "FrontCoverEmpty": "車隊封面無效.",
             "CountyEmpty": "未設定車隊所在地.",

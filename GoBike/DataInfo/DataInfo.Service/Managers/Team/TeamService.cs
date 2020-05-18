@@ -18,7 +18,6 @@ using FluentValidation.Results;
 using Newtonsoft.Json;
 using NLog;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -77,6 +76,58 @@ namespace DataInfo.Service.Managers.Team
         }
 
         #region 車隊資料
+
+        /// <summary>
+        /// 取得車隊互動狀態
+        /// </summary>
+        /// <param name="teamDao">teamDao</param>
+        /// <param name="memberID">memberID</param>
+        /// <returns>TeamInteractiveType</returns>
+        private TeamInteractiveType GetTeamInteractiveStatus(TeamDao teamDao, string memberID)
+        {
+            if (teamDao.ApplyJoinList.Contains(memberID))
+            {
+                return TeamInteractiveType.ApplyFor;
+            }
+            else if (teamDao.InviteJoinList.Contains(memberID))
+            {
+                return TeamInteractiveType.Invite;
+            }
+            else if (teamDao.Leader.Equals(memberID) || teamDao.TeamViceLeaderIDs.Contains(memberID) || teamDao.TeamMemberIDs.Contains(memberID))
+            {
+                return TeamInteractiveType.Member;
+            }
+            else
+            {
+                return TeamInteractiveType.None;
+            }
+        }
+
+        /// <summary>
+        /// 取得車隊角色
+        /// </summary>
+        /// <param name="teamDao">teamDao</param>
+        /// <param name="memberID">memberID</param>
+        /// <returns>TeamRoleType</returns>
+        private TeamRoleType GetTeamRole(TeamDao teamDao, string memberID)
+        {
+            if (teamDao.Leader.Equals(memberID))
+            {
+                return TeamRoleType.Leader;
+            }
+            else if (teamDao.TeamViceLeaderIDs.Contains(memberID))
+            {
+                return TeamRoleType.ViceLeader;
+            }
+            else if (teamDao.TeamMemberIDs.Contains(memberID))
+            {
+                return TeamRoleType.Normal;
+            }
+            else
+            {
+                return TeamRoleType.None;
+            }
+        }
 
         /// <summary>
         /// 建立車隊
@@ -241,6 +292,102 @@ namespace DataInfo.Service.Managers.Team
             catch (Exception ex)
             {
                 this.logger.LogError("取得車隊下拉選單發生錯誤", $"MemberID: {memberID}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                };
+            }
+        }
+
+        /// <summary>
+        /// 取得車隊資訊
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="teamID">teamID</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> GetTeamInfo(string memberID, string teamID)
+        {
+            try
+            {
+                #region 驗證資料
+
+                if (string.IsNullOrEmpty(memberID))
+                {
+                    this.logger.LogWarn("取得車隊資訊結果", $"Result: 驗證失敗，會員編號無效 MemberID: {memberID} TeamID: {teamID}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.DenyAccess,
+                        Content = MessageHelper.Message.ResponseMessage.Member.MemberIDEmpty
+                    };
+                }
+
+                if (string.IsNullOrEmpty(teamID))
+                {
+                    this.logger.LogWarn("取得車隊資訊結果", $"Result: 驗證失敗，車隊編號無效 MemberID: {memberID} TeamID: {teamID}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.DenyAccess,
+                        Content = MessageHelper.Message.ResponseMessage.Team.TeamIDEmpty
+                    };
+                }
+
+                #endregion 驗證資料
+
+                #region 取得車隊資料
+
+                TeamDao teamDao = await this.teamRepository.Get(teamID).ConfigureAwait(false);
+                if (teamDao == null)
+                {
+                    this.logger.LogWarn("取得車隊資訊結果", $"Result: 無車隊資料 MemberID: {memberID} TeamID: {teamID}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.Missed,
+                        Content = MessageHelper.Message.ResponseMessage.Get.Fail
+                    };
+                }
+
+                #endregion 取得車隊資料
+
+                #region 取得資料
+
+                TeamInfoView teamInfoView = this.mapper.Map<TeamInfoView>(teamDao);
+                IEnumerable<string> teamMemberIDs = (new string[] { teamDao.Leader }).Concat(teamDao.TeamViceLeaderIDs).Concat(teamDao.TeamMemberIDs);
+                IEnumerable<MemberDao> teamMemberDaos = await this.memberRepository.Get(teamMemberIDs, null).ConfigureAwait(false);
+                TeamRoleType role = this.GetTeamRole(teamDao, memberID);
+                List<TeamMemberView> teamMemberViews = new List<TeamMemberView>();
+                foreach (MemberDao memberDao in teamMemberDaos)
+                {
+                    TeamMemberView teamMemberView = new TeamMemberView()
+                    {
+                        Avatar = memberDao.Avatar,
+                        MemberID = memberDao.MemberID,
+                        Nickname = memberDao.Nickname,
+                        Role = (int)this.GetTeamRole(teamDao, memberDao.MemberID)
+                    };
+                    teamMemberView.OnlineType = role.Equals(TeamRoleType.None) ? (int)OnlineStatusType.None : await this.memberRepository.GetOnlineType(memberDao.MemberID).ConfigureAwait(false);
+                    teamMemberViews.Add(teamMemberView);
+                }
+
+                teamInfoView.MemberList = teamMemberViews;
+                teamInfoView.InteractiveStatus = (int)this.GetTeamInteractiveStatus(teamDao, memberID);
+
+                #endregion 取得資料
+
+                return new ResponseResult()
+                {
+                    Result = true,
+                    ResultCode = (int)ResponseResultType.Success,
+                    Content = teamInfoView
+                };
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得車隊資訊發生錯誤", $"MemberID: {memberID}", ex);
                 return new ResponseResult()
                 {
                     Result = false,

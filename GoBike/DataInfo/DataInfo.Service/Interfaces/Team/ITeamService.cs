@@ -23,5 +23,13 @@ namespace DataInfo.Service.Interfaces.Team
         /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>
         Task<ResponseResult> GetTeamDropMenu(string memberID);
+
+        /// <summary>
+        /// 取得車隊資訊
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="teamID">teamID</param>
+        /// <returns>ResponseResult</returns>
+        Task<ResponseResult> GetTeamInfo(string memberID, string teamID);
     }
 }
