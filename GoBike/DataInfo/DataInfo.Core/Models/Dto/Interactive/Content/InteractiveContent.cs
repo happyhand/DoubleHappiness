@@ -9,9 +9,9 @@ namespace DataInfo.Core.Models.Dto.Interactive.Content
     public class InteractiveContent
     {
         /// <summary>
-        /// Gets or sets 目標會員ID
+        /// Gets or sets 會員 ID
         /// </summary>
-        public string TargetID { get; set; }
+        public string MemberID { get; set; }
     }
 
     /// <summary>
@@ -26,7 +26,7 @@ namespace DataInfo.Core.Models.Dto.Interactive.Content
         public InteractiveContentValidator(string memberID)
         {
             ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
-            RuleFor(content => content.TargetID)
+            RuleFor(content => content.MemberID)
             .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Member.MemberIDEmpty)
             .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Member.MemberIDEmpty)
             .NotEqual(memberID).WithMessage(MessageHelper.Message.ResponseMessage.Interactive.TargetError);

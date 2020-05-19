@@ -1,7 +1,7 @@
 ﻿namespace DataInfo.Core.Models.Dto.Team.Response
 {
     /// <summary>
-    /// 建立車隊後端回覆資料
+    /// 建立新車隊後端回覆資料
     /// </summary>
     public class TeamCreateResponse
     {

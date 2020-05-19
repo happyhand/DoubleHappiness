@@ -6,6 +6,11 @@
     public class MemberUpdatePasswordRequest
     {
         /// <summary>
+        /// Gets or sets 更新動作
+        /// </summary>
+        public int Action { get; set; }
+
+        /// <summary>
         /// Gets or sets 會員 ID
         /// </summary>
         public string MemberID { get; set; }

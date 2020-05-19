@@ -110,4 +110,25 @@
         /// </summary>
         Fuzzy = 1
     }
+
+    /// <summary>
+    /// 更新密碼動作類別資料
+    /// </summary>
+    public enum UpdatePasswordActionType
+    {
+        /// <summary>
+        /// 未設定
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// 更新密碼
+        /// </summary>
+        Update = 1,
+
+        /// <summary>
+        /// 忘記密碼
+        /// </summary>
+        Forget = 2
+    }
 }

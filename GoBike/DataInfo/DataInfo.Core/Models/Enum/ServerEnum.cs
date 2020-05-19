@@ -243,13 +243,34 @@
         /// <summary>
         /// 更新申請加入車隊列表
         /// </summary>
-        UpdateApplyJoinList = 1006
+        UpdateApplyJoinList = 1006,
+
+        /// <summary>
+        /// 更新邀請加入車隊列表
+        /// </summary>
+        UpdateInviteJoinList = 1007
     }
 
     /// <summary>
     /// 更新申請加入車隊列表結果
     /// </summary>
     public enum UpdateApplyJoinListResultType
+    {
+        /// <summary>
+        /// 更新失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 更新成功
+        /// </summary>
+        Success = 1,
+    }
+
+    /// <summary>
+    /// 更新邀請加入車隊列表結果
+    /// </summary>
+    public enum UpdateInviteJoinListResultType
     {
         /// <summary>
         /// 更新失敗

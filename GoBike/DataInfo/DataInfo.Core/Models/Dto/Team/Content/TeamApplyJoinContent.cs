@@ -4,7 +4,7 @@ using FluentValidation;
 namespace DataInfo.Core.Models.Dto.Team.Content
 {
     /// <summary>
-    /// 車隊申請加入內容
+    /// 申請加入車隊內容
     /// </summary>
     public class TeamApplyJoinContent
     {
@@ -15,7 +15,7 @@ namespace DataInfo.Core.Models.Dto.Team.Content
     }
 
     /// <summary>
-    /// 驗證會員註冊內容
+    /// 驗證申請加入車隊內容內容
     /// </summary>
     public class TeamApplyJoinContentValidator : AbstractValidator<TeamApplyJoinContent>
     {

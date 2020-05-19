@@ -14,6 +14,7 @@ using DataInfo.Service.Interfaces.Interactive;
 using DataInfo.Service.Interfaces.Member;
 using DataInfo.Service.Interfaces.Server;
 using FluentValidation.Results;
+using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -177,7 +178,7 @@ namespace DataInfo.Service.Managers.Interactive
                 if (!validationResult.IsValid)
                 {
                     string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("更新互動資料結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} TargetID: {content.TargetID} Status: {status} Action: {action}", null);
+                    this.logger.LogWarn("更新互動資料結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} Status: {status} Action: {action}", null);
                     return new ResponseResult()
                     {
                         Result = false,
@@ -198,7 +199,7 @@ namespace DataInfo.Service.Managers.Interactive
                         {
                             Action = (int)action,
                             MemberID = memberID,
-                            FriendID = content.TargetID
+                            FriendID = content.MemberID
                         }).ConfigureAwait(false);
                         break;
 
@@ -207,12 +208,12 @@ namespace DataInfo.Service.Managers.Interactive
                         {
                             Action = (int)action,
                             MemberID = memberID,
-                            BlackID = content.TargetID
+                            BlackID = content.MemberID
                         }).ConfigureAwait(false);
                         break;
 
                     default:
-                        this.logger.LogWarn("更新互動資料結果", $"Result: 會員互動類別設定錯誤 MemberID: {memberID} TargetID: {content.TargetID} Status: {status} Action: {action}", null);
+                        this.logger.LogWarn("更新互動資料結果", $"Result: 會員互動類別設定錯誤 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} Status: {status} Action: {action}", null);
                         return new ResponseResult()
                         {
                             Result = false,
@@ -221,7 +222,7 @@ namespace DataInfo.Service.Managers.Interactive
                         };
                 }
 
-                this.logger.LogInfo("更新互動資料結果", $"Result: {response.Data.Result} MemberID: { memberID} TargetID: { content.TargetID} Status: { status} Action: { action}", null);
+                this.logger.LogInfo("更新互動資料結果", $"Result: {response.Data.Result} MemberID: { memberID} Content: {JsonConvert.SerializeObject(content)} Status: { status} Action: { action}", null);
 
                 switch (response.Data.Result)
                 {
@@ -254,7 +255,7 @@ namespace DataInfo.Service.Managers.Interactive
             }
             catch (Exception ex)
             {
-                this.logger.LogError("更新互動資料發生錯誤", $"MemberID: {memberID} TargetID: {content.TargetID} Status: {status} Action: {action}", ex);
+                this.logger.LogError("更新互動資料發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} Status: {status} Action: {action}", ex);
                 return new ResponseResult()
                 {
                     Result = false,

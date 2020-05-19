@@ -1396,7 +1396,8 @@ namespace DataInfo.Service.Managers.Member
                 {
                     MemberID = memberID,
                     Password = content.Password,
-                    NewPassword = content.NewPassword
+                    NewPassword = content.NewPassword,
+                    Action = isIgnoreOldPassword ? (int)UpdatePasswordActionType.Forget : (int)UpdatePasswordActionType.Update
                 };
                 CommandData<MemberEditInfoResponse> response = await this.serverService.DoAction<MemberEditInfoResponse>((int)UserCommandIDType.UpdatePassword, CommandType.User, request).ConfigureAwait(false);
                 this.logger.LogInfo("會員更新密碼結果", $"Result: {response.Data.Result} Content: {JsonConvert.SerializeObject(content)}", null);

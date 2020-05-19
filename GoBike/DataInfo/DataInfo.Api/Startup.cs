@@ -92,6 +92,7 @@ namespace DataInfo.Api
             services.AddSingleton<IRideService, RideService>();
             services.AddSingleton<IInteractiveService, InteractiveService>();
             services.AddSingleton<ITeamService, TeamService>();
+            services.AddSingleton<ITeamInteractiveService, TeamInteractiveService>();
             services.AddSingleton<IUploadService, UploadService>();
             services.AddSingleton<IVerifyCodeService, VerifyCodeService>();
             services.AddSingleton<IServerService, ServerService>();

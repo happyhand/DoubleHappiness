@@ -14,17 +14,17 @@ using System.Threading.Tasks;
 namespace DataInfo.Api.Controllers.Team
 {
     /// <summary>
-    /// 申請加入車隊
+    /// 邀請加入車隊
     /// </summary>
     [ApiController]
     [Authorize]
     [Route("api/Team/[controller]")]
-    public class ApplyJoinController : JwtController
+    public class InviteJoinController : JwtController
     {
         /// <summary>
         /// logger
         /// </summary>
-        private readonly ILogger logger = LogManager.GetLogger("TeamApplyJoinController");
+        private readonly ILogger logger = LogManager.GetLogger("TeamInviteJoinController");
 
         /// <summary>
         /// teamInteractiveService
@@ -36,29 +36,29 @@ namespace DataInfo.Api.Controllers.Team
         /// </summary>
         /// <param name="jwtService">jwtService</param>
         /// <param name="teamInteractiveService">teamInteractiveService</param>
-        public ApplyJoinController(IJwtService jwtService, ITeamInteractiveService teamInteractiveService) : base(jwtService)
+        public InviteJoinController(IJwtService jwtService, ITeamInteractiveService teamInteractiveService) : base(jwtService)
         {
             this.teamInteractiveService = teamInteractiveService;
         }
 
         /// <summary>
-        /// 取消申請加入車隊
+        /// 取消邀請加入車隊
         /// </summary>
         /// <param name="content">content</param>
         /// <returns>IActionResult</returns>
         [HttpDelete]
-        public async Task<IActionResult> Delete(TeamApplyJoinContent content)
+        public async Task<IActionResult> Delete(TeamInviteJoinContent content)
         {
             string memberID = this.GetMemberID();
             try
             {
-                this.logger.LogInfo("會員請求取消申請加入車隊", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await teamInteractiveService.CancelApplyJoinTeam(memberID, content).ConfigureAwait(false);
+                this.logger.LogInfo("會員請求取消邀請加入車隊", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                ResponseResult responseResult = await teamInteractiveService.CancelInviteJoinTeam(memberID, content).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員請求取消申請加入車隊發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                this.logger.LogError("會員請求取消邀請加入車隊發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
                 return Ok(new ResponseResult()
                 {
                     Result = false,
@@ -69,23 +69,23 @@ namespace DataInfo.Api.Controllers.Team
         }
 
         /// <summary>
-        /// 回覆申請加入車隊
+        /// 回覆邀請加入車隊
         /// </summary>
         /// <param name="content">content</param>
         /// <returns>IActionResult</returns>
         [HttpPatch]
-        public async Task<IActionResult> Patch(TeamResponseApplyJoinContent content)
+        public async Task<IActionResult> Patch(TeamResponseInviteJoinContent content)
         {
             string memberID = this.GetMemberID();
             try
             {
-                this.logger.LogInfo("會員請求回覆申請加入車隊", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await teamInteractiveService.ResponseApplyJoinTeam(memberID, content).ConfigureAwait(false);
+                this.logger.LogInfo("會員請求回覆邀請加入車隊", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                ResponseResult responseResult = await teamInteractiveService.ResponseInviteJoinTeam(memberID, content).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員請求回覆申請加入車隊發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                this.logger.LogError("會員請求回覆邀請加入車隊發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
                 return Ok(new ResponseResult()
                 {
                     Result = false,
@@ -96,23 +96,23 @@ namespace DataInfo.Api.Controllers.Team
         }
 
         /// <summary>
-        /// 申請加入車隊
+        /// 邀請加入車隊
         /// </summary>
         /// <param name="content">content</param>
         /// <returns>IActionResult</returns>
         [HttpPost]
-        public async Task<IActionResult> Post(TeamApplyJoinContent content)
+        public async Task<IActionResult> Post(TeamInviteJoinContent content)
         {
             string memberID = this.GetMemberID();
             try
             {
-                this.logger.LogInfo("會員請求申請加入車隊", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await teamInteractiveService.ApplyJoinTeam(memberID, content).ConfigureAwait(false);
+                this.logger.LogInfo("會員請求邀請加入車隊", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                ResponseResult responseResult = await teamInteractiveService.InviteJoinTeam(memberID, content).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員請求申請加入車隊發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                this.logger.LogError("會員請求邀請加入車隊發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
                 return Ok(new ResponseResult()
                 {
                     Result = false,
