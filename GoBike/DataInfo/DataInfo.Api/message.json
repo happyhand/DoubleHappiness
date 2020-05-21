@@ -14,7 +14,8 @@
             "MobileEmpty": "手機號碼無效.",
             "MobileFormatError": "手機號碼格式錯誤.",
             "MobileBind": "該手機已被綁定.",
-            "SearchEmpty": "未提供搜尋內容."
+            "SearchEmpty": "未提供搜尋內容.",
+            "CountyEmpty": "未設定所在地."
         },
         "Update": {
             "Success": "更新資料成功.",

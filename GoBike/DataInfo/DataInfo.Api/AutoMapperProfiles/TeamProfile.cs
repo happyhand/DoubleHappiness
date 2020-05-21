@@ -31,6 +31,7 @@ namespace DataInfo.AutoMapperProfiles
 
             CreateMap<TeamDao, TeamDropMenuView>();
             CreateMap<TeamDao, TeamInfoView>();
+            CreateMap<TeamDao, TeamSearchView>();
         }
     }
 }

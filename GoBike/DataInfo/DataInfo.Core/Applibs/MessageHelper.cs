@@ -97,6 +97,11 @@
         public class MemberMessageSetting
         {
             /// <summary>
+            /// Gets or sets CountyEmpty
+            /// </summary>
+            public string CountyEmpty { get; set; }
+
+            /// <summary>
             /// Gets or sets EmailEmpty
             /// </summary>
             public string EmailEmpty { get; set; }

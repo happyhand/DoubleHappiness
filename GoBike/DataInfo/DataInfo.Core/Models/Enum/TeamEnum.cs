@@ -114,20 +114,4 @@
         /// </summary>
         Open = 1
     }
-
-    /// <summary>
-    /// 車隊搜尋類別資料
-    /// </summary>
-    public enum TeamSearchType
-    {
-        /// <summary>
-        /// 車隊 ID
-        /// </summary>
-        TeamID = 1,
-
-        /// <summary>
-        /// 車隊名稱
-        /// </summary>
-        TeamName = 2,
-    }
 }

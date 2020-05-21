@@ -18,6 +18,14 @@ namespace DataInfo.Service.Interfaces.Team
         Task<ResponseResult> Create(string memberID, TeamCreateContent content);
 
         /// <summary>
+        /// 取得瀏覽車隊
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
+        /// <returns>ResponseResult</returns>
+        Task<ResponseResult> GetBrowseTeam(string memberID, TeamBrowseContent content);
+
+        /// <summary>
         /// 取得車隊下拉選單
         /// </summary>
         /// <param name="memberID">memberID</param>
@@ -31,5 +39,13 @@ namespace DataInfo.Service.Interfaces.Team
         /// <param name="teamID">teamID</param>
         /// <returns>ResponseResult</returns>
         Task<ResponseResult> GetTeamInfo(string memberID, string teamID);
+
+        /// <summary>
+        /// 搜尋車隊
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="searchKey">searchKey</param>
+        /// <returns>ResponseResult</returns>
+        Task<ResponseResult> SearchTeam(string memberID, string searchKey);
     }
 }

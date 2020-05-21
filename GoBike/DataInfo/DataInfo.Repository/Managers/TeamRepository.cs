@@ -1,12 +1,13 @@
 ﻿using AutoMapper;
+using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dao.Team;
 using DataInfo.Core.Models.Dao.Team.Table;
-using DataInfo.Core.Models.Enum;
 using DataInfo.Repository.Interfaces;
 using DataInfo.Repository.Managers.Base;
 using Newtonsoft.Json;
 using NLog;
+using SqlSugar;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -83,53 +84,6 @@ namespace DataInfo.Repository.Managers
         }
 
         /// <summary>
-        /// 取得車隊資料列表
-        /// </summary>
-        /// <param name="searchKey">searchKey</param>
-        /// <param name="type">type</param>
-        /// <param name="isFuzzy">isFuzzy</param>
-        /// <returns>TeamDaos</returns>
-        public async Task<IEnumerable<TeamDao>> Get(string searchKey, TeamSearchType type, bool isFuzzy)
-        {
-            try
-            {
-                IEnumerable<TeamData> teamDatas;
-                switch (type)
-                {
-                    case TeamSearchType.TeamName:
-                        //// 無法在 Where 裡作 ? 的判斷式，待以後有沒有其他解可優化
-                        if (isFuzzy)
-                        {
-                            teamDatas = await this.Db.Queryable<TeamData>()
-                                           .Where(data => data.TeamName.Contains(searchKey))
-                                           .ToListAsync().ConfigureAwait(false);
-                        }
-                        else
-                        {
-                            teamDatas = await this.Db.Queryable<TeamData>()
-                                           .Where(data => data.TeamName.Equals(searchKey))
-                                           .ToListAsync().ConfigureAwait(false);
-                        }
-                        break;
-
-                    case TeamSearchType.TeamID:
-                    default:
-                        teamDatas = await this.Db.Queryable<TeamData>()
-                                              .Where(data => data.TeamID.Equals(searchKey))
-                                              .ToListAsync().ConfigureAwait(false);
-                        break;
-                }
-
-                return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("取得車隊資料列表發生錯誤", $"SearchKey: {searchKey} Type: {type} IsFuzzy: {isFuzzy}", ex);
-                return new List<TeamDao>();
-            }
-        }
-
-        /// <summary>
         /// 取得申請車隊列表
         /// </summary>
         /// <param name="memberID">memberID</param>
@@ -169,6 +123,94 @@ namespace DataInfo.Repository.Managers
             catch (Exception ex)
             {
                 this.logger.LogError("取得邀請車隊列表發生錯誤", $"MemberID: {JsonConvert.SerializeObject(memberID)}", ex);
+                return new List<TeamDao>();
+            }
+        }
+
+        /// <summary>
+        /// 取得附近車隊資料列表
+        /// </summary>
+        /// <param name="county">county</param>
+        /// <returns>TeamDaos</returns>
+        public async Task<IEnumerable<TeamDao>> GetNearbyTeam(int county)
+        {
+            try
+            {
+                IEnumerable<TeamData> teamDatas = await this.Db.Queryable<TeamData>()
+                                              .Where(data => data.County.Equals(county))
+                                              .ToListAsync().ConfigureAwait(false);
+
+                return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得附近車隊資料列表發生錯誤", $"County: {county}", ex);
+                return new List<TeamDao>();
+            }
+        }
+
+        /// <summary>
+        /// 取得新創車隊資料列表
+        /// </summary>
+        /// <returns>TeamDaos</returns>
+        public async Task<IEnumerable<TeamDao>> GetNewCreationTeam()
+        {
+            DateTime expiredDate = DateTime.UtcNow.AddDays(AppSettingHelper.Appsetting.DaysOfNewCreation * -1);
+            try
+            {
+                IEnumerable<TeamData> teamDatas = await this.Db.Queryable<TeamData>()
+                                              .Where(data => Convert.ToDateTime(data).Ticks - expiredDate.Ticks > 0)
+                                              .ToListAsync().ConfigureAwait(false);
+
+                return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得新創車隊資料列表發生錯誤", $"ExpiredDate: {expiredDate}", ex);
+                return new List<TeamDao>();
+            }
+        }
+
+        /// <summary>
+        /// 取得推薦車隊資料列表
+        /// </summary>
+        /// <returns>TeamDaos</returns>
+        public async Task<IEnumerable<TeamDao>> GetRecommendTeam()
+        {
+            try
+            {
+                //// TODO 待確認推薦標準
+                IEnumerable<TeamData> teamDatas = await this.Db.Queryable<TeamData>()
+                                              .Where(data => data.TeamViceLeaderIDs.Length + data.TeamMemberIDs.Length >= 50)
+                                              .ToListAsync().ConfigureAwait(false);
+
+                return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得推薦車隊資料列表發生錯誤", string.Empty, ex);
+                return new List<TeamDao>();
+            }
+        }
+
+        /// <summary>
+        /// 搜尋車隊
+        /// </summary>
+        /// <param name="key">key</param>
+        /// <returns>TeamDaos</returns>
+        public async Task<IEnumerable<TeamDao>> Search(string key)
+        {
+            try
+            {
+                IEnumerable<TeamData> teamDatas = await this.Db.Queryable<TeamData>()
+                                           .Where(data => data.TeamName.Contains(key))
+                                           .ToListAsync().ConfigureAwait(false);
+
+                return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("搜尋車隊發生錯誤", $"Key: {key}", ex);
                 return new List<TeamDao>();
             }
         }

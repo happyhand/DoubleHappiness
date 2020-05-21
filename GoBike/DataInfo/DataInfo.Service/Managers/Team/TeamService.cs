@@ -230,6 +230,63 @@ namespace DataInfo.Service.Managers.Team
         }
 
         /// <summary>
+        /// 取得瀏覽車隊
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> GetBrowseTeam(string memberID, TeamBrowseContent content)
+        {
+            try
+            {
+                #region 驗證資料
+
+                TeamBrowseContentValidator teamRecommendContentValidator = new TeamBrowseContentValidator();
+                ValidationResult validationResult = teamRecommendContentValidator.Validate(content);
+                if (!validationResult.IsValid)
+                {
+                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
+                    this.logger.LogWarn("取得瀏覽車隊結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.InputError,
+                        Content = errorMessgae
+                    };
+                }
+
+                #endregion 驗證資料
+
+                Task<IEnumerable<TeamDao>> nearbyTeamListTask = this.teamRepository.GetNearbyTeam(content.County);
+                Task<IEnumerable<TeamDao>> newCreationTeamListTask = this.teamRepository.GetNewCreationTeam();
+                Task<IEnumerable<TeamDao>> recommendTeamListTask = this.teamRepository.GetRecommendTeam();
+                IEnumerable<TeamDao>[] teamDaos = new IEnumerable<TeamDao>[]
+                {
+                    await nearbyTeamListTask.ConfigureAwait(false),
+                    await newCreationTeamListTask.ConfigureAwait(false),
+                    await recommendTeamListTask.ConfigureAwait(false)
+                };
+
+                return new ResponseResult()
+                {
+                    Result = true,
+                    ResultCode = (int)ResponseResultType.Success,
+                    Content = this.mapper.Map<IEnumerable<IEnumerable<TeamSearchView>>>(teamDaos)
+                };
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得瀏覽車隊發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                };
+            }
+        }
+
+        /// <summary>
         /// 取得車隊下拉選單
         /// </summary>
         /// <param name="memberID">memberID</param>
@@ -358,6 +415,51 @@ namespace DataInfo.Service.Managers.Team
             catch (Exception ex)
             {
                 this.logger.LogError("取得車隊資訊發生錯誤", $"MemberID: {memberID}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                };
+            }
+        }
+
+        /// <summary>
+        /// 搜尋車隊
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="searchKey">searchKey</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> SearchTeam(string memberID, string searchKey)
+        {
+            try
+            {
+                #region 驗證資料
+
+                if (string.IsNullOrEmpty(searchKey))
+                {
+                    this.logger.LogWarn("搜尋車隊結果", $"Result: 驗證失敗，關鍵字無效 MemberID: {memberID} SearchKey: {searchKey}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.InputError,
+                        Content = MessageHelper.Message.ResponseMessage.Get.Fail
+                    };
+                }
+
+                #endregion 驗證資料
+
+                IEnumerable<TeamDao> teamDaos = await this.teamRepository.Search(searchKey).ConfigureAwait(false);
+                return new ResponseResult()
+                {
+                    Result = true,
+                    ResultCode = (int)ResponseResultType.Success,
+                    Content = this.mapper.Map<IEnumerable<TeamSearchView>>(teamDaos)
+                };
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("搜尋車隊發生錯誤", $"MemberID: {memberID} SearchKey: {searchKey}", ex);
                 return new ResponseResult()
                 {
                     Result = false,
