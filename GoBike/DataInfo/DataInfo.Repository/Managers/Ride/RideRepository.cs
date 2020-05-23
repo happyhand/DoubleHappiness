@@ -1,20 +1,18 @@
-﻿using DataInfo.Core.Extensions;
-using DataInfo.Repository.Interfaces;
-using DataInfo.Repository.Managers.Base;
-using DataInfo.Core.Models.Dao.Member;
-using Newtonsoft.Json;
-using NLog;
-using SqlSugar;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using AutoMapper;
+using DataInfo.Core.Applibs;
+using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dao.Ride;
 using DataInfo.Core.Models.Dao.Ride.Table;
-using DataInfo.Core.Applibs;
+using DataInfo.Repository.Interfaces.Ride;
+using DataInfo.Repository.Managers.Base;
+using Newtonsoft.Json;
+using NLog;
+using System;
+using System.Collections.Generic;
 using System.Linq;
-using AutoMapper;
+using System.Threading.Tasks;
 
-namespace DataInfo.Repository.Managers
+namespace DataInfo.Repository.Managers.Ride
 {
     /// <summary>
     /// 騎乘資料庫

@@ -322,6 +322,46 @@
         public class TeamMessageSetting
         {
             /// <summary>
+            /// Gets or sets ActivityAltitudeEmpty
+            /// </summary>
+            public string ActivityAltitudeEmpty { get; set; }
+
+            /// <summary>
+            /// Gets or sets ActivityDateEmpty
+            /// </summary>
+            public string ActivityDateEmpty { get; set; }
+
+            /// <summary>
+            /// Gets or sets ActivityDistanceEmpty
+            /// </summary>
+            public string ActivityDistanceEmpty { get; set; }
+
+            /// <summary>
+            /// Gets or sets ActivityIDEmpty
+            /// </summary>
+            public string ActivityIDEmpty { get; set; }
+
+            /// <summary>
+            /// Gets or sets ActivityMeetTimeEmpty
+            /// </summary>
+            public string ActivityMeetTimeEmpty { get; set; }
+
+            /// <summary>
+            /// Gets or sets ActivityNotExist
+            /// </summary>
+            public string ActivityNotExist { get; set; }
+
+            /// <summary>
+            /// Gets or sets ActivityPhotoEmpty
+            /// </summary>
+            public string ActivityPhotoEmpty { get; set; }
+
+            /// <summary>
+            /// Gets or sets ActivityTitleEmpty
+            /// </summary>
+            public string ActivityTitleEmpty { get; set; }
+
+            /// <summary>
             /// Gets or sets AvatarEmpty
             /// </summary>
             public string AvatarEmpty { get; set; }

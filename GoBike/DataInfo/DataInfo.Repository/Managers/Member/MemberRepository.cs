@@ -3,7 +3,8 @@ using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dao.Member;
 using DataInfo.Core.Models.Dao.Member.Table;
 using DataInfo.Core.Models.Enum;
-using DataInfo.Repository.Interfaces;
+using DataInfo.Repository.Interfaces.Common;
+using DataInfo.Repository.Interfaces.Member;
 using DataInfo.Repository.Managers.Base;
 using Newtonsoft.Json;
 using NLog;
@@ -13,7 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace DataInfo.Repository.Managers
+namespace DataInfo.Repository.Managers.Member
 {
     /// <summary>
     /// 會員資料庫
@@ -42,8 +43,7 @@ namespace DataInfo.Repository.Managers
         /// <summary>
         /// 轉換 MemberDao
         /// </summary>
-        /// <param name="userAccount">userAccount</param>
-        /// <param name="userInfo">userInfo</param>
+        /// <param name="query">query</param>
         /// <returns>MemberDaos</returns>
         private async Task<IEnumerable<MemberDao>> TransformMemberDao(ISugarQueryable<UserAccount, UserInfo> query)
         {
@@ -81,8 +81,7 @@ namespace DataInfo.Repository.Managers
         {
             try
             {
-                ISugarQueryable<UserAccount, UserInfo> query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => new object[] {
-                        JoinType.Left,ua.MemberID.Equals(ui.MemberID)})
+                ISugarQueryable<UserAccount, UserInfo> query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID))
                           .Where((ua, ui) => ua.MemberID.Equals(memberID));
 
                 return (await this.TransformMemberDao(query).ConfigureAwait(false)).FirstOrDefault();
@@ -108,9 +107,7 @@ namespace DataInfo.Repository.Managers
                 ISugarQueryable<UserAccount, UserInfo> query = null;
                 if (isFuzzy)
                 {
-                    //// 注意避免 NickName 若為空值時，由 NickName 去比對 searchKey 會發生報錯，所以改用 searchKey 去比對 NickName
-                    query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => new object[] {
-                        JoinType.Left,ua.MemberID.Equals(ui.MemberID)})
+                    query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID))
                           .Where((ua, ui) => ua.Email.Contains(searchKey) || (!string.IsNullOrEmpty(ui.NickName) && ui.NickName.Contains(searchKey)) || ua.MemberID.Contains(searchKey))
                           .Where(ua => ignoreMemberIDs == null || !ignoreMemberIDs.Contains(ua.MemberID));
                 }
@@ -118,22 +115,19 @@ namespace DataInfo.Repository.Managers
                 {
                     if (Utility.ValidateEmail(searchKey))
                     {
-                        query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => new object[] {
-                        JoinType.Left,ua.MemberID.Equals(ui.MemberID)})
+                        query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID))
                           .Where((ua, ui) => ua.Email.Equals(searchKey))
                           .Where(ua => ignoreMemberIDs == null || !ignoreMemberIDs.Contains(ua.MemberID));
                     }
                     else if (searchKey.Contains(AppSettingHelper.Appsetting.MemberIDFlag))
                     {
-                        query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => new object[] {
-                        JoinType.Left,ua.MemberID.Equals(ui.MemberID)})
+                        query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID))
                           .Where((ua, ui) => ua.MemberID.Equals(searchKey))
                           .Where(ua => ignoreMemberIDs == null || !ignoreMemberIDs.Contains(ua.MemberID));
                     }
                     else if (Utility.ValidateMobile(searchKey))
                     {
-                        query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => new object[] {
-                        JoinType.Left,ua.MemberID.Equals(ui.MemberID)})
+                        query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID))
                           .Where((ua, ui) => !string.IsNullOrEmpty(ui.Mobile) && ui.Mobile.Equals(searchKey))
                           .Where(ua => ignoreMemberIDs == null || !ignoreMemberIDs.Contains(ua.MemberID));
                     }
@@ -165,8 +159,7 @@ namespace DataInfo.Repository.Managers
         {
             try
             {
-                ISugarQueryable<UserAccount, UserInfo> query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => new object[] {
-                        JoinType.Left,ua.MemberID.Equals(ui.MemberID)})
+                ISugarQueryable<UserAccount, UserInfo> query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID))
                            .Where(ua => memberIDs.Contains(ua.MemberID))
                            .Where(ua => ignoreMemberIDs == null || !ignoreMemberIDs.Contains(ua.MemberID));
 

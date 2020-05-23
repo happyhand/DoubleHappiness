@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace DataInfo.Repository.Interfaces
+namespace DataInfo.Repository.Interfaces.Ride
 {
     /// <summary>
     /// 騎乘資料庫

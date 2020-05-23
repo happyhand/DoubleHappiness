@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace DataInfo.Repository.Interfaces
+namespace DataInfo.Repository.Interfaces.Team
 {
     /// <summary>
     /// 車隊資料庫

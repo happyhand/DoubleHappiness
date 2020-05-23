@@ -10,7 +10,9 @@ using DataInfo.Core.Models.Dto.Ride.Response;
 using DataInfo.Core.Models.Dto.Ride.View;
 using DataInfo.Core.Models.Dto.Server;
 using DataInfo.Core.Models.Enum;
-using DataInfo.Repository.Interfaces;
+using DataInfo.Repository.Interfaces.Interactive;
+using DataInfo.Repository.Interfaces.Member;
+using DataInfo.Repository.Interfaces.Ride;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Ride;
 using DataInfo.Service.Interfaces.Server;
@@ -72,7 +74,7 @@ namespace DataInfo.Service.Managers.Ride
         /// <param name="serverService">serverService</param>
         /// <param name="memberRepository">memberRepository</param>
         /// <param name="interactiveRepository">interactiveRepository</param>
-        /// <param name="redisRepository">redisRepository</param>
+        /// <param name="rideRepository">rideRepository</param>
         public RideService(IMapper mapper, IUploadService uploadService, IServerService serverService, IMemberRepository memberRepository, IInteractiveRepository interactiveRepository, IRideRepository rideRepository)
         {
             this.mapper = mapper;
@@ -160,7 +162,7 @@ namespace DataInfo.Service.Managers.Ride
                 AddRideInfoRequest request = this.mapper.Map<AddRideInfoRequest>(content);
                 request.MemberID = memberID;
                 CommandData<AddRideInfoResponse> response = await this.serverService.DoAction<AddRideInfoResponse>((int)RideCommandIDType.CreateRideRecord, CommandType.Ride, request).ConfigureAwait(false);
-                this.logger.LogInfo("新增騎乘資料結果", $"Result: {response.Data.Result} MemberID: {memberID} Request: {JsonConvert.SerializeObject(request)} Content: {JsonConvert.SerializeObject(content)}", null);
+                this.logger.LogInfo("新增騎乘資料結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
 
                 switch (response.Data.Result)
                 {

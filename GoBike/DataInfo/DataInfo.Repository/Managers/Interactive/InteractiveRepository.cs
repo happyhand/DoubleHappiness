@@ -1,7 +1,6 @@
 ﻿using DataInfo.Core.Extensions;
-using DataInfo.Core.Models.Dao.Interactive;
 using DataInfo.Core.Models.Dao.Member.Table;
-using DataInfo.Repository.Interfaces;
+using DataInfo.Repository.Interfaces.Interactive;
 using DataInfo.Repository.Managers.Base;
 using Newtonsoft.Json;
 using NLog;
@@ -10,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace DataInfo.Repository.Managers
+namespace DataInfo.Repository.Managers.Interactive
 {
     /// <summary>
     /// 互動資料庫

@@ -43,9 +43,9 @@ namespace DataInfo.Core.Applibs
         public class MemberImageSetting
         {
             /// <summary>
-            /// Gets or sets Uri
+            /// Gets or sets Path
             /// </summary>
-            public string Uri { get; set; }
+            public string Path { get; set; }
         }
 
         /// <summary>
@@ -54,9 +54,20 @@ namespace DataInfo.Core.Applibs
         public class RideImageSetting
         {
             /// <summary>
-            /// Gets or sets Uri
+            /// Gets or sets Path
             /// </summary>
-            public string Uri { get; set; }
+            public string Path { get; set; }
+        }
+
+        /// <summary>
+        /// TeamActivityImageSetting
+        /// </summary>
+        public class TeamActivityImageSetting
+        {
+            /// <summary>
+            /// Gets or sets Path
+            /// </summary>
+            public string Path { get; set; }
         }
 
         /// <summary>
@@ -65,9 +76,9 @@ namespace DataInfo.Core.Applibs
         public class TeamImageSetting
         {
             /// <summary>
-            /// Gets or sets Uri
+            /// Gets or sets Path
             /// </summary>
-            public string Uri { get; set; }
+            public string Path { get; set; }
         }
 
         /// <summary>
@@ -75,6 +86,11 @@ namespace DataInfo.Core.Applibs
         /// </summary>
         public class UploadServerSetting
         {
+            /// <summary>
+            /// Gets or sets Api
+            /// </summary>
+            public string Api { get; set; }
+
             /// <summary>
             /// Gets or sets Domain
             /// </summary>
@@ -99,6 +115,11 @@ namespace DataInfo.Core.Applibs
             /// Gets or sets Team
             /// </summary>
             public TeamImageSetting Team { get; set; }
+
+            /// <summary>
+            /// Gets or sets TeamActivity
+            /// </summary>
+            public TeamActivityImageSetting TeamActivity { get; set; }
         }
 
         #endregion Upload Server 設定資料
@@ -116,14 +137,14 @@ namespace DataInfo.Core.Applibs
         public class SmtpServerSetting
         {
             /// <summary>
+            /// Gets or sets Api
+            /// </summary>
+            public string Api { get; set; }
+
+            /// <summary>
             /// Gets or sets Domain
             /// </summary>
             public string Domain { get; set; }
-
-            /// <summary>
-            /// Gets or sets SendEmailApi
-            /// </summary>
-            public string SendEmailApi { get; set; }
         }
 
         #endregion Smtp Server 設定資料

@@ -1,6 +1,6 @@
 ﻿using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
-using DataInfo.Repository.Interfaces;
+using DataInfo.Repository.Interfaces.Common;
 using Newtonsoft.Json;
 using NLog;
 using StackExchange.Redis;
@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace DataInfo.Repository.Managers
+namespace DataInfo.Repository.Managers.Common
 {
     /// <summary>
     /// Redis 資料庫

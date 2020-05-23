@@ -10,7 +10,8 @@ using DataInfo.Core.Models.Dto.Team.Request;
 using DataInfo.Core.Models.Dto.Team.Response;
 using DataInfo.Core.Models.Dto.Team.View;
 using DataInfo.Core.Models.Enum;
-using DataInfo.Repository.Interfaces;
+using DataInfo.Repository.Interfaces.Member;
+using DataInfo.Repository.Interfaces.Team;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Server;
 using DataInfo.Service.Interfaces.Team;
@@ -65,6 +66,7 @@ namespace DataInfo.Service.Managers.Team
         /// <param name="mapper">mapper</param>
         /// <param name="uploadService">uploadService</param>
         /// <param name="serverService">serverService</param>
+        /// <param name="memberRepository">memberRepository</param>
         /// <param name="teamRepository">teamRepository</param>
         public TeamService(IMapper mapper, IUploadService uploadService, IServerService serverService, IMemberRepository memberRepository, ITeamRepository teamRepository)
         {
@@ -187,7 +189,7 @@ namespace DataInfo.Service.Managers.Team
                 request.MemberID = memberID;
 
                 CommandData<TeamCreateResponse> response = await this.serverService.DoAction<TeamCreateResponse>((int)TeamCommandIDType.CreateNewTeam, CommandType.Team, request).ConfigureAwait(false);
-                this.logger.LogInfo("建立車隊結果", $"Result: {response.Data.Result} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                this.logger.LogInfo("建立車隊結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                 switch (response.Data.Result)
                 {
                     case (int)CreateNewTeamResultType.Success:

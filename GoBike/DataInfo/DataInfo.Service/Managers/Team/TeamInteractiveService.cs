@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using DataInfo.Core.Applibs;
+﻿using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dao.Team;
 using DataInfo.Core.Models.Dto.Response;
@@ -8,7 +7,7 @@ using DataInfo.Core.Models.Dto.Team.Content;
 using DataInfo.Core.Models.Dto.Team.Request;
 using DataInfo.Core.Models.Dto.Team.Response;
 using DataInfo.Core.Models.Enum;
-using DataInfo.Repository.Interfaces;
+using DataInfo.Repository.Interfaces.Team;
 using DataInfo.Service.Interfaces.Server;
 using DataInfo.Service.Interfaces.Team;
 using FluentValidation.Results;
@@ -146,7 +145,7 @@ namespace DataInfo.Service.Managers.Team
                 };
 
                 CommandData<TeamApplyJoinResponse> response = await this.serverService.DoAction<TeamApplyJoinResponse>((int)TeamCommandIDType.UpdateApplyJoinList, CommandType.Team, request).ConfigureAwait(false);
-                this.logger.LogInfo("申請加入車隊結果", $"Result: {response.Data.Result} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                this.logger.LogInfo("申請加入車隊結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                 switch (response.Data.Result)
                 {
                     case (int)UpdateApplyJoinListResultType.Success:
@@ -238,7 +237,7 @@ namespace DataInfo.Service.Managers.Team
                 };
 
                 CommandData<TeamApplyJoinResponse> response = await this.serverService.DoAction<TeamApplyJoinResponse>((int)TeamCommandIDType.UpdateApplyJoinList, CommandType.Team, request).ConfigureAwait(false);
-                this.logger.LogInfo("取消申請加入車隊結果", $"Result: {response.Data.Result} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                this.logger.LogInfo("取消申請加入車隊結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                 switch (response.Data.Result)
                 {
                     case (int)UpdateApplyJoinListResultType.Success:
@@ -341,7 +340,7 @@ namespace DataInfo.Service.Managers.Team
                 };
 
                 CommandData<TeamInviteJoinResponse> response = await this.serverService.DoAction<TeamInviteJoinResponse>((int)TeamCommandIDType.UpdateInviteJoinList, CommandType.Team, request).ConfigureAwait(false);
-                this.logger.LogInfo("取消邀請加入車隊結果", $"Result: {response.Data.Result} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                this.logger.LogInfo("取消邀請加入車隊結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                 switch (response.Data.Result)
                 {
                     case (int)UpdateInviteJoinListResultType.Success:
@@ -466,7 +465,7 @@ namespace DataInfo.Service.Managers.Team
                 };
 
                 CommandData<TeamInviteJoinResponse> response = await this.serverService.DoAction<TeamInviteJoinResponse>((int)TeamCommandIDType.UpdateInviteJoinList, CommandType.Team, request).ConfigureAwait(false);
-                this.logger.LogInfo("邀請加入車隊結果", $"Result: {response.Data.Result} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                this.logger.LogInfo("邀請加入車隊結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                 switch (response.Data.Result)
                 {
                     case (int)UpdateInviteJoinListResultType.Success:
@@ -579,7 +578,7 @@ namespace DataInfo.Service.Managers.Team
                     TeamID = content.TeamID
                 };
                 CommandData<TeamApplyJoinResponse> teamApplyJoinResponse = await this.serverService.DoAction<TeamApplyJoinResponse>((int)TeamCommandIDType.UpdateApplyJoinList, CommandType.Team, teamApplyJoinRequest).ConfigureAwait(false);
-                this.logger.LogInfo("回覆申請加入車隊結果(更新申請加入車隊列表)", $"Result: {teamApplyJoinResponse.Data.Result} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                this.logger.LogInfo("回覆申請加入車隊結果(更新申請加入車隊列表)", $"Response: {JsonConvert.SerializeObject(teamApplyJoinResponse)} Request: {JsonConvert.SerializeObject(teamApplyJoinRequest)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                 switch (teamApplyJoinResponse.Data.Result)
                 {
                     case (int)UpdateApplyJoinListResultType.Success:
@@ -592,7 +591,7 @@ namespace DataInfo.Service.Managers.Team
                                 TeamID = content.TeamID
                             };
                             CommandData<TeamUpdateMemberResponse> teamUpdateMemberResponse = await this.serverService.DoAction<TeamUpdateMemberResponse>((int)TeamCommandIDType.UpdateTeamMemberList, CommandType.Team, teamUpdateMemberRequest).ConfigureAwait(false);
-                            this.logger.LogInfo("回覆申請加入車隊結果(更新隊員列表)", $"Result: {teamUpdateMemberResponse.Data.Result} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                            this.logger.LogInfo("回覆申請加入車隊結果(更新隊員列表)", $"Response: {JsonConvert.SerializeObject(teamUpdateMemberResponse)} Request: {JsonConvert.SerializeObject(teamUpdateMemberRequest)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                             switch (teamUpdateMemberResponse.Data.Result)
                             {
                                 case (int)UpdateTeamMemberListResultType.Success:
@@ -714,15 +713,15 @@ namespace DataInfo.Service.Managers.Team
 
                 #region 發送【更新邀請加入車隊列表】、【更新隊員列表】指令至後端
 
-                TeamInviteJoinRequest teamInviteJoinRequest = new TeamInviteJoinRequest()
+                TeamInviteJoinRequest request = new TeamInviteJoinRequest()
                 {
                     MemberID = memberID,
                     Action = (int)ActionType.Delete,
                     TeamID = content.TeamID
                 };
 
-                CommandData<TeamInviteJoinResponse> response = await this.serverService.DoAction<TeamInviteJoinResponse>((int)TeamCommandIDType.UpdateInviteJoinList, CommandType.Team, teamInviteJoinRequest).ConfigureAwait(false);
-                this.logger.LogInfo("回覆邀請加入車隊結果(更新邀請加入車隊列表)", $"Result: {response.Data.Result} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                CommandData<TeamInviteJoinResponse> response = await this.serverService.DoAction<TeamInviteJoinResponse>((int)TeamCommandIDType.UpdateInviteJoinList, CommandType.Team, request).ConfigureAwait(false);
+                this.logger.LogInfo("回覆邀請加入車隊結果(更新邀請加入車隊列表)", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                 switch (response.Data.Result)
                 {
                     case (int)UpdateInviteJoinListResultType.Success:
@@ -735,7 +734,7 @@ namespace DataInfo.Service.Managers.Team
                                 TeamID = content.TeamID
                             };
                             CommandData<TeamUpdateMemberResponse> teamUpdateMemberResponse = await this.serverService.DoAction<TeamUpdateMemberResponse>((int)TeamCommandIDType.UpdateTeamMemberList, CommandType.Team, teamUpdateMemberRequest).ConfigureAwait(false);
-                            this.logger.LogInfo("回覆邀請加入車隊結果(更新隊員列表)", $"Result: {teamUpdateMemberResponse.Data.Result} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                            this.logger.LogInfo("回覆邀請加入車隊結果(更新隊員列表)", $"Response: {JsonConvert.SerializeObject(teamUpdateMemberResponse)} Request: {JsonConvert.SerializeObject(teamUpdateMemberRequest)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                             switch (teamUpdateMemberResponse.Data.Result)
                             {
                                 case (int)UpdateTeamMemberListResultType.Success:

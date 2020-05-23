@@ -15,13 +15,8 @@ namespace DataInfo.Core.Models.Dto.Common.Upload.Request
         public IEnumerable<string> ImgBase64s { get; set; }
 
         /// <summary>
-        /// Gets or sets Project
+        /// Gets or sets Path
         /// </summary>
-        public string Project { get; set; }
-
-        /// <summary>
-        /// Gets or sets Type
-        /// </summary>
-        public string Type { get; set; }
+        public string Path { get; set; }
     }
 }

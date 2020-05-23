@@ -12,7 +12,9 @@ using DataInfo.Core.Models.Dto.Member.View;
 using DataInfo.Core.Models.Dto.Response;
 using DataInfo.Core.Models.Dto.Server;
 using DataInfo.Core.Models.Enum;
-using DataInfo.Repository.Interfaces;
+using DataInfo.Repository.Interfaces.Common;
+using DataInfo.Repository.Interfaces.Member;
+using DataInfo.Repository.Interfaces.Ride;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Member;
 using DataInfo.Service.Interfaces.Server;
@@ -215,7 +217,7 @@ namespace DataInfo.Service.Managers.Member
                 };
 
                 CommandData<MemberLoginResponse> response = await this.serverService.DoAction<MemberLoginResponse>((int)UserCommandIDType.UserLogin, CommandType.User, request).ConfigureAwait(false);
-                this.logger.LogInfo("會員登入結果(一般登入)", $"Result: {response.Data.Result} Email: {content.Email} Password: {content.Password}", null);
+                this.logger.LogInfo("會員登入結果(一般登入)", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} Email: {content.Email} Password: {content.Password}", null);
                 switch (response.Data.Result)
                 {
                     case (int)UserLoginResultType.Success:
@@ -317,7 +319,7 @@ namespace DataInfo.Service.Managers.Member
                 };
 
                 CommandData<MemberRegisterResponse> response = await this.serverService.DoAction<MemberRegisterResponse>((int)UserCommandIDType.UserRegistered, CommandType.User, request).ConfigureAwait(false);
-                this.logger.LogInfo("會員註冊結果", $"Result: {response.Data.Result} Email: {content.Email} Password: {content.Password} ConfirmPassword: {content.ConfirmPassword} IsValidatePassword: {isValidatePassword} FbToken: {fbToken} GoogleToken: {googleToken}", null);
+                this.logger.LogInfo("會員註冊結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} Email: {content.Email} Password: {content.Password} ConfirmPassword: {content.ConfirmPassword} IsValidatePassword: {isValidatePassword} FbToken: {fbToken} GoogleToken: {googleToken}", null);
                 switch (response.Data.Result)
                 {
                     case (int)UserRegisteredResultType.Success:
@@ -662,7 +664,7 @@ namespace DataInfo.Service.Managers.Member
                 #region 發送【更新使用者資訊】指令至後端
 
                 CommandData<MemberEditInfoResponse> response = await this.serverService.DoAction<MemberEditInfoResponse>((int)UserCommandIDType.UpdateUserInfo, CommandType.User, request).ConfigureAwait(false);
-                this.logger.LogInfo("會員編輯資訊結果", $"Result: {response.Data.Result} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                this.logger.LogInfo("會員編輯資訊結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                 switch (response.Data.Result)
                 {
                     case (int)UpdateUserInfoResultType.Success:
@@ -927,7 +929,7 @@ namespace DataInfo.Service.Managers.Member
                     }
                 };
                 CommandData<MemberEditInfoResponse> response = await this.serverService.DoAction<MemberEditInfoResponse>((int)UserCommandIDType.UpdateUserInfo, CommandType.User, request).ConfigureAwait(false);
-                this.logger.LogInfo("會員手機綁定結果", $"Result: {response.Data.Result} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                this.logger.LogInfo("會員手機綁定結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                 switch (response.Data.Result)
                 {
                     case (int)UpdateUserInfoResultType.Success:
@@ -1112,7 +1114,7 @@ namespace DataInfo.Service.Managers.Member
 
                 EmailContext emailContext = EmailContext.GetVerifierCodetEmailContextForForgetPassword(content.Email, verifierCode);
                 string postData = JsonConvert.SerializeObject(emailContext);
-                HttpResponseMessage httpResponseMessage = await Utility.ApiPost(AppSettingHelper.Appsetting.SmtpServer.Domain, AppSettingHelper.Appsetting.SmtpServer.SendEmailApi, postData).ConfigureAwait(false);
+                HttpResponseMessage httpResponseMessage = await Utility.ApiPost(AppSettingHelper.Appsetting.SmtpServer.Domain, AppSettingHelper.Appsetting.SmtpServer.Api, postData).ConfigureAwait(false);
                 if (!httpResponseMessage.IsSuccessStatusCode)
                 {
                     this.logger.LogWarn("發送會員忘記密碼驗證碼結果", $"Result: 發送郵件失敗({httpResponseMessage.Content}) EmailContext: {JsonConvert.SerializeObject(emailContext)}", null);
@@ -1211,7 +1213,7 @@ namespace DataInfo.Service.Managers.Member
 
                 EmailContext emailContext = EmailContext.GetVerifierCodetEmailContextForMobileBind(memberDao.Email, verifierCode);
                 string postData = JsonConvert.SerializeObject(emailContext);
-                HttpResponseMessage httpResponseMessage = await Utility.ApiPost(AppSettingHelper.Appsetting.SmtpServer.Domain, AppSettingHelper.Appsetting.SmtpServer.SendEmailApi, postData).ConfigureAwait(false);
+                HttpResponseMessage httpResponseMessage = await Utility.ApiPost(AppSettingHelper.Appsetting.SmtpServer.Domain, AppSettingHelper.Appsetting.SmtpServer.Api, postData).ConfigureAwait(false);
                 if (!httpResponseMessage.IsSuccessStatusCode)
                 {
                     this.logger.LogWarn("發送會員手機綁定驗證碼結果", $"Result: 發送郵件失敗({httpResponseMessage.Content}) EmailContext: {JsonConvert.SerializeObject(emailContext)}  MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
@@ -1400,7 +1402,7 @@ namespace DataInfo.Service.Managers.Member
                     Action = isIgnoreOldPassword ? (int)UpdatePasswordActionType.Forget : (int)UpdatePasswordActionType.Update
                 };
                 CommandData<MemberEditInfoResponse> response = await this.serverService.DoAction<MemberEditInfoResponse>((int)UserCommandIDType.UpdatePassword, CommandType.User, request).ConfigureAwait(false);
-                this.logger.LogInfo("會員更新密碼結果", $"Result: {response.Data.Result} Content: {JsonConvert.SerializeObject(content)}", null);
+                this.logger.LogInfo("會員更新密碼結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} Content: {JsonConvert.SerializeObject(content)}", null);
                 switch (response.Data.Result)
                 {
                     case (int)UpdatePasswordResultType.Success:

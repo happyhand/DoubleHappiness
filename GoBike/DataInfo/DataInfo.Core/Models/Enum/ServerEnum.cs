@@ -29,7 +29,7 @@
     #region 會員
 
     /// <summary>
-    /// 更新互動結果
+    /// 更新互動結果類別資料
     /// </summary>
     public enum UpdateInteractiveResultType
     {
@@ -45,7 +45,7 @@
     }
 
     /// <summary>
-    /// 更新使用者資訊密碼結果
+    /// 更新使用者資訊密碼結果類別資料
     /// </summary>
     public enum UpdatePasswordResultType
     {
@@ -66,7 +66,7 @@
     }
 
     /// <summary>
-    /// 更新使用者資訊結果
+    /// 更新使用者資訊結果類別資料
     /// </summary>
     public enum UpdateUserInfoResultType
     {
@@ -179,7 +179,7 @@
     #region 騎乘
 
     /// <summary>
-    /// 建立騎乘紀錄結果
+    /// 建立騎乘紀錄結果類別資料
     /// </summary>
     public enum CreateRideRecordResultType
     {
@@ -210,7 +210,7 @@
     #region 車隊
 
     /// <summary>
-    /// 建立新車隊結果
+    /// 建立新車隊結果類別資料
     /// </summary>
     public enum CreateNewTeamResultType
     {
@@ -248,11 +248,37 @@
         /// <summary>
         /// 更新邀請加入車隊列表
         /// </summary>
-        UpdateInviteJoinList = 1007
+        UpdateInviteJoinList = 1007,
+
+        /// <summary>
+        /// 更新活動
+        /// </summary>
+        UpdateActivity = 1009
     }
 
     /// <summary>
-    /// 更新申請加入車隊列表結果
+    /// 更新活動結果類別資料
+    /// </summary>
+    public enum UpdateActivityResultType
+    {
+        /// <summary>
+        /// 更新失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 更新成功
+        /// </summary>
+        Success = 1,
+
+        /// <summary>
+        /// 權限不足
+        /// </summary>
+        AuthorityNotEnough = 2,
+    }
+
+    /// <summary>
+    /// 更新申請加入車隊列表結果類別資料
     /// </summary>
     public enum UpdateApplyJoinListResultType
     {
@@ -268,7 +294,7 @@
     }
 
     /// <summary>
-    /// 更新邀請加入車隊列表結果
+    /// 更新邀請加入車隊列表結果類別資料
     /// </summary>
     public enum UpdateInviteJoinListResultType
     {
@@ -284,7 +310,7 @@
     }
 
     /// <summary>
-    /// 更新隊員列表結果
+    /// 更新隊員列表結果類別資料
     /// </summary>
     public enum UpdateTeamMemberListResultType
     {

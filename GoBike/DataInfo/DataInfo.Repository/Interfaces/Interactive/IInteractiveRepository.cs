@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace DataInfo.Repository.Interfaces
+namespace DataInfo.Repository.Interfaces.Interactive
 {
     /// <summary>
     /// 互動資料庫

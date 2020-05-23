@@ -1,6 +1,22 @@
 ﻿namespace DataInfo.Core.Models.Enum
 {
     /// <summary>
+    /// 加入狀態類別資料
+    /// </summary>
+    public enum JoinStatusType
+    {
+        /// <summary>
+        /// 未加入
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// 在線
+        /// </summary>
+        Join = 1
+    }
+
+    /// <summary>
     /// 車隊審核狀態類別資料
     /// </summary>
     public enum TeamExamineStatusType
@@ -69,7 +85,7 @@
     }
 
     /// <summary>
-    /// 車隊角色類型資料
+    /// 車隊角色類別資料
     /// </summary>
     public enum TeamRoleType
     {
@@ -113,5 +129,31 @@
         /// 開啟
         /// </summary>
         Open = 1
+    }
+
+    /// <summary>
+    /// 車隊搜尋狀態類別資料
+    /// </summary>
+    public enum TeamUpdateActivityType
+    {
+        /// <summary>
+        /// 刪除
+        /// </summary>
+        Delete = -1,
+
+        /// <summary>
+        /// 無設定
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// 新增
+        /// </summary>
+        Add = 1,
+
+        /// <summary>
+        /// 修改
+        /// </summary>
+        Edit = 2
     }
 }

@@ -13,13 +13,8 @@ namespace UploadFiles.Core.Models.Dto.Image.Content
         public IEnumerable<string> ImgBase64s { get; set; }
 
         /// <summary>
-        /// Gets or sets Project
+        /// Gets or sets Path
         /// </summary>
-        public string Project { get; set; }
-
-        /// <summary>
-        /// Gets or sets Type
-        /// </summary>
-        public string Type { get; set; }
+        public string Path { get; set; }
     }
 }

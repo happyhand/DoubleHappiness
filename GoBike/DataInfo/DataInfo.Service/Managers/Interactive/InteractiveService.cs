@@ -9,7 +9,8 @@ using DataInfo.Core.Models.Dto.Member.View;
 using DataInfo.Core.Models.Dto.Response;
 using DataInfo.Core.Models.Dto.Server;
 using DataInfo.Core.Models.Enum;
-using DataInfo.Repository.Interfaces;
+using DataInfo.Repository.Interfaces.Interactive;
+using DataInfo.Repository.Interfaces.Member;
 using DataInfo.Service.Interfaces.Interactive;
 using DataInfo.Service.Interfaces.Member;
 using DataInfo.Service.Interfaces.Server;
@@ -54,11 +55,6 @@ namespace DataInfo.Service.Managers.Interactive
         private readonly IMemberService memberService;
 
         /// <summary>
-        /// redisRepository
-        /// </summary>
-        private readonly IRedisRepository redisRepository;
-
-        /// <summary>
         /// serverService
         /// </summary>
         private readonly IServerService serverService;
@@ -71,15 +67,13 @@ namespace DataInfo.Service.Managers.Interactive
         /// <param name="serverService">serverService</param>
         /// <param name="memberRepository">memberRepository</param>
         /// <param name="interactiveRepository">interactiveRepository</param>
-        /// <param name="redisRepository">redisRepository</param>
-        public InteractiveService(IMapper mapper, IMemberService memberService, IServerService serverService, IMemberRepository memberRepository, IInteractiveRepository interactiveRepository, IRedisRepository redisRepository)
+        public InteractiveService(IMapper mapper, IMemberService memberService, IServerService serverService, IMemberRepository memberRepository, IInteractiveRepository interactiveRepository)
         {
             this.mapper = mapper;
             this.memberService = memberService;
             this.serverService = serverService;
             this.memberRepository = memberRepository;
             this.interactiveRepository = interactiveRepository;
-            this.redisRepository = redisRepository;
         }
 
         /// <summary>
@@ -222,7 +216,7 @@ namespace DataInfo.Service.Managers.Interactive
                         };
                 }
 
-                this.logger.LogInfo("更新互動資料結果", $"Result: {response.Data.Result} MemberID: { memberID} Content: {JsonConvert.SerializeObject(content)} Status: { status} Action: { action}", null);
+                this.logger.LogInfo("更新互動資料結果", $"Response: {JsonConvert.SerializeObject(response)} MemberID: { memberID} Content: {JsonConvert.SerializeObject(content)} Status: { status} Action: { action}", null);
 
                 switch (response.Data.Result)
                 {

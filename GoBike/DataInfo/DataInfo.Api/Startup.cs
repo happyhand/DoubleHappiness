@@ -1,7 +1,15 @@
 using AutoMapper;
 using DataInfo.Core.Applibs;
-using DataInfo.Repository.Interfaces;
-using DataInfo.Repository.Managers;
+using DataInfo.Repository.Interfaces.Common;
+using DataInfo.Repository.Interfaces.Interactive;
+using DataInfo.Repository.Interfaces.Member;
+using DataInfo.Repository.Interfaces.Ride;
+using DataInfo.Repository.Interfaces.Team;
+using DataInfo.Repository.Managers.Common;
+using DataInfo.Repository.Managers.Interactive;
+using DataInfo.Repository.Managers.Member;
+using DataInfo.Repository.Managers.Ride;
+using DataInfo.Repository.Managers.Team;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Interactive;
 using DataInfo.Service.Interfaces.Member;
@@ -93,6 +101,7 @@ namespace DataInfo.Api
             services.AddSingleton<IInteractiveService, InteractiveService>();
             services.AddSingleton<ITeamService, TeamService>();
             services.AddSingleton<ITeamInteractiveService, TeamInteractiveService>();
+            services.AddSingleton<ITeamActivityService, TeamActivityService>();
             services.AddSingleton<IUploadService, UploadService>();
             services.AddSingleton<IVerifyCodeService, VerifyCodeService>();
             services.AddSingleton<IServerService, ServerService>();
@@ -105,6 +114,7 @@ namespace DataInfo.Api
             services.AddSingleton<IRideRepository, RideRepository>();
             services.AddSingleton<IInteractiveRepository, InteractiveRepository>();
             services.AddSingleton<ITeamRepository, TeamRepository>();
+            services.AddSingleton<ITeamActivityRepository, TeamActivityRepository>();
             services.AddSingleton<IRedisRepository, RedisRepository>();
 
             #endregion Repository

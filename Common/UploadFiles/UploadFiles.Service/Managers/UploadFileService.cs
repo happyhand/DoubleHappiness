@@ -92,7 +92,7 @@ namespace UploadFiles.Service.Managers
             {
                 IEnumerable<string> imgBase64s = content.ImgBase64s;
                 string cdnPath = AppSettingHelper.Appsetting.CdnPath;
-                string fileDirectoryName = $"{cdnPath}/{content.Project}/images/{content.Type}/{DateTime.UtcNow:yyyyMMdd}/";
+                string fileDirectoryName = $"{cdnPath}{content.Path}/{DateTime.UtcNow:yyyyMMdd}/";
                 if (!Directory.Exists(fileDirectoryName))
                 {
                     Directory.CreateDirectory(fileDirectoryName);

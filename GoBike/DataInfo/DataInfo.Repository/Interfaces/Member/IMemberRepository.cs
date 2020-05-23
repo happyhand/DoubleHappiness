@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace DataInfo.Repository.Interfaces
+namespace DataInfo.Repository.Interfaces.Member
 {
     /// <summary>
     /// 會員資料庫

@@ -9,12 +9,12 @@ using UploadFiles.Core.Extensions;
 using UploadFiles.Core.Models.Dto.Image.Content;
 using UploadFiles.Service.Interfaces;
 
-namespace UploadFiles.Api.Controllers.GoBike
+namespace UploadFiles.Api.Controllers
 {
     /// <summary>
     /// 圖像上傳
     /// </summary>
-    [Route("api/gobike/[controller]")]
+    [Route("api/uploadFile/[controller]")]
     [ApiController]
     public class ImageController : ControllerBase
     {
@@ -38,7 +38,7 @@ namespace UploadFiles.Api.Controllers.GoBike
         }
 
         /// <summary>
-        /// 車隊圖像
+        /// 圖像上傳
         /// </summary>
         /// <returns>IActionResult</returns>
         [HttpPost]

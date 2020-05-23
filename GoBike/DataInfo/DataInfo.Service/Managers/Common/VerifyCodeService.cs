@@ -2,7 +2,7 @@
 using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dto.Common;
 using DataInfo.Core.Models.Dto.Response;
-using DataInfo.Repository.Interfaces;
+using DataInfo.Repository.Interfaces.Common;
 using DataInfo.Service.Interfaces.Common;
 using FluentValidation.Results;
 using Newtonsoft.Json;

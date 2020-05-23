@@ -2,6 +2,7 @@
 using DataInfo.Core.Models.Dao.Member;
 using DataInfo.Core.Models.Dto.Member.Content;
 using DataInfo.Core.Models.Dto.Member.View;
+using DataInfo.Core.Models.Enum;
 using Newtonsoft.Json;
 using System.Linq;
 
@@ -21,7 +22,7 @@ namespace DataInfo.AutoMapperProfiles
             CreateMap<MemberDao, MemberDetailInfoView>();
             CreateMap<MemberDao, MemberHomeInfoView>();
             CreateMap<MemberDao, MemberCardInfoView>()
-             .ForMember(view => view.HasTeam, options => options.MapFrom(dao => dao.TeamList.Any() ? 1 : 0));
+             .ForMember(view => view.HasTeam, options => options.MapFrom(dao => dao.TeamList.Any() ? (int)JoinStatusType.Join : (int)JoinStatusType.None));
         }
     }
 }

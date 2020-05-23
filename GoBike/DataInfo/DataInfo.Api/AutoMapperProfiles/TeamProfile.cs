@@ -7,6 +7,7 @@ using DataInfo.Core.Models.Dto.Team.View;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DataInfo.AutoMapperProfiles
 {
@@ -21,6 +22,7 @@ namespace DataInfo.AutoMapperProfiles
         public TeamProfile()
         {
             CreateMap<TeamCreateContent, TeamCreateRequest>();
+            CreateMap<TeamAddActivityContent, TeamUpdateActivityRequest>();
 
             CreateMap<TeamData, TeamDao>()
              .ForMember(dao => dao.CreateDate, options => options.MapFrom(table => Convert.ToDateTime(table.CreateDate)))
@@ -29,9 +31,13 @@ namespace DataInfo.AutoMapperProfiles
              .ForMember(dao => dao.ApplyJoinList, options => options.MapFrom(table => JsonConvert.DeserializeObject<IEnumerable<string>>(table.ApplyJoinList)))
              .ForMember(dao => dao.InviteJoinList, options => options.MapFrom(table => JsonConvert.DeserializeObject<IEnumerable<string>>(table.InviteJoinList)));
 
+            CreateMap<TeamActivity, TeamActivityDao>();
+
             CreateMap<TeamDao, TeamDropMenuView>();
             CreateMap<TeamDao, TeamInfoView>();
             CreateMap<TeamDao, TeamSearchView>();
+            CreateMap<TeamActivityDao, TeamActivityListView>();
+            CreateMap<TeamActivityDao, TeamActivityDetailView>();
         }
     }
 }

@@ -82,7 +82,15 @@
             "ResponseStatusEmpty": "回覆狀態無效.",
             "TeamInfoEmpty": "車隊簡介無效.",
             "TeamNameEmpty": "車隊名稱無效.",
-            "TeamAuthorityNotEnough": "權限不足."
+            "TeamAuthorityNotEnough": "權限不足.",
+            "ActivityIDEmpty": "車隊活動編號無效.",
+            "ActivityNotExist": "車隊活動資料不存在.",
+            "ActivityDateEmpty": "未設定活動日期.",
+            "ActivityMeetTimeEmpty": "未設定活動集合時間.",
+            "ActivityPhotoEmpty": "未設定活動圖片.",
+            "ActivityAltitudeEmpty": "未設定活動最高海拔.",
+            "ActivityDistanceEmpty": "未設定活動總距離.",
+            "ActivityTitleEmpty": "未設定活動標題."
         }
     }
 }

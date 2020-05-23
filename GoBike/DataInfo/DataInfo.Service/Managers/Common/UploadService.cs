@@ -22,8 +22,6 @@ namespace DataInfo.Service.Managers.Common
         /// </summary>
         private readonly ILogger logger = LogManager.GetLogger("UploadService");
 
-        private readonly string project = "gobike";
-
         /// <summary>
         /// 上傳圖片
         /// </summary>
@@ -33,7 +31,7 @@ namespace DataInfo.Service.Managers.Common
         {
             try
             {
-                HttpResponseMessage httpResponseMessage = await Utility.ApiPost(AppSettingHelper.Appsetting.UploadServer.Domain, "api/gobike/Image", JsonConvert.SerializeObject(request));
+                HttpResponseMessage httpResponseMessage = await Utility.ApiPost(AppSettingHelper.Appsetting.UploadServer.Domain, AppSettingHelper.Appsetting.UploadServer.Api, JsonConvert.SerializeObject(request));
                 if (!httpResponseMessage.IsSuccessStatusCode)
                 {
                     this.logger.LogWarn("上傳圖片結果", $"Result: 上傳圖片失敗 Request: {JsonConvert.SerializeObject(request)}", null);
@@ -63,13 +61,12 @@ namespace DataInfo.Service.Managers.Common
                 UploadImageRequest request = new UploadImageRequest()
                 {
                     ImgBase64s = imgBase64s,
-                    Project = project,
-                    Type = "member"
+                    Path = AppSettingHelper.Appsetting.UploadServer.Member.Path
                 };
                 IEnumerable<string> imgUris = await this.UploadImages(request).ConfigureAwait(false);
                 if (isIgnoreUri)
                 {
-                    imgUris = imgUris.Select(uri => uri.Replace(AppSettingHelper.Appsetting.UploadServer.Member.Uri, string.Empty));
+                    imgUris = imgUris.Select(uri => uri.Replace(AppSettingHelper.Appsetting.UploadServer.Member.Path, string.Empty));
                 }
 
                 return imgUris;
@@ -94,13 +91,12 @@ namespace DataInfo.Service.Managers.Common
                 UploadImageRequest request = new UploadImageRequest()
                 {
                     ImgBase64s = imgBase64s,
-                    Project = project,
-                    Type = "ride"
+                    Path = AppSettingHelper.Appsetting.UploadServer.Ride.Path
                 };
                 IEnumerable<string> imgUris = await this.UploadImages(request).ConfigureAwait(false);
                 if (isIgnoreUri)
                 {
-                    imgUris = imgUris.Select(uri => uri.Replace(AppSettingHelper.Appsetting.UploadServer.Ride.Uri, string.Empty));
+                    imgUris = imgUris.Select(uri => uri.Replace(AppSettingHelper.Appsetting.UploadServer.Ride.Path, string.Empty));
                 }
 
                 return imgUris;
@@ -108,6 +104,36 @@ namespace DataInfo.Service.Managers.Common
             catch (Exception ex)
             {
                 this.logger.LogError("上傳騎乘圖片發生錯誤", $"ImgBase64s: {JsonConvert.SerializeObject(imgBase64s)}", ex);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 上傳車隊活動圖片
+        /// </summary>
+        /// <param name="imgBase64s">imgBase64s</param>
+        /// <param name="isIgnoreUri">isIgnoreUri</param>
+        /// <returns>strings</returns>
+        public async Task<IEnumerable<string>> UploadTeamActivityImages(IEnumerable<string> imgBase64s, bool isIgnoreUri)
+        {
+            try
+            {
+                UploadImageRequest request = new UploadImageRequest()
+                {
+                    ImgBase64s = imgBase64s,
+                    Path = AppSettingHelper.Appsetting.UploadServer.TeamActivity.Path
+                };
+                IEnumerable<string> imgUris = await this.UploadImages(request).ConfigureAwait(false);
+                if (isIgnoreUri)
+                {
+                    imgUris = imgUris.Select(uri => uri.Replace(AppSettingHelper.Appsetting.UploadServer.TeamActivity.Path, string.Empty));
+                }
+
+                return imgUris;
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("上傳車隊活動圖片發生錯誤", $"ImgBase64s: {JsonConvert.SerializeObject(imgBase64s)}", ex);
                 return null;
             }
         }
@@ -125,20 +151,19 @@ namespace DataInfo.Service.Managers.Common
                 UploadImageRequest request = new UploadImageRequest()
                 {
                     ImgBase64s = imgBase64s,
-                    Project = project,
-                    Type = "team"
+                    Path = AppSettingHelper.Appsetting.UploadServer.Team.Path
                 };
                 IEnumerable<string> imgUris = await this.UploadImages(request).ConfigureAwait(false);
                 if (isIgnoreUri)
                 {
-                    imgUris = imgUris.Select(uri => uri.Replace(AppSettingHelper.Appsetting.UploadServer.Team.Uri, string.Empty));
+                    imgUris = imgUris.Select(uri => uri.Replace(AppSettingHelper.Appsetting.UploadServer.Team.Path, string.Empty));
                 }
 
                 return imgUris;
             }
             catch (Exception ex)
             {
-                this.logger.LogError("上傳騎乘圖片發生錯誤", $"ImgBase64s: {JsonConvert.SerializeObject(imgBase64s)}", ex);
+                this.logger.LogError("上傳車隊圖片發生錯誤", $"ImgBase64s: {JsonConvert.SerializeObject(imgBase64s)}", ex);
                 return null;
             }
         }

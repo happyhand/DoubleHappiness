@@ -20,7 +20,7 @@ namespace DataInfo.Core.Models.Dao.Member
         /// <summary>
         /// Gets or sets 生日
         /// </summary>
-        public DateTime Birthday { get; set; }
+        public DateTime? Birthday { get; set; }
 
         /// <summary>
         /// Gets or sets 黑名單列表

@@ -3,17 +3,16 @@ using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dao.Team;
 using DataInfo.Core.Models.Dao.Team.Table;
-using DataInfo.Repository.Interfaces;
+using DataInfo.Repository.Interfaces.Team;
 using DataInfo.Repository.Managers.Base;
 using Newtonsoft.Json;
 using NLog;
-using SqlSugar;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace DataInfo.Repository.Managers
+namespace DataInfo.Repository.Managers.Team
 {
     /// <summary>
     /// 車隊資料庫
