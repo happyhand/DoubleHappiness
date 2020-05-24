@@ -429,125 +429,6 @@ namespace DataInfo.Service.Managers.Member
             }
         }
 
-        ///// <summary>
-        ///// 會員登入(FB登入)
-        ///// </summary>
-        ///// <param name="email">email</param>
-        ///// <param name="token">token</param>
-        ///// <returns>ResponseResultDto</returns>
-        //public async Task<ResponseResultDto> LoginWithFB(string email, string token)
-        //{
-        //    try
-        //    {
-        //        #region 驗證登入資料
-
-        // if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(token)) {
-        // this.logger.LogWarn("會員登入結果(FB登入)", $"Result: 驗證失敗 Email: {email} Token: {token}", null);
-        // return new ResponseResultDto() { Ok = false, Data = "信箱或認證碼無效." }; }
-
-        // #endregion 驗證登入資料
-
-        // #region 檢查資料是否存在，若不存在則自動註冊資料
-
-        // MemberData memberData = await
-        // this.GetMemberData($"{CommonFlagHelper.CommonFlag.PlatformFlag.FB}_{token}").ConfigureAwait(false);
-        // if (memberData == null) { ResponseResultDto registerResult = await this.Register(email,
-        // string.Empty, false, token, string.Empty); if (registerResult.Ok) { return await
-        // this.LoginWithFB(email, token); } else { return registerResult; } }
-
-        // #endregion 檢查資料是否存在，若不存在則自動註冊資料
-
-        // #region 更新最新登入時間
-
-        // this.UpdateLastLoginDate(memberData);
-
-        // #endregion 更新最新登入時間
-
-        //        this.logger.LogInfo("會員登入成功(FB登入)", $"Email: {email} Token: {token}", null);
-        //        return new ResponseResultDto()
-        //        {
-        //            Ok = true,
-        //            Data = new MemberLoginInfoViewDto { MemberID = memberData.MemberID }
-        //        };
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        this.logger.LogError("會員登入發生錯誤(FB登入)", $"Email: {email} Token: {token}", ex);
-        //        return new ResponseResultDto()
-        //        {
-        //            Ok = false,
-        //            Data = "會員登入發生錯誤."
-        //        };
-        //    }
-        //}
-
-        ///// <summary>
-        ///// 會員登入(Google登入)
-        ///// </summary>
-        ///// <param name="email">email</param>
-        ///// <param name="token">token</param>
-        ///// <returns>ResponseResultDto</returns>
-        //public async Task<ResponseResultDto> LoginWithGoogle(string email, string token)
-        //{
-        //    try
-        //    {
-        //        #region 驗證登入資料
-
-        // if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(token)) {
-        // this.logger.LogWarn("會員登入結果(Google登入)", $"Result: 驗證失敗 Email: {email} Token: {token}",
-        // null); return new ResponseResultDto() { Ok = false, Data = "信箱或認證碼無效." }; }
-
-        // #endregion 驗證登入資料
-
-        // #region 檢查資料是否存在，若不存在則自動註冊資料
-
-        // MemberData memberData = await
-        // this.GetMemberData($"{CommonFlagHelper.CommonFlag.PlatformFlag.Google}_{token}").ConfigureAwait(false);
-        // if (memberData == null) { ResponseResultDto registerResult = await this.Register(email,
-        // string.Empty, false, string.Empty, token); if (registerResult.Ok) { return await
-        // this.LoginWithGoogle(email, token); } else { return registerResult; } }
-
-        // #endregion 檢查資料是否存在，若不存在則自動註冊資料
-
-        // #region 更新最新登入時間
-
-        // this.UpdateLastLoginDate(memberData);
-
-        // #endregion 更新最新登入時間
-
-        //        this.logger.LogInfo("會員登入成功(Google登入)", $"Email: {email} Token: {token}", null);
-        //        return new ResponseResultDto()
-        //        {
-        //            Ok = true,
-        //            Data = new MemberLoginInfoViewDto { MemberID = memberData.MemberID }
-        //        };
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        this.logger.LogError("會員登入發生錯誤(Google登入)", $"Email: {email} Token: {token}", ex);
-        //        return new ResponseResultDto()
-        //        {
-        //            Ok = false,
-        //            Data = "會員登入發生錯誤."
-        //        };
-        //    }
-        //}
-
-        ///// <summary>
-        ///// 會員登出
-        ///// </summary>
-        ///// <param name="memberID">memberID</param>
-        //public void Logout(string memberID)
-        //{
-        //    try
-        //    {
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        this.logger.LogError("會員登出發生錯誤", $"MemberID: {memberID}", ex);
-        //    }
-        //}
-
         #endregion 註冊 \ 登入 \ 登出 \ 保持在線
 
         #region 會員資料
@@ -761,32 +642,35 @@ namespace DataInfo.Service.Managers.Member
         /// <summary>
         /// 取得會員名片資訊
         /// </summary>
-        /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
         /// <param name="searchMemberID">searchMemberID</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> GetCardInfo(string memberID, string searchMemberID = null)
+        public async Task<ResponseResult> GetCardInfo(MemberCardInfoContent content, string searchMemberID = null)
         {
             try
             {
                 #region 驗證資料
 
-                if (string.IsNullOrEmpty(memberID))
+                MemberCardInfoContentValidator memberCardInfoContentValidator = new MemberCardInfoContentValidator();
+                ValidationResult validationResult = memberCardInfoContentValidator.Validate(content);
+                if (!validationResult.IsValid)
                 {
-                    this.logger.LogWarn("取得會員名片資訊結果", $"Result: 驗證失敗，會員編號無效 MemberID: {memberID} SearchMemberID: {searchMemberID}", null);
+                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
+                    this.logger.LogWarn("取得會員名片資訊結果", $"Result: 驗證失敗({errorMessgae}) Content: {JsonConvert.SerializeObject(content)} SearchMemberID: {searchMemberID}", null);
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = MessageHelper.Message.ResponseMessage.Member.MemberIDEmpty
+                        ResultCode = (int)ResponseResultType.InputError,
+                        Content = errorMessgae
                     };
                 }
 
                 #endregion 驗證資料
 
-                MemberDao memberDao = await this.memberRepository.Get(memberID).ConfigureAwait(false);
+                MemberDao memberDao = await this.memberRepository.Get(content.MemberID).ConfigureAwait(false);
                 if (memberDao == null)
                 {
-                    this.logger.LogWarn("取得會員名片資訊結果", $"Result: 無會員資料 MemberID: {memberID} SearchMemberID: {searchMemberID}", null);
+                    this.logger.LogWarn("取得會員名片資訊結果", $"Result: 無會員資料 Content: {JsonConvert.SerializeObject(content)} SearchMemberID: {searchMemberID}", null);
                     return new ResponseResult()
                     {
                         Result = false,
@@ -804,7 +688,7 @@ namespace DataInfo.Service.Managers.Member
             }
             catch (Exception ex)
             {
-                this.logger.LogError("取得會員名片資訊發生錯誤", $"MemberID: {memberID} SearchMemberID: {searchMemberID}", ex);
+                this.logger.LogError("取得會員名片資訊發生錯誤", $"Content: {JsonConvert.SerializeObject(content)} SearchMemberID: {searchMemberID}", ex);
                 return new ResponseResult()
                 {
                     Result = false,

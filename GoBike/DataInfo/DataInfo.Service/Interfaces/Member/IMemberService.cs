@@ -68,10 +68,10 @@ namespace DataInfo.Service.Interfaces.Member
         /// <summary>
         /// 取得會員名片資訊
         /// </summary>
-        /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
         /// <param name="searchMemberID">searchMemberID</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> GetCardInfo(string memberID, string searchMemberID = null);
+        Task<ResponseResult> GetCardInfo(MemberCardInfoContent content, string searchMemberID = null);
 
         /// <summary>
         /// 取得首頁資訊

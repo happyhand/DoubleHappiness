@@ -1,5 +1,6 @@
 ﻿using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
+using DataInfo.Core.Models.Dto.Member.Content;
 using DataInfo.Core.Models.Dto.Response;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Member;
@@ -48,7 +49,8 @@ namespace DataInfo.Api.Controllers.Member
         {
             try
             {
-                ResponseResult responseResult = await this.memberService.GetCardInfo(memberID).ConfigureAwait(false);
+                MemberCardInfoContent content = new MemberCardInfoContent() { MemberID = memberID };
+                ResponseResult responseResult = await this.memberService.GetCardInfo(content).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)

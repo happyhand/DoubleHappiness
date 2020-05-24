@@ -1,6 +1,7 @@
 ﻿using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dto.Response;
+using DataInfo.Core.Models.Dto.Team.Content;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Team;
 using Microsoft.AspNetCore.Authorization;
@@ -51,7 +52,8 @@ namespace DataInfo.Api.Controllers.Team
             try
             {
                 this.logger.LogInfo("會員請求搜尋車隊", $"MemberID: {memberID} SearchKey: {searchKey}", null);
-                ResponseResult responseResult = await teamService.SearchTeam(memberID, searchKey).ConfigureAwait(false);
+                TeamSearchContent content = new TeamSearchContent() { SearchKey = searchKey };
+                ResponseResult responseResult = await teamService.SearchTeam(memberID, content).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)

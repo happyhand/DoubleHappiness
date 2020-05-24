@@ -1,6 +1,7 @@
 ﻿using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dto.Response;
+using DataInfo.Core.Models.Dto.Team.Content;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Team;
 using Microsoft.AspNetCore.Authorization;
@@ -51,7 +52,8 @@ namespace DataInfo.Api.Controllers.Team
             try
             {
                 this.logger.LogInfo("會員請求取得車隊資訊", $"MemberID: {memberID} TeamID: {teamID}", null);
-                ResponseResult responseResult = await teamService.GetTeamInfo(memberID, teamID).ConfigureAwait(false);
+                TeamGetContent content = new TeamGetContent() { TeamID = teamID };
+                ResponseResult responseResult = await teamService.GetTeamInfo(memberID, content).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)

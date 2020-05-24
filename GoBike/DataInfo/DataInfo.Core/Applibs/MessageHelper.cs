@@ -387,6 +387,11 @@
             public string ResponseStatusEmpty { get; set; }
 
             /// <summary>
+            /// Gets or sets SearchKeyEmpty
+            /// </summary>
+            public string SearchKeyEmpty { get; set; }
+
+            /// <summary>
             /// Gets or sets SearchStatusEmpty
             /// </summary>
             public string SearchStatusEmpty { get; set; }

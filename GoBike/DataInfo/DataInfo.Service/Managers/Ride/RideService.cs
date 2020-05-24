@@ -264,21 +264,6 @@ namespace DataInfo.Service.Managers.Ride
         {
             try
             {
-                #region 驗證資料
-
-                if (string.IsNullOrEmpty(memberID))
-                {
-                    this.logger.LogWarn("取得騎乘記錄結果", $"Result: 驗證失敗，會員編號無效 MemberID: {memberID}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = MessageHelper.Message.ResponseMessage.Member.MemberIDEmpty
-                    };
-                }
-
-                #endregion 驗證資料
-
                 IEnumerable<RideDao> rideDaos = await this.rideRepository.GetRecordList(memberID).ConfigureAwait(false);
                 return new ResponseResult()
                 {

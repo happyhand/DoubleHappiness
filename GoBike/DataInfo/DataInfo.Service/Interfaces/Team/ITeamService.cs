@@ -36,16 +36,16 @@ namespace DataInfo.Service.Interfaces.Team
         /// 取得車隊資訊
         /// </summary>
         /// <param name="memberID">memberID</param>
-        /// <param name="teamID">teamID</param>
+        /// <param name="content">content</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> GetTeamInfo(string memberID, string teamID);
+        Task<ResponseResult> GetTeamInfo(string memberID, TeamGetContent content);
 
         /// <summary>
         /// 搜尋車隊
         /// </summary>
         /// <param name="memberID">memberID</param>
-        /// <param name="searchKey">searchKey</param>
+        /// <param name="content">content</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> SearchTeam(string memberID, string searchKey);
+        Task<ResponseResult> SearchTeam(string memberID, TeamSearchContent content);
     }
 }

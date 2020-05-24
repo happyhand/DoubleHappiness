@@ -78,6 +78,7 @@
             "FrontCoverEmpty": "車隊封面無效.",
             "CountyEmpty": "未設定車隊所在地.",
             "ExamineStatusEmpty": "車隊審核狀態無效.",
+            "SearchKeyEmpty": "車隊搜尋關鍵字無效.",
             "SearchStatusEmpty": "車隊搜尋狀態無效.",
             "ResponseStatusEmpty": "回覆狀態無效.",
             "TeamInfoEmpty": "車隊簡介無效.",
