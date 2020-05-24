@@ -20,7 +20,7 @@ namespace DataInfo.Core.Models.Dao.Member
         /// <summary>
         /// Gets or sets 生日
         /// </summary>
-        public DateTime? Birthday { get; set; }
+        public string Birthday { get; set; }
 
         /// <summary>
         /// Gets or sets 黑名單列表
@@ -105,7 +105,7 @@ namespace DataInfo.Core.Models.Dao.Member
         /// <summary>
         /// Gets or sets 註冊日期
         /// </summary>
-        public DateTime RegisterDate { get; set; }
+        public string RegisterDate { get; set; }
 
         /// <summary>
         /// Gets or sets 註冊來源

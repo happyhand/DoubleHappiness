@@ -226,6 +226,22 @@
     }
 
     /// <summary>
+    /// 加入或離開車隊活動結果類別資料
+    /// </summary>
+    public enum JoinOrLeaveTeamActivityResultType
+    {
+        /// <summary>
+        /// 更新失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 更新成功
+        /// </summary>
+        Success = 1
+    }
+
+    /// <summary>
     /// 車隊後端封包編號類別資料
     /// </summary>
     public enum TeamCommandIDType
@@ -253,7 +269,12 @@
         /// <summary>
         /// 更新活動
         /// </summary>
-        UpdateActivity = 1009
+        UpdateActivity = 1009,
+
+        /// <summary>
+        /// 加入或離開車隊活動
+        /// </summary>
+        JoinOrLeaveTeamActivity = 1011
     }
 
     /// <summary>

@@ -7,7 +7,6 @@ using DataInfo.Core.Models.Dto.Team.View;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace DataInfo.AutoMapperProfiles
 {
@@ -22,6 +21,7 @@ namespace DataInfo.AutoMapperProfiles
         public TeamProfile()
         {
             CreateMap<TeamCreateContent, TeamCreateRequest>();
+            CreateMap<TeamActivityContent, TeamJoinOrLeaveActivityRequest>();
             CreateMap<TeamAddActivityContent, TeamUpdateActivityRequest>();
 
             CreateMap<TeamData, TeamDao>()

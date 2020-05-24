@@ -1,6 +1,22 @@
 ﻿namespace DataInfo.Core.Models.Enum
 {
     /// <summary>
+    /// 綁定手機狀態類別資料
+    /// </summary>
+    public enum BindMobileStatusType
+    {
+        /// <summary>
+        /// 未綁定
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// 已綁定
+        /// </summary>
+        Bind = 1
+    }
+
+    /// <summary>
     /// 性別類別資料
     /// </summary>
     public enum GenderType

@@ -52,7 +52,7 @@ namespace DataInfo.Api.Controllers.Team
             try
             {
                 this.logger.LogInfo("會員請求取得車隊資訊", $"MemberID: {memberID} TeamID: {teamID}", null);
-                TeamGetContent content = new TeamGetContent() { TeamID = teamID };
+                TeamContent content = new TeamContent() { TeamID = teamID };
                 ResponseResult responseResult = await teamService.GetTeamInfo(memberID, content).ConfigureAwait(false);
                 return Ok(responseResult);
             }

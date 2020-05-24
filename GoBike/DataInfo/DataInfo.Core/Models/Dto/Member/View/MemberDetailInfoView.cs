@@ -10,17 +10,17 @@ namespace DataInfo.Core.Models.Dto.Member.View
         /// <summary>
         /// Gets or sets 生日
         /// </summary>
-        public DateTime? Birthday { get; set; }
+        public string Birthday { get; set; }
 
         /// <summary>
         /// Gets or sets 身高
         /// </summary>
-        public double BodyHeight { get; set; }
+        public float BodyHeight { get; set; }
 
         /// <summary>
         /// Gets or sets 體重
         /// </summary>
-        public double BodyWeight { get; set; }
+        public float BodyWeight { get; set; }
 
         /// <summary>
         /// Gets or sets 封面圖片路徑
@@ -31,6 +31,11 @@ namespace DataInfo.Core.Models.Dto.Member.View
         /// Gets or sets 性別
         /// </summary>
         public int Gender { get; set; }
+
+        /// <summary>
+        /// Gets or sets 是否已綁定手機
+        /// </summary>
+        public int HasMobile { get; set; }
 
         /// <summary>
         /// Gets or sets 手機

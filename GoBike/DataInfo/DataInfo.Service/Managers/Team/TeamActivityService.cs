@@ -248,14 +248,14 @@ namespace DataInfo.Service.Managers.Team
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> GetTeamActivityList(string memberID, TeamActivityContent content)
+        public async Task<ResponseResult> GetTeamActivityList(string memberID, TeamContent content)
         {
             try
             {
                 #region 驗證資料
 
-                TeamActivityContentValidator teamActivityContentValidator = new TeamActivityContentValidator();
-                ValidationResult validationResult = teamActivityContentValidator.Validate(content);
+                TeamContentValidator teamContentValidator = new TeamContentValidator();
+                ValidationResult validationResult = teamContentValidator.Validate(content);
                 if (!validationResult.IsValid)
                 {
                     string errorMessgae = validationResult.Errors[0].ErrorMessage;
@@ -296,6 +296,83 @@ namespace DataInfo.Service.Managers.Team
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
                     Content = MessageHelper.Message.ResponseMessage.Get.Error
+                };
+            }
+        }
+
+        /// <summary>
+        /// 加入或離開車隊活動
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
+        /// <param name="action">action</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> JoinOrLeave(string memberID, TeamActivityContent content, ActionType action)
+        {
+            try
+            {
+                #region 驗證資料
+
+                TeamActivityContentValidator teamActivityContentValidator = new TeamActivityContentValidator();
+                ValidationResult validationResult = teamActivityContentValidator.Validate(content);
+                if (!validationResult.IsValid)
+                {
+                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
+                    this.logger.LogWarn("加入或離開車隊活動結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} Action: {action}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.DenyAccess,
+                        Content = errorMessgae
+                    };
+                }
+
+                #endregion 驗證資料
+
+                #region 發送【加入或離開車隊活動】指令至後端
+
+                TeamJoinOrLeaveActivityRequest request = this.mapper.Map<TeamJoinOrLeaveActivityRequest>(content);
+                request.Action = (int)action;
+                request.MemberID = memberID;
+                CommandData<TeamJoinOrLeaveActivityResponse> response = await this.serverService.DoAction<TeamJoinOrLeaveActivityResponse>((int)TeamCommandIDType.JoinOrLeaveTeamActivity, CommandType.Team, request).ConfigureAwait(false);
+                this.logger.LogInfo("加入或離開車隊活動結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} Action: {action}", null);
+                switch (response.Data.Result)
+                {
+                    case (int)JoinOrLeaveTeamActivityResultType.Success:
+                        return new ResponseResult()
+                        {
+                            Result = true,
+                            ResultCode = (int)ResponseResultType.Success,
+                            Content = MessageHelper.Message.ResponseMessage.Update.Success
+                        };
+
+                    case (int)JoinOrLeaveTeamActivityResultType.Fail:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.UpdateFail,
+                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                        };
+
+                    default:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.UnknownError,
+                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                        };
+                }
+
+                #endregion 發送【加入或離開車隊活動】指令至後端
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("加入或離開車隊活動結果", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} Action: {action}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = MessageHelper.Message.ResponseMessage.Update.Error
                 };
             }
         }

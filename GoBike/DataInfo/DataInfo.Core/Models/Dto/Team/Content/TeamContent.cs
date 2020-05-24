@@ -4,9 +4,9 @@ using FluentValidation;
 namespace DataInfo.Core.Models.Dto.Team.Content
 {
     /// <summary>
-    /// 取得車隊內容
+    /// 車隊內容
     /// </summary>
-    public class TeamGetContent
+    public class TeamContent
     {
         /// <summary>
         /// Gets or sets 車隊 ID
@@ -15,16 +15,20 @@ namespace DataInfo.Core.Models.Dto.Team.Content
     }
 
     /// <summary>
-    /// 驗證取得車隊內容
+    /// 驗證車隊內容
     /// </summary>
-    public class TeamGetContentValidator : AbstractValidator<TeamGetContent>
+    public class TeamContentValidator : AbstractValidator<TeamContent>
     {
-        public TeamGetContentValidator()
+        /// <summary>
+        /// 建構式
+        /// </summary>
+        public TeamContentValidator()
         {
             ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
+
             RuleFor(content => content.TeamID)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.TeamIDEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Team.TeamIDEmpty);
+           .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.TeamIDEmpty)
+           .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Team.TeamIDEmpty);
         }
     }
 }

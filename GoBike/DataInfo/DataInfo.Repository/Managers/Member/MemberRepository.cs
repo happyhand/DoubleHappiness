@@ -51,7 +51,7 @@ namespace DataInfo.Repository.Managers.Member
             new MemberDao()
             {
                 Avatar = ui.Avatar,
-                Birthday = Convert.ToDateTime(ui.Birthday),
+                Birthday = ui.Birthday,
                 BodyHeight = ui.BodyHeight,
                 BodyWeight = ui.BodyWeight,
                 County = ui.County,
@@ -63,7 +63,7 @@ namespace DataInfo.Repository.Managers.Member
                 MemberID = ua.MemberID,
                 Mobile = ui.Mobile,
                 Nickname = ui.NickName,
-                RegisterDate = Convert.ToDateTime(ua.RegisterDate),
+                RegisterDate = ua.RegisterDate,
                 RegisterSource = ua.RegisterSource,
                 Photo = ui.Photo,
                 TeamListDataJson = ui.TeamList,

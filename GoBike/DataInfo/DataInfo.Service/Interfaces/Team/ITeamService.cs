@@ -38,7 +38,7 @@ namespace DataInfo.Service.Interfaces.Team
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> GetTeamInfo(string memberID, TeamGetContent content);
+        Task<ResponseResult> GetTeamInfo(string memberID, TeamContent content);
 
         /// <summary>
         /// 搜尋車隊

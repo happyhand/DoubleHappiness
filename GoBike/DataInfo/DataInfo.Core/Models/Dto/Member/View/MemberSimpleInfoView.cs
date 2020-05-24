@@ -13,11 +13,6 @@ namespace DataInfo.Core.Models.Dto.Member.View
         public string Avatar { get; set; }
 
         /// <summary>
-        /// Gets or sets 登入時間
-        /// </summary>
-        public DateTime? LoginDate { get; set; }
-
-        /// <summary>
         /// Gets or sets MemberID
         /// </summary>
         public string MemberID { get; set; }

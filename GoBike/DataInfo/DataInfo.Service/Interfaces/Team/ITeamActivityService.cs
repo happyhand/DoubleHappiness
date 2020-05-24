@@ -1,5 +1,6 @@
 ﻿using DataInfo.Core.Models.Dto.Response;
 using DataInfo.Core.Models.Dto.Team.Content;
+using DataInfo.Core.Models.Enum;
 using System.Threading.Tasks;
 
 namespace DataInfo.Service.Interfaces.Team
@@ -31,6 +32,15 @@ namespace DataInfo.Service.Interfaces.Team
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> GetTeamActivityList(string memberID, TeamActivityContent content);
+        Task<ResponseResult> GetTeamActivityList(string memberID, TeamContent content);
+
+        /// <summary>
+        /// 加入或離開車隊活動
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
+        /// <param name="action">action</param>
+        /// <returns>ResponseResult</returns>
+        Task<ResponseResult> JoinOrLeave(string memberID, TeamActivityContent content, ActionType action);
     }
 }

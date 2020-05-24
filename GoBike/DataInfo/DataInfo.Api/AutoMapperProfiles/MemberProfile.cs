@@ -19,7 +19,9 @@ namespace DataInfo.AutoMapperProfiles
         public MemberProfile()
         {
             CreateMap<MemberDao, MemberSimpleInfoView>();
-            CreateMap<MemberDao, MemberDetailInfoView>();
+            CreateMap<MemberDao, MemberDetailInfoView>()
+             .ForMember(view => view.HasMobile, options => options.MapFrom(dao => string.IsNullOrEmpty(dao.Mobile) ? (int)BindMobileStatusType.None : (int)BindMobileStatusType.Bind));
+
             CreateMap<MemberDao, MemberHomeInfoView>();
             CreateMap<MemberDao, MemberCardInfoView>()
              .ForMember(view => view.HasTeam, options => options.MapFrom(dao => dao.TeamList.Any() ? (int)JoinStatusType.Join : (int)JoinStatusType.None));

@@ -53,7 +53,7 @@ namespace DataInfo.Api.Controllers.Team
             try
             {
                 this.logger.LogInfo("會員請求取得車隊活動列表", $"MemberID: {memberID} TeamID: {teamID}", null);
-                TeamActivityContent content = new TeamActivityContent() { TeamID = teamID };
+                TeamContent content = new TeamContent() { TeamID = teamID };
                 ResponseResult responseResult = await teamActivityService.GetTeamActivityList(memberID, content).ConfigureAwait(false);
                 return Ok(responseResult);
             }

@@ -347,14 +347,14 @@ namespace DataInfo.Service.Managers.Team
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> GetTeamInfo(string memberID, TeamGetContent content)
+        public async Task<ResponseResult> GetTeamInfo(string memberID, TeamContent content)
         {
             try
             {
                 #region 驗證資料
 
-                TeamGetContentValidator teamGetContentValidator = new TeamGetContentValidator();
-                ValidationResult validationResult = teamGetContentValidator.Validate(content);
+                TeamContentValidator teamContentValidator = new TeamContentValidator();
+                ValidationResult validationResult = teamContentValidator.Validate(content);
                 if (!validationResult.IsValid)
                 {
                     string errorMessgae = validationResult.Errors[0].ErrorMessage;
