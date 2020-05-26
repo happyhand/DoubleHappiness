@@ -1,4 +1,5 @@
-﻿using DataInfo.Core.Applibs;
+﻿using AutoMapper;
+using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dao.Team;
 using DataInfo.Core.Models.Dto.Response;
@@ -30,6 +31,11 @@ namespace DataInfo.Service.Managers.Team
         private readonly ILogger logger = LogManager.GetLogger("TeamInteractiveService");
 
         /// <summary>
+        /// mapper
+        /// </summary>
+        private readonly IMapper mapper;
+
+        /// <summary>
         /// serverService
         /// </summary>
         private readonly IServerService serverService;
@@ -42,10 +48,12 @@ namespace DataInfo.Service.Managers.Team
         /// <summary>
         /// 建構式
         /// </summary>
+        /// <param name="mapper">mapper</param>
         /// <param name="serverService">serverService</param>
         /// <param name="teamRepository">teamRepository</param>
-        public TeamInteractiveService(IServerService serverService, ITeamRepository teamRepository)
+        public TeamInteractiveService(IMapper mapper, IServerService serverService, ITeamRepository teamRepository)
         {
+            this.mapper = mapper;
             this.serverService = serverService;
             this.teamRepository = teamRepository;
         }
@@ -569,84 +577,93 @@ namespace DataInfo.Service.Managers.Team
 
                 #endregion 驗證資料
 
-                #region 發送【更新申請加入車隊列表】、【更新隊員列表】指令至後端
-
-                TeamApplyJoinRequest teamApplyJoinRequest = new TeamApplyJoinRequest()
+                if (content.ResponseType.Equals((int)ActionType.Add))
                 {
-                    MemberID = content.MemberID,
-                    Action = (int)ActionType.Delete,
-                    TeamID = content.TeamID
-                };
-                CommandData<TeamApplyJoinResponse> teamApplyJoinResponse = await this.serverService.DoAction<TeamApplyJoinResponse>((int)TeamCommandIDType.UpdateApplyJoinList, CommandType.Team, teamApplyJoinRequest).ConfigureAwait(false);
-                this.logger.LogInfo("回覆申請加入車隊結果(更新申請加入車隊列表)", $"Response: {JsonConvert.SerializeObject(teamApplyJoinResponse)} Request: {JsonConvert.SerializeObject(teamApplyJoinRequest)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                switch (teamApplyJoinResponse.Data.Result)
-                {
-                    case (int)UpdateApplyJoinListResultType.Success:
-                        if (content.ResponseType.Equals((int)ActionType.Add))
-                        {
-                            TeamUpdateMemberRequest teamUpdateMemberRequest = new TeamUpdateMemberRequest()
-                            {
-                                MemberID = content.MemberID,
-                                Action = (int)ActionType.Add,
-                                TeamID = content.TeamID
-                            };
-                            CommandData<TeamUpdateMemberResponse> teamUpdateMemberResponse = await this.serverService.DoAction<TeamUpdateMemberResponse>((int)TeamCommandIDType.UpdateTeamMemberList, CommandType.Team, teamUpdateMemberRequest).ConfigureAwait(false);
-                            this.logger.LogInfo("回覆申請加入車隊結果(更新隊員列表)", $"Response: {JsonConvert.SerializeObject(teamUpdateMemberResponse)} Request: {JsonConvert.SerializeObject(teamUpdateMemberRequest)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                            switch (teamUpdateMemberResponse.Data.Result)
-                            {
-                                case (int)UpdateTeamMemberListResultType.Success:
-                                    return new ResponseResult()
-                                    {
-                                        Result = true,
-                                        ResultCode = (int)ResponseResultType.Success,
-                                        Content = MessageHelper.Message.ResponseMessage.Update.Success
-                                    };
+                    #region 發送【加入或離開車隊】指令至後端
 
-                                case (int)UpdateTeamMemberListResultType.Fail:
-                                    return new ResponseResult()
-                                    {
-                                        Result = false,
-                                        ResultCode = (int)ResponseResultType.UpdateFail,
-                                        Content = MessageHelper.Message.ResponseMessage.Update.Fail
-                                    };
-
-                                default:
-                                    return new ResponseResult()
-                                    {
-                                        Result = false,
-                                        ResultCode = (int)ResponseResultType.UnknownError,
-                                        Content = MessageHelper.Message.ResponseMessage.Update.Fail
-                                    };
-                            }
-                        }
-                        else
-                        {
+                    TeamJoinOrLeaveRequest teamJoinOrLeaveRequest = this.mapper.Map<TeamJoinOrLeaveRequest>(content);
+                    CommandData<TeamJoinOrLeaveResponse> teamJoinOrLeaveResponse = await this.serverService.DoAction<TeamJoinOrLeaveResponse>((int)TeamCommandIDType.JoinOrLeaveTeam, CommandType.Team, teamJoinOrLeaveRequest).ConfigureAwait(false);
+                    this.logger.LogInfo("回覆申請加入車隊結果(加入或離開車隊)", $"Response: {JsonConvert.SerializeObject(teamJoinOrLeaveResponse)} Request: {JsonConvert.SerializeObject(teamJoinOrLeaveRequest)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    switch (teamJoinOrLeaveResponse.Data.Result)
+                    {
+                        case (int)JoinOrLeaveTeamResultType.Success:
                             return new ResponseResult()
                             {
                                 Result = true,
                                 ResultCode = (int)ResponseResultType.Success,
                                 Content = MessageHelper.Message.ResponseMessage.Update.Success
                             };
-                        }
 
-                    case (int)UpdateApplyJoinListResultType.Fail:
-                        return new ResponseResult()
-                        {
-                            Result = false,
-                            ResultCode = (int)ResponseResultType.UpdateFail,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
-                        };
+                        case (int)JoinOrLeaveTeamResultType.Fail:
+                            return new ResponseResult()
+                            {
+                                Result = false,
+                                ResultCode = (int)ResponseResultType.UpdateFail,
+                                Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            };
 
-                    default:
-                        return new ResponseResult()
-                        {
-                            Result = false,
-                            ResultCode = (int)ResponseResultType.UnknownError,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
-                        };
+                        default:
+                            return new ResponseResult()
+                            {
+                                Result = false,
+                                ResultCode = (int)ResponseResultType.UnknownError,
+                                Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            };
+                    }
+
+                    #endregion 發送【加入或離開車隊】指令至後端
                 }
+                else if (content.ResponseType.Equals((int)ActionType.Delete))
+                {
+                    #region 發送【更新申請加入車隊列表】指令至後端
 
-                #endregion 發送【更新申請加入車隊列表】、【更新隊員列表】指令至後端
+                    TeamApplyJoinRequest teamApplyJoinRequest = new TeamApplyJoinRequest()
+                    {
+                        MemberID = content.MemberID,
+                        Action = (int)ActionType.Delete,
+                        TeamID = content.TeamID
+                    };
+                    CommandData<TeamApplyJoinResponse> teamApplyJoinResponse = await this.serverService.DoAction<TeamApplyJoinResponse>((int)TeamCommandIDType.UpdateApplyJoinList, CommandType.Team, teamApplyJoinRequest).ConfigureAwait(false);
+                    this.logger.LogInfo("回覆申請加入車隊結果(更新申請加入車隊列表)", $"Response: {JsonConvert.SerializeObject(teamApplyJoinResponse)} Request: {JsonConvert.SerializeObject(teamApplyJoinRequest)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    switch (teamApplyJoinResponse.Data.Result)
+                    {
+                        case (int)UpdateApplyJoinListResultType.Success:
+                            return new ResponseResult()
+                            {
+                                Result = true,
+                                ResultCode = (int)ResponseResultType.Success,
+                                Content = MessageHelper.Message.ResponseMessage.Update.Success
+                            };
+
+                        case (int)UpdateApplyJoinListResultType.Fail:
+                            return new ResponseResult()
+                            {
+                                Result = false,
+                                ResultCode = (int)ResponseResultType.UpdateFail,
+                                Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            };
+
+                        default:
+                            return new ResponseResult()
+                            {
+                                Result = false,
+                                ResultCode = (int)ResponseResultType.UnknownError,
+                                Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            };
+                    }
+
+                    #endregion 發送【更新申請加入車隊列表】指令至後端
+                }
+                else
+                {
+                    this.logger.LogWarn("回覆申請加入車隊結果", $"Result: 回覆動作無效 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.UpdateFail,
+                        Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                    };
+                }
             }
             catch (Exception ex)
             {
@@ -711,85 +728,95 @@ namespace DataInfo.Service.Managers.Team
 
                 #endregion 驗證資料
 
-                #region 發送【更新邀請加入車隊列表】、【更新隊員列表】指令至後端
-
-                TeamInviteJoinRequest request = new TeamInviteJoinRequest()
+                if (content.ResponseType.Equals((int)ActionType.Add))
                 {
-                    MemberID = memberID,
-                    Action = (int)ActionType.Delete,
-                    TeamID = content.TeamID
-                };
+                    #region 發送【加入或離開車隊】指令至後端
 
-                CommandData<TeamInviteJoinResponse> response = await this.serverService.DoAction<TeamInviteJoinResponse>((int)TeamCommandIDType.UpdateInviteJoinList, CommandType.Team, request).ConfigureAwait(false);
-                this.logger.LogInfo("回覆邀請加入車隊結果(更新邀請加入車隊列表)", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                switch (response.Data.Result)
-                {
-                    case (int)UpdateInviteJoinListResultType.Success:
-                        if (content.ResponseType.Equals((int)ActionType.Add))
-                        {
-                            TeamUpdateMemberRequest teamUpdateMemberRequest = new TeamUpdateMemberRequest()
-                            {
-                                MemberID = memberID,
-                                Action = (int)ActionType.Add,
-                                TeamID = content.TeamID
-                            };
-                            CommandData<TeamUpdateMemberResponse> teamUpdateMemberResponse = await this.serverService.DoAction<TeamUpdateMemberResponse>((int)TeamCommandIDType.UpdateTeamMemberList, CommandType.Team, teamUpdateMemberRequest).ConfigureAwait(false);
-                            this.logger.LogInfo("回覆邀請加入車隊結果(更新隊員列表)", $"Response: {JsonConvert.SerializeObject(teamUpdateMemberResponse)} Request: {JsonConvert.SerializeObject(teamUpdateMemberRequest)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                            switch (teamUpdateMemberResponse.Data.Result)
-                            {
-                                case (int)UpdateTeamMemberListResultType.Success:
-                                    return new ResponseResult()
-                                    {
-                                        Result = true,
-                                        ResultCode = (int)ResponseResultType.Success,
-                                        Content = MessageHelper.Message.ResponseMessage.Update.Success
-                                    };
-
-                                case (int)UpdateTeamMemberListResultType.Fail:
-                                    return new ResponseResult()
-                                    {
-                                        Result = false,
-                                        ResultCode = (int)ResponseResultType.UpdateFail,
-                                        Content = MessageHelper.Message.ResponseMessage.Update.Fail
-                                    };
-
-                                default:
-                                    return new ResponseResult()
-                                    {
-                                        Result = false,
-                                        ResultCode = (int)ResponseResultType.UnknownError,
-                                        Content = MessageHelper.Message.ResponseMessage.Update.Fail
-                                    };
-                            }
-                        }
-                        else
-                        {
+                    TeamJoinOrLeaveRequest teamJoinOrLeaveRequest = this.mapper.Map<TeamJoinOrLeaveRequest>(content);
+                    teamJoinOrLeaveRequest.MemberID = memberID;
+                    CommandData<TeamJoinOrLeaveResponse> teamJoinOrLeaveResponse = await this.serverService.DoAction<TeamJoinOrLeaveResponse>((int)TeamCommandIDType.JoinOrLeaveTeam, CommandType.Team, teamJoinOrLeaveRequest).ConfigureAwait(false);
+                    this.logger.LogInfo("回覆申請加入車隊結果(加入或離開車隊)", $"Response: {JsonConvert.SerializeObject(teamJoinOrLeaveResponse)} Request: {JsonConvert.SerializeObject(teamJoinOrLeaveRequest)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    switch (teamJoinOrLeaveResponse.Data.Result)
+                    {
+                        case (int)JoinOrLeaveTeamResultType.Success:
                             return new ResponseResult()
                             {
                                 Result = true,
                                 ResultCode = (int)ResponseResultType.Success,
                                 Content = MessageHelper.Message.ResponseMessage.Update.Success
                             };
-                        }
 
-                    case (int)UpdateInviteJoinListResultType.Fail:
-                        return new ResponseResult()
-                        {
-                            Result = false,
-                            ResultCode = (int)ResponseResultType.UpdateFail,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
-                        };
+                        case (int)JoinOrLeaveTeamResultType.Fail:
+                            return new ResponseResult()
+                            {
+                                Result = false,
+                                ResultCode = (int)ResponseResultType.UpdateFail,
+                                Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            };
 
-                    default:
-                        return new ResponseResult()
-                        {
-                            Result = false,
-                            ResultCode = (int)ResponseResultType.UnknownError,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
-                        };
+                        default:
+                            return new ResponseResult()
+                            {
+                                Result = false,
+                                ResultCode = (int)ResponseResultType.UnknownError,
+                                Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            };
+                    }
+
+                    #endregion 發送【加入或離開車隊】指令至後端
                 }
+                else if (content.ResponseType.Equals((int)ActionType.Delete))
+                {
+                    #region 發送【更新邀請加入車隊列表】指令至後端
 
-                #endregion 發送【更新邀請加入車隊列表】、【更新隊員列表】指令至後端
+                    TeamInviteJoinRequest request = new TeamInviteJoinRequest()
+                    {
+                        MemberID = memberID,
+                        Action = (int)ActionType.Delete,
+                        TeamID = content.TeamID
+                    };
+
+                    CommandData<TeamInviteJoinResponse> response = await this.serverService.DoAction<TeamInviteJoinResponse>((int)TeamCommandIDType.UpdateInviteJoinList, CommandType.Team, request).ConfigureAwait(false);
+                    this.logger.LogInfo("回覆邀請加入車隊結果(更新邀請加入車隊列表)", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    switch (response.Data.Result)
+                    {
+                        case (int)UpdateInviteJoinListResultType.Success:
+                            return new ResponseResult()
+                            {
+                                Result = true,
+                                ResultCode = (int)ResponseResultType.Success,
+                                Content = MessageHelper.Message.ResponseMessage.Update.Success
+                            };
+
+                        case (int)UpdateInviteJoinListResultType.Fail:
+                            return new ResponseResult()
+                            {
+                                Result = false,
+                                ResultCode = (int)ResponseResultType.UpdateFail,
+                                Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            };
+
+                        default:
+                            return new ResponseResult()
+                            {
+                                Result = false,
+                                ResultCode = (int)ResponseResultType.UnknownError,
+                                Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            };
+                    }
+
+                    #endregion 發送【更新邀請加入車隊列表】指令至後端
+                }
+                else
+                {
+                    this.logger.LogWarn("回覆邀請加入車隊結果", $"Result: 回覆動作無效 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.UpdateFail,
+                        Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                    };
+                }
             }
             catch (Exception ex)
             {

@@ -97,6 +97,11 @@
         public class MemberMessageSetting
         {
             /// <summary>
+            /// Gets or sets BirthdayError
+            /// </summary>
+            public string BirthdayError { get; set; }
+
+            /// <summary>
             /// Gets or sets CountyEmpty
             /// </summary>
             public string CountyEmpty { get; set; }

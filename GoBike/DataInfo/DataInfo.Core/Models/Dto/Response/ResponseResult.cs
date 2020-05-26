@@ -51,6 +51,11 @@
         TimeOut = 908,
 
         /// <summary>
+        /// 重複
+        /// </summary>
+        Repeat = 909,
+
+        /// <summary>
         /// 成功
         /// </summary>
         Success = 1000

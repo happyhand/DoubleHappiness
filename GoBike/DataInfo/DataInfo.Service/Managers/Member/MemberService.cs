@@ -485,9 +485,14 @@ namespace DataInfo.Service.Managers.Member
                 }
             }
 
-            if (content.Birthday.HasValue)
+            if (!string.IsNullOrEmpty(content.Birthday))
             {
-                memberUpdateInfoData.Birthday = content.Birthday.Value.ToString("yyyy/MM/dd HH:mm:ss");
+                if (!DateTime.TryParse(content.Birthday, out DateTime birthday))
+                {
+                    return Tuple.Create<string, MemberEditInfoRequest>(MessageHelper.Message.ResponseMessage.Member.BirthdayError, null);
+                }
+
+                memberUpdateInfoData.Birthday = birthday.ToString("yyyy-MM-dd HH:mm:ss");
             }
 
             if (content.BodyHeight > 0)

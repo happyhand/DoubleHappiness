@@ -109,12 +109,12 @@
         /// <summary>
         /// 更新朋友列表
         /// </summary>
-        UpdateFriendList = 1006,
+        UpdateFriendList = 1005,
 
         /// <summary>
         /// 更新黑名單列表
         /// </summary>
-        UpdateBlackList = 1007
+        UpdateBlackList = 1006
     }
 
     /// <summary>
@@ -210,6 +210,32 @@
     #region 車隊
 
     /// <summary>
+    /// 更換隊長結果類別資料
+    /// </summary>
+    public enum ChangeLeaderResultType
+    {
+        /// <summary>
+        /// 更新失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 更新成功
+        /// </summary>
+        Success = 1,
+
+        /// <summary>
+        /// 重複擔任
+        /// </summary>
+        Repeat = 2,
+
+        /// <summary>
+        /// 權限不足
+        /// </summary>
+        AuthorityNotEnough = 3,
+    }
+
+    /// <summary>
     /// 建立新車隊結果類別資料
     /// </summary>
     public enum CreateNewTeamResultType
@@ -223,12 +249,33 @@
         /// 更新成功
         /// </summary>
         Success = 1,
+
+        /// <summary>
+        /// 重複建立
+        /// </summary>
+        Repeat = 2,
     }
 
     /// <summary>
     /// 加入或離開車隊活動結果類別資料
     /// </summary>
     public enum JoinOrLeaveTeamActivityResultType
+    {
+        /// <summary>
+        /// 更新失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 更新成功
+        /// </summary>
+        Success = 1
+    }
+
+    /// <summary>
+    /// 加入或離開車隊結果類別資料
+    /// </summary>
+    public enum JoinOrLeaveTeamResultType
     {
         /// <summary>
         /// 更新失敗
@@ -250,6 +297,11 @@
         /// 建立新車隊
         /// </summary>
         CreateNewTeam = 1001,
+
+        /// <summary>
+        /// 更換隊長
+        /// </summary>
+        ChangeLeader = 1003,
 
         /// <summary>
         /// 更新隊員列表
@@ -274,7 +326,12 @@
         /// <summary>
         /// 加入或離開車隊活動
         /// </summary>
-        JoinOrLeaveTeamActivity = 1011
+        JoinOrLeaveTeamActivity = 1011,
+
+        /// <summary>
+        /// 加入或離開車隊
+        /// </summary>
+        JoinOrLeaveTeam = 1012
     }
 
     /// <summary>

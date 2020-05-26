@@ -15,7 +15,7 @@ namespace DataInfo.Core.Models.Dto.Member.Content
         /// <summary>
         /// Gets or sets 生日
         /// </summary>
-        public DateTime? Birthday { get; set; }
+        public string Birthday { get; set; }
 
         /// <summary>
         /// Gets or sets 身高

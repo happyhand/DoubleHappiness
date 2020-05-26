@@ -22,7 +22,13 @@ namespace DataInfo.AutoMapperProfiles
         {
             CreateMap<TeamCreateContent, TeamCreateRequest>();
             CreateMap<TeamActivityContent, TeamJoinOrLeaveActivityRequest>();
-            CreateMap<TeamAddActivityContent, TeamUpdateActivityRequest>();
+            CreateMap<TeamAddActivityContent, TeamUpdateActivityRequest>()
+             .ForMember(request => request.ActDate, options => options.MapFrom(content => Convert.ToDateTime(content.ActDate).ToString("yyyy-MM-dd HH:mm:ss)")));
+            CreateMap<TeamChangeLeaderContent, TeamChangeLeaderRequest>();
+            CreateMap<TeamResponseApplyJoinContent, TeamJoinOrLeaveRequest>()
+             .ForMember(request => request.Action, options => options.MapFrom(content => content.ResponseType));
+            CreateMap<TeamResponseInviteJoinContent, TeamJoinOrLeaveRequest>()
+             .ForMember(request => request.Action, options => options.MapFrom(content => content.ResponseType));
 
             CreateMap<TeamData, TeamDao>()
              .ForMember(dao => dao.CreateDate, options => options.MapFrom(table => Convert.ToDateTime(table.CreateDate)))

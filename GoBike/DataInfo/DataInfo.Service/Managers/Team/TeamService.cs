@@ -132,6 +132,97 @@ namespace DataInfo.Service.Managers.Team
         }
 
         /// <summary>
+        /// 更換車隊隊長
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> ChangeLeader(string memberID, TeamChangeLeaderContent content)
+        {
+            try
+            {
+                #region 驗證資料
+
+                TeamChangeLeaderContentValidator contentValidator = new TeamChangeLeaderContentValidator();
+                ValidationResult validationResult = contentValidator.Validate(content);
+                if (!validationResult.IsValid)
+                {
+                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
+                    this.logger.LogWarn("更換車隊隊長結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.DenyAccess,
+                        Content = errorMessgae
+                    };
+                }
+
+                #endregion 驗證資料
+
+                #region 發送【更換隊長】指令至後端
+
+                TeamChangeLeaderRequest request = this.mapper.Map<TeamChangeLeaderRequest>(content);
+                request.LeaderID = memberID;
+                CommandData<TeamChangeLeaderResponse> response = await this.serverService.DoAction<TeamChangeLeaderResponse>((int)TeamCommandIDType.ChangeLeader, CommandType.Team, request).ConfigureAwait(false);
+                this.logger.LogInfo("更換車隊隊長結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                switch (response.Data.Result)
+                {
+                    case (int)ChangeLeaderResultType.Success:
+                        return new ResponseResult()
+                        {
+                            Result = true,
+                            ResultCode = (int)ResponseResultType.Success,
+                            Content = MessageHelper.Message.ResponseMessage.Update.Success
+                        };
+
+                    case (int)ChangeLeaderResultType.Fail:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.UpdateFail,
+                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                        };
+
+                    case (int)ChangeLeaderResultType.Repeat:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.Repeat,
+                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                        };
+
+                    case (int)ChangeLeaderResultType.AuthorityNotEnough:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.DenyAccess,
+                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                        };
+
+                    default:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.UnknownError,
+                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                        };
+                }
+
+                #endregion 發送【更換隊長】指令至後端
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("更換車隊隊長發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = MessageHelper.Message.ResponseMessage.Update.Error
+                };
+            }
+        }
+
+        /// <summary>
         /// 建立車隊
         /// </summary>
         /// <param name="memberID">memberID</param>
@@ -205,6 +296,14 @@ namespace DataInfo.Service.Managers.Team
                         {
                             Result = false,
                             ResultCode = (int)ResponseResultType.CreateFail,
+                            Content = MessageHelper.Message.ResponseMessage.Add.Fail
+                        };
+
+                    case (int)CreateNewTeamResultType.Repeat:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.Repeat,
                             Content = MessageHelper.Message.ResponseMessage.Add.Fail
                         };
 

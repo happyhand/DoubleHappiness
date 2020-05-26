@@ -10,6 +10,14 @@ namespace DataInfo.Service.Interfaces.Team
     public interface ITeamService
     {
         /// <summary>
+        /// 更換車隊隊長
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
+        /// <returns>ResponseResult</returns>
+        Task<ResponseResult> ChangeLeader(string memberID, TeamChangeLeaderContent content);
+
+        /// <summary>
         /// 建立車隊
         /// </summary>
         /// <param name="memberID">memberID</param>
