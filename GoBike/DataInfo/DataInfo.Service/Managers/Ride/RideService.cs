@@ -91,14 +91,14 @@ namespace DataInfo.Service.Managers.Ride
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> AddRideData(string memberID, AddRideInfoContent content)
+        public async Task<ResponseResult> AddRideData(string memberID, AddRideDataContent content)
         {
             try
             {
                 #region 驗證騎乘資料
 
-                AddRideInfoContentValidator addRideInfoContentValidator = new AddRideInfoContentValidator();
-                ValidationResult validationResult = addRideInfoContentValidator.Validate(content);
+                AddRideDataContentValidator contentValidator = new AddRideDataContentValidator();
+                ValidationResult validationResult = contentValidator.Validate(content);
                 if (!validationResult.IsValid)
                 {
                     string errorMessgae = validationResult.Errors[0].ErrorMessage;

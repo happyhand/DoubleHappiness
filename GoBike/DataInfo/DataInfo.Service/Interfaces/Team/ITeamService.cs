@@ -27,6 +27,14 @@ namespace DataInfo.Service.Interfaces.Team
         Task<ResponseResult> Create(string memberID, TeamCreateContent content);
 
         /// <summary>
+        /// 解散車隊
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
+        /// <returns>ResponseResult</returns>
+        Task<ResponseResult> Disband(string memberID, TeamContent content);
+
+        /// <summary>
         /// 取得瀏覽車隊
         /// </summary>
         /// <param name="memberID">memberID</param>

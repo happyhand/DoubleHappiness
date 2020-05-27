@@ -19,7 +19,7 @@ namespace DataInfo.AutoMapperProfiles
         /// </summary>
         public RideProfile()
         {
-            CreateMap<AddRideInfoContent, AddRideInfoRequest>()
+            CreateMap<AddRideDataContent, AddRideInfoRequest>()
             .ForMember(data => data.ShareContent, options => options.MapFrom(dto => JsonConvert.SerializeObject(dto.ShareContent)))
             .ForMember(data => data.Route, options => options.MapFrom(dto => JsonConvert.SerializeObject(dto.Route)));
 

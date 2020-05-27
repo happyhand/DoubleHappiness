@@ -137,6 +137,7 @@ namespace DataInfo.Repository.Managers.Team
             {
                 IEnumerable<TeamData> teamDatas = await this.Db.Queryable<TeamData>()
                                               .Where(data => data.County.Equals(county))
+                                              .Take(AppSettingHelper.Appsetting.TakeBrowseCount)
                                               .ToListAsync().ConfigureAwait(false);
 
                 return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);
@@ -159,6 +160,7 @@ namespace DataInfo.Repository.Managers.Team
             {
                 IEnumerable<TeamData> teamDatas = await this.Db.Queryable<TeamData>()
                                               .Where(data => Convert.ToDateTime(data).Ticks - expiredDate.Ticks > 0)
+                                              .Take(AppSettingHelper.Appsetting.TakeBrowseCount)
                                               .ToListAsync().ConfigureAwait(false);
 
                 return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);
@@ -181,6 +183,7 @@ namespace DataInfo.Repository.Managers.Team
                 //// TODO 待確認推薦標準
                 IEnumerable<TeamData> teamDatas = await this.Db.Queryable<TeamData>()
                                               .Where(data => data.TeamViceLeaderIDs.Length + data.TeamMemberIDs.Length >= 50)
+                                              .Take(AppSettingHelper.Appsetting.TakeBrowseCount)
                                               .ToListAsync().ConfigureAwait(false);
 
                 return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);

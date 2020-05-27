@@ -215,12 +215,12 @@
     public enum ChangeLeaderResultType
     {
         /// <summary>
-        /// 更新失敗
+        /// 更換失敗
         /// </summary>
         Fail = 0,
 
         /// <summary>
-        /// 更新成功
+        /// 更換成功
         /// </summary>
         Success = 1,
 
@@ -241,12 +241,12 @@
     public enum CreateNewTeamResultType
     {
         /// <summary>
-        /// 更新失敗
+        /// 建立失敗
         /// </summary>
         Fail = 0,
 
         /// <summary>
-        /// 更新成功
+        /// 建立成功
         /// </summary>
         Success = 1,
 
@@ -254,6 +254,27 @@
         /// 重複建立
         /// </summary>
         Repeat = 2,
+    }
+
+    /// <summary>
+    /// 解散車隊結果類別資料
+    /// </summary>
+    public enum DeleteTeamResultType
+    {
+        /// <summary>
+        /// 解散失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 解散成功
+        /// </summary>
+        Success = 1,
+
+        /// <summary>
+        /// 權限不足
+        /// </summary>
+        AuthorityNotEnough = 2,
     }
 
     /// <summary>
@@ -327,6 +348,11 @@
         /// 更新活動
         /// </summary>
         UpdateActivity = 1009,
+
+        /// <summary>
+        /// 解散車隊
+        /// </summary>
+        DeleteTeam = 1010,
 
         /// <summary>
         /// 加入或離開車隊活動

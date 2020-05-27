@@ -8,7 +8,7 @@ namespace DataInfo.Core.Models.Dto.Ride.Content
     /// <summary>
     /// 新增騎乘資訊內容
     /// </summary>
-    public class AddRideInfoContent
+    public class AddRideDataContent
     {
         /// <summary>
         /// Gets or sets Altitude
@@ -64,9 +64,12 @@ namespace DataInfo.Core.Models.Dto.Ride.Content
     /// <summary>
     /// 驗證新增騎乘資訊內容
     /// </summary>
-    public class AddRideInfoContentValidator : AbstractValidator<AddRideInfoContent>
+    public class AddRideDataContentValidator : AbstractValidator<AddRideDataContent>
     {
-        public AddRideInfoContentValidator()
+        /// <summary>
+        /// 建構式
+        /// </summary>
+        public AddRideDataContentValidator()
         {
             ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
             RuleFor(content => content.Time)

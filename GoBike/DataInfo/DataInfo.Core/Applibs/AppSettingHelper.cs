@@ -402,13 +402,18 @@ namespace DataInfo.Core.Applibs
 
         #endregion Command Server 設定資料
 
-        #region 新創時間設定資料
+        #region 瀏覽車隊設定資料
 
         /// <summary>
         /// Gets or sets DaysOfNewCreation
         /// </summary>
         public int DaysOfNewCreation { get; set; }
 
-        #endregion 新創時間設定資料
+        /// <summary>
+        /// Gets or sets TakeBrowseCount
+        /// </summary>
+        public int TakeBrowseCount { get; set; }
+
+        #endregion 瀏覽車隊設定資料
     }
 }

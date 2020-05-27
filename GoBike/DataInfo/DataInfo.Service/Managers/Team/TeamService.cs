@@ -234,8 +234,8 @@ namespace DataInfo.Service.Managers.Team
             {
                 #region 驗證資料
 
-                TeamCreateContentValidator teamCreateContentValidator = new TeamCreateContentValidator();
-                ValidationResult validationResult = teamCreateContentValidator.Validate(content);
+                TeamCreateContentValidator contentValidator = new TeamCreateContentValidator();
+                ValidationResult validationResult = contentValidator.Validate(content);
                 if (!validationResult.IsValid)
                 {
                     string errorMessgae = validationResult.Errors[0].ErrorMessage;
@@ -320,12 +320,96 @@ namespace DataInfo.Service.Managers.Team
             }
             catch (Exception ex)
             {
-                this.logger.LogError("建立車隊發生錯誤", $"MemberID: {memberID} IsValidatePassword: {JsonConvert.SerializeObject(content)}", ex);
+                this.logger.LogError("建立車隊發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
                 return new ResponseResult()
                 {
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
                     Content = MessageHelper.Message.ResponseMessage.Add.Error
+                };
+            }
+        }
+
+        /// <summary>
+        /// 解散車隊
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> Disband(string memberID, TeamContent content)
+        {
+            try
+            {
+                #region 驗證資料
+
+                TeamContentValidator contentValidator = new TeamContentValidator();
+                ValidationResult validationResult = contentValidator.Validate(content);
+                if (!validationResult.IsValid)
+                {
+                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
+                    this.logger.LogWarn("解散車隊結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.DenyAccess,
+                        Content = errorMessgae
+                    };
+                }
+
+                #endregion 驗證資料
+
+                #region 發送【解散車隊】指令至後端
+
+                TeamDisbandRequest request = this.mapper.Map<TeamDisbandRequest>(content);
+                request.MemberID = memberID;
+
+                CommandData<TeamDisbandResponse> response = await this.serverService.DoAction<TeamDisbandResponse>((int)TeamCommandIDType.DeleteTeam, CommandType.Team, request).ConfigureAwait(false);
+                this.logger.LogInfo("解散車隊結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                switch (response.Data.Result)
+                {
+                    case (int)DeleteTeamResultType.Success:
+                        return new ResponseResult()
+                        {
+                            Result = true,
+                            ResultCode = (int)ResponseResultType.Success,
+                            Content = MessageHelper.Message.ResponseMessage.Update.Success
+                        };
+
+                    case (int)DeleteTeamResultType.Fail:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.CreateFail,
+                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                        };
+
+                    case (int)DeleteTeamResultType.AuthorityNotEnough:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.DenyAccess,
+                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                        };
+
+                    default:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.UnknownError,
+                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                        };
+                }
+
+                #endregion 發送【解散車隊】指令至後端
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("解散車隊發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = MessageHelper.Message.ResponseMessage.Update.Error
                 };
             }
         }
