@@ -29,6 +29,7 @@ namespace DataInfo.AutoMapperProfiles
              .ForMember(request => request.Action, options => options.MapFrom(content => content.ResponseType));
             CreateMap<TeamResponseInviteJoinContent, TeamJoinOrLeaveRequest>()
              .ForMember(request => request.Action, options => options.MapFrom(content => content.ResponseType));
+            CreateMap<TeamUpdateViceLeaderContent, TeamUpdateViceLeaderRequest>();
 
             CreateMap<TeamData, TeamDao>()
              .ForMember(dao => dao.CreateDate, options => options.MapFrom(table => Convert.ToDateTime(table.CreateDate)))

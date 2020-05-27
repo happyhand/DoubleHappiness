@@ -304,6 +304,11 @@
         ChangeLeader = 1003,
 
         /// <summary>
+        /// 更新副隊長列表
+        /// </summary>
+        UpdateViceLeaderList = 1004,
+
+        /// <summary>
         /// 更新隊員列表
         /// </summary>
         UpdateTeamMemberList = 1005,
@@ -401,6 +406,27 @@
         /// 更新成功
         /// </summary>
         Success = 1,
+    }
+
+    /// <summary>
+    /// 更新副隊長列表結果類別資料
+    /// </summary>
+    public enum UpdateViceLeaderListResultType
+    {
+        /// <summary>
+        /// 更新失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 更新成功
+        /// </summary>
+        Success = 1,
+
+        /// <summary>
+        /// 權限不足
+        /// </summary>
+        AuthorityNotEnough = 2,
     }
 
     #endregion 車隊

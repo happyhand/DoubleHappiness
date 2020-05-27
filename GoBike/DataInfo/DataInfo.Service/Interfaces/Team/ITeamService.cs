@@ -1,5 +1,6 @@
 ﻿using DataInfo.Core.Models.Dto.Response;
 using DataInfo.Core.Models.Dto.Team.Content;
+using DataInfo.Core.Models.Enum;
 using System.Threading.Tasks;
 
 namespace DataInfo.Service.Interfaces.Team
@@ -55,5 +56,14 @@ namespace DataInfo.Service.Interfaces.Team
         /// <param name="content">content</param>
         /// <returns>ResponseResult</returns>
         Task<ResponseResult> SearchTeam(string memberID, TeamSearchContent content);
+
+        /// <summary>
+        /// 更新車隊副隊長
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
+        /// <param name="action">action</param>
+        /// <returns>ResponseResult</returns>
+        Task<ResponseResult> UpdateViceLeader(string memberID, TeamUpdateViceLeaderContent content, ActionType action);
     }
 }

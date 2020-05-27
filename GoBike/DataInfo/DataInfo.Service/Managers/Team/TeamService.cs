@@ -576,6 +576,91 @@ namespace DataInfo.Service.Managers.Team
             }
         }
 
+        /// <summary>
+        /// 更新車隊副隊長
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
+        /// <param name="actionType">actionType</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> UpdateViceLeader(string memberID, TeamUpdateViceLeaderContent content, ActionType action)
+        {
+            try
+            {
+                #region 驗證資料
+
+                TeamUpdateViceLeaderContentValidator contentValidator = new TeamUpdateViceLeaderContentValidator();
+                ValidationResult validationResult = contentValidator.Validate(content);
+                if (!validationResult.IsValid)
+                {
+                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
+                    this.logger.LogWarn("更新車隊副隊長結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} Action: {action}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.DenyAccess,
+                        Content = errorMessgae
+                    };
+                }
+
+                #endregion 驗證資料
+
+                #region 發送【更新副隊長】指令至後端
+
+                TeamUpdateViceLeaderRequest request = this.mapper.Map<TeamUpdateViceLeaderRequest>(content);
+                request.LeaderID = memberID;
+                request.Action = (int)action;
+                CommandData<TeamUpdateViceLeaderResponse> response = await this.serverService.DoAction<TeamUpdateViceLeaderResponse>((int)TeamCommandIDType.UpdateViceLeaderList, CommandType.Team, request).ConfigureAwait(false);
+                this.logger.LogInfo("更新車隊副隊長結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                switch (response.Data.Result)
+                {
+                    case (int)ChangeLeaderResultType.Success:
+                        return new ResponseResult()
+                        {
+                            Result = true,
+                            ResultCode = (int)ResponseResultType.Success,
+                            Content = MessageHelper.Message.ResponseMessage.Update.Success
+                        };
+
+                    case (int)ChangeLeaderResultType.Fail:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.UpdateFail,
+                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                        };
+
+                    case (int)ChangeLeaderResultType.AuthorityNotEnough:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.DenyAccess,
+                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                        };
+
+                    default:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.UnknownError,
+                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                        };
+                }
+
+                #endregion 發送【更新副隊長】指令至後端
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("更新車隊副隊長發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = MessageHelper.Message.ResponseMessage.Update.Error
+                };
+            }
+        }
+
         #endregion 車隊資料
     }
 }
