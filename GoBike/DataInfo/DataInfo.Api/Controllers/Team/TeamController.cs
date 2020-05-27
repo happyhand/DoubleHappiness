@@ -97,6 +97,33 @@ namespace DataInfo.Api.Controllers.Team
         }
 
         /// <summary>
+        /// 車隊功能 - 更新車隊資料
+        /// </summary>
+        /// <param name="content">content</param>
+        /// <returns>IActionResult</returns>
+        [HttpPatch]
+        public async Task<IActionResult> Patch(TeamEditContent content)
+        {
+            string memberID = this.GetMemberID();
+            try
+            {
+                this.logger.LogInfo("會員請求更新車隊資料", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                ResponseResult responseResult = await teamService.Edit(memberID, content).ConfigureAwait(false);
+                return Ok(responseResult);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("會員請求更新車隊資料發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                return Ok(new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = MessageHelper.Message.ResponseMessage.Update.Error
+                });
+            }
+        }
+
+        /// <summary>
         /// 車隊功能 - 建立車隊
         /// </summary>
         /// <param name="content">content</param>

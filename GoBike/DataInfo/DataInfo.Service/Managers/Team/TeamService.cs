@@ -132,6 +132,75 @@ namespace DataInfo.Service.Managers.Team
         }
 
         /// <summary>
+        /// 車隊資料更新處理
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
+        /// <returns>Tuple(string, MemberEditInfoRequest)</returns>
+        private async Task<Tuple<string, TeamEditRequest>> UpdateInfoHandler(string memberID, TeamEditContent content)
+        {
+            if (string.IsNullOrEmpty(content.TeamID))
+            {
+                return Tuple.Create<string, TeamEditRequest>(MessageHelper.Message.ResponseMessage.Team.TeamIDEmpty, null);
+            }
+
+            TeamEditRequest request = new TeamEditRequest
+            {
+                MemberID = memberID,
+                TeamID = content.TeamID
+            };
+
+            if (!string.IsNullOrEmpty(content.Avatar) || !string.IsNullOrEmpty(content.FrontCover))
+            {
+                List<string> imgBase64s = new List<string>() { content.Avatar, content.FrontCover };
+                IEnumerable<string> imgUris = await this.uploadService.UploadMemberImages(imgBase64s, true).ConfigureAwait(false);
+                if (imgUris == null || !imgUris.Any())
+                {
+                    return Tuple.Create<string, TeamEditRequest>(MessageHelper.Message.ResponseMessage.Upload.PhotoFail, null);
+                }
+
+                if (!string.IsNullOrEmpty(content.Avatar))
+                {
+                    string avatar = imgUris.ElementAt(0);
+                    if (string.IsNullOrEmpty(avatar))
+                    {
+                        return Tuple.Create<string, TeamEditRequest>(MessageHelper.Message.ResponseMessage.Upload.AvatarFail, null);
+                    }
+
+                    request.Avatar = avatar;
+                }
+
+                if (!string.IsNullOrEmpty(content.FrontCover))
+                {
+                    string frontCover = imgUris.ElementAt(1);
+                    if (string.IsNullOrEmpty(frontCover))
+                    {
+                        return Tuple.Create<string, TeamEditRequest>(MessageHelper.Message.ResponseMessage.Upload.FrontCoverFail, null);
+                    }
+
+                    request.FrontCover = frontCover;
+                }
+            }
+
+            if (content.ExamineStatus != (int)TeamExamineStatusType.None)
+            {
+                request.ExamineStatus = content.ExamineStatus;
+            }
+
+            if (content.SearchStatus != (int)TeamSearchStatusType.None)
+            {
+                request.SearchStatus = content.SearchStatus;
+            }
+
+            if (!string.IsNullOrEmpty(content.TeamInfo))
+            {
+                request.TeamInfo = content.TeamInfo;
+            }
+
+            return Tuple.Create(string.Empty, request);
+        }
+
+        /// <summary>
         /// 更換車隊隊長
         /// </summary>
         /// <param name="memberID">memberID</param>
@@ -405,6 +474,87 @@ namespace DataInfo.Service.Managers.Team
             catch (Exception ex)
             {
                 this.logger.LogError("解散車隊發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = MessageHelper.Message.ResponseMessage.Update.Error
+                };
+            }
+        }
+
+        /// <summary>
+        /// 更新車隊資料
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> Edit(string memberID, TeamEditContent content)
+        {
+            try
+            {
+                #region 處理更新資料
+
+                Tuple<string, TeamEditRequest> updateInfoHandlerResult = await this.UpdateInfoHandler(memberID, content).ConfigureAwait(false);
+                if (!string.IsNullOrEmpty(updateInfoHandlerResult.Item1))
+                {
+                    this.logger.LogWarn("更新車隊資料結果", $"Result: 更新失敗({updateInfoHandlerResult.Item1}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.InputError,
+                        Content = updateInfoHandlerResult.Item1
+                    };
+                }
+
+                TeamEditRequest request = updateInfoHandlerResult.Item2;
+
+                #endregion 處理更新資料
+
+                #region 發送【更新車隊資訊】指令至後端
+
+                CommandData<TeamEditResponse> response = await this.serverService.DoAction<TeamEditResponse>((int)TeamCommandIDType.UpdateTeamData, CommandType.Team, request).ConfigureAwait(false);
+                this.logger.LogInfo("更新車隊資料結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                switch (response.Data.Result)
+                {
+                    case (int)UpdateTeamDataResultType.Success:
+                        return new ResponseResult()
+                        {
+                            Result = true,
+                            ResultCode = (int)ResponseResultType.Success,
+                            Content = MessageHelper.Message.ResponseMessage.Update.Success
+                        };
+
+                    case (int)UpdateTeamDataResultType.Fail:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.UpdateFail,
+                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                        };
+
+                    case (int)UpdateTeamDataResultType.AuthorityNotEnough:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.DenyAccess,
+                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                        };
+
+                    default:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.UnknownError,
+                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                        };
+                }
+
+                #endregion 發送【更新車隊資訊】指令至後端
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("更新車隊資料發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
                 return new ResponseResult()
                 {
                     Result = false,

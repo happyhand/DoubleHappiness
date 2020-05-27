@@ -1,19 +1,14 @@
 ﻿namespace DataInfo.Core.Models.Dto.Team.Request
 {
     /// <summary>
-    /// 建立新車隊請求後端資料
+    /// 更新車隊資訊請求後端資料
     /// </summary>
-    public class TeamCreateRequest
+    public class TeamEditRequest
     {
         /// <summary>
         /// Gets or sets 車隊頭像路徑
         /// </summary>
         public string Avatar { get; set; }
-
-        /// <summary>
-        /// Gets or sets 所在地
-        /// </summary>
-        public int County { get; set; }
 
         /// <summary>
         /// Gets or sets 審查狀態
@@ -36,13 +31,13 @@
         public int SearchStatus { get; set; }
 
         /// <summary>
+        /// Gets or sets 車隊 ID
+        /// </summary>
+        public string TeamID { get; set; }
+
+        /// <summary>
         /// Gets or sets 車隊簡介
         /// </summary>
         public string TeamInfo { get; set; }
-
-        /// <summary>
-        /// Gets or sets 車隊名稱
-        /// </summary>
-        public string TeamName { get; set; }
     }
 }

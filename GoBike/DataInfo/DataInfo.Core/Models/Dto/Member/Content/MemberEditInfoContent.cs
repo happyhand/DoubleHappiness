@@ -35,7 +35,7 @@ namespace DataInfo.Core.Models.Dto.Member.Content
         /// <summary>
         /// Gets or sets 性別
         /// </summary>
-        public int Gender { get; set; }
+        public string Gender { get; set; }
 
         /// <summary>
         /// Gets or sets 暱稱

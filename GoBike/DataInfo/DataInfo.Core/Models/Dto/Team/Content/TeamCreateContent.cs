@@ -15,12 +15,12 @@ namespace DataInfo.Core.Models.Dto.Team.Content
         public string Avatar { get; set; }
 
         /// <summary>
-        /// Gets or sets County
+        /// Gets or sets 所在地
         /// </summary>
         public int County { get; set; }
 
         /// <summary>
-        /// Gets or sets ExamineStatus
+        /// Gets or sets 審查狀態
         /// </summary>
         public int ExamineStatus { get; set; }
 
@@ -30,7 +30,7 @@ namespace DataInfo.Core.Models.Dto.Team.Content
         public string FrontCover { get; set; }
 
         /// <summary>
-        /// Gets or sets SearchStatus
+        /// Gets or sets 搜尋狀態
         /// </summary>
         public int SearchStatus { get; set; }
 

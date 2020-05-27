@@ -505,9 +505,13 @@ namespace DataInfo.Service.Managers.Member
                 memberUpdateInfoData.BodyWeight = content.BodyWeight;
             }
 
-            if (content.Gender > (int)GenderType.None)
+            if (!string.IsNullOrEmpty(content.Gender))
             {
-                memberUpdateInfoData.Gender = content.Gender;
+                int gender = Convert.ToInt32(content.Gender);
+                if (gender > (int)GenderType.None)
+                {
+                    memberUpdateInfoData.Gender = gender;
+                }
             }
 
             if (!string.IsNullOrEmpty(content.Nickname))

@@ -320,6 +320,11 @@
         CreateNewTeam = 1001,
 
         /// <summary>
+        /// 更新車隊資訊
+        /// </summary>
+        UpdateTeamData = 1002,
+
+        /// <summary>
         /// 更換隊長
         /// </summary>
         ChangeLeader = 1003,
@@ -416,6 +421,27 @@
         /// 更新成功
         /// </summary>
         Success = 1,
+    }
+
+    /// <summary>
+    /// 更新車隊資訊結果類別資料
+    /// </summary>
+    public enum UpdateTeamDataResultType
+    {
+        /// <summary>
+        /// 更新失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 更新成功
+        /// </summary>
+        Success = 1,
+
+        /// <summary>
+        /// 權限不足
+        /// </summary>
+        AuthorityNotEnough = 2,
     }
 
     /// <summary>

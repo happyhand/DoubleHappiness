@@ -35,6 +35,14 @@ namespace DataInfo.Service.Interfaces.Team
         Task<ResponseResult> Disband(string memberID, TeamContent content);
 
         /// <summary>
+        /// 更新車隊資料
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
+        /// <returns>ResponseResult</returns>
+        Task<ResponseResult> Edit(string memberID, TeamEditContent content);
+
+        /// <summary>
         /// 取得瀏覽車隊
         /// </summary>
         /// <param name="memberID">memberID</param>
