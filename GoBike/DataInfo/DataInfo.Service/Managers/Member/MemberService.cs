@@ -492,7 +492,7 @@ namespace DataInfo.Service.Managers.Member
                     return Tuple.Create<string, MemberEditInfoRequest>(MessageHelper.Message.ResponseMessage.Member.BirthdayError, null);
                 }
 
-                memberUpdateInfoData.Birthday = birthday.ToString("yyyy-MM-dd HH:mm:ss");
+                memberUpdateInfoData.Birthday = birthday.ToString("yyyy-MM-dd");
             }
 
             if (content.BodyHeight > 0)
@@ -505,13 +505,9 @@ namespace DataInfo.Service.Managers.Member
                 memberUpdateInfoData.BodyWeight = content.BodyWeight;
             }
 
-            if (!string.IsNullOrEmpty(content.Gender))
+            if (content.Gender > (int)GenderType.None)
             {
-                int gender = Convert.ToInt32(content.Gender);
-                if (gender > (int)GenderType.None)
-                {
-                    memberUpdateInfoData.Gender = gender;
-                }
+                memberUpdateInfoData.Gender = content.Gender;
             }
 
             if (!string.IsNullOrEmpty(content.Nickname))
