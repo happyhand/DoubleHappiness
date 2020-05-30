@@ -77,12 +77,12 @@ namespace DataInfo.Core.Models.Dto.Team.Content
             RuleFor(content => content.MaxAltitude)
             .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.ActivityAltitudeEmpty)
             .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Team.ActivityAltitudeEmpty)
-            .NotEqual(default(float)).WithMessage(MessageHelper.Message.ResponseMessage.Team.ActivityAltitudeEmpty);
+            .GreaterThan(default(float)).WithMessage(MessageHelper.Message.ResponseMessage.Team.ActivityAltitudeEmpty);
 
             RuleFor(content => content.TotalDistance)
             .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.ActivityDistanceEmpty)
             .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Team.ActivityDistanceEmpty)
-            .NotEqual(default(float)).WithMessage(MessageHelper.Message.ResponseMessage.Team.ActivityDistanceEmpty);
+            .GreaterThan(default(float)).WithMessage(MessageHelper.Message.ResponseMessage.Team.ActivityDistanceEmpty);
 
             RuleFor(content => content.Title)
             .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.ActivityTitleEmpty)

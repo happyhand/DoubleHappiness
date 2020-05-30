@@ -88,11 +88,16 @@
             "ActivityIDEmpty": "車隊活動編號無效.",
             "ActivityNotExist": "車隊活動資料不存在.",
             "ActivityDateEmpty": "未設定活動日期.",
+            "ActivityDateError": "活動日期設定錯誤.",
             "ActivityMeetTimeEmpty": "未設定活動集合時間.",
+            "ActivityMeetTimeError": "活動集合時間設定錯誤.",
             "ActivityPhotoEmpty": "未設定活動圖片.",
             "ActivityAltitudeEmpty": "未設定活動最高海拔.",
             "ActivityDistanceEmpty": "未設定活動總距離.",
-            "ActivityTitleEmpty": "未設定活動標題."
+            "ActivityTitleEmpty": "未設定活動標題.",
+            "BulletinIDEmpty": "車隊公告編號無效.",
+            "BulletinContentEmpty": "無車隊公告內容.",
+            "BulletinDayEmpty": "未設定車隊公告天數."
         }
     }
 }

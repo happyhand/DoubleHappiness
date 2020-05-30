@@ -102,6 +102,7 @@ namespace DataInfo.Api
             services.AddSingleton<ITeamService, TeamService>();
             services.AddSingleton<ITeamInteractiveService, TeamInteractiveService>();
             services.AddSingleton<ITeamActivityService, TeamActivityService>();
+            services.AddSingleton<ITeamBulletinService, TeamBulletinService>();
             services.AddSingleton<IUploadService, UploadService>();
             services.AddSingleton<IVerifyCodeService, VerifyCodeService>();
             services.AddSingleton<IServerService, ServerService>();
@@ -115,6 +116,7 @@ namespace DataInfo.Api
             services.AddSingleton<IInteractiveRepository, InteractiveRepository>();
             services.AddSingleton<ITeamRepository, TeamRepository>();
             services.AddSingleton<ITeamActivityRepository, TeamActivityRepository>();
+            services.AddSingleton<ITeamBulletinRepository, TeamBulletinRepository>();
             services.AddSingleton<IRedisRepository, RedisRepository>();
 
             #endregion Repository

@@ -23,7 +23,8 @@ namespace DataInfo.AutoMapperProfiles
             CreateMap<TeamCreateContent, TeamCreateRequest>();
             CreateMap<TeamActivityContent, TeamJoinOrLeaveActivityRequest>();
             CreateMap<TeamAddActivityContent, TeamUpdateActivityRequest>()
-             .ForMember(request => request.ActDate, options => options.MapFrom(content => Convert.ToDateTime(content.ActDate).ToString("yyyy-MM-dd HH:mm:ss)")));
+             .ForMember(request => request.ActDate, options => options.MapFrom(content => Convert.ToDateTime(content.ActDate).ToString("yyyy-MM-dd")))
+             .ForMember(request => request.MeetTime, options => options.MapFrom(content => Convert.ToDateTime(content.MeetTime).ToString("HH:mm:ss")));
             CreateMap<TeamChangeLeaderContent, TeamChangeLeaderRequest>();
             CreateMap<TeamResponseApplyJoinContent, TeamJoinOrLeaveRequest>()
              .ForMember(request => request.Action, options => options.MapFrom(content => content.ResponseType));
@@ -31,6 +32,7 @@ namespace DataInfo.AutoMapperProfiles
              .ForMember(request => request.Action, options => options.MapFrom(content => content.ResponseType));
             CreateMap<TeamUpdateViceLeaderContent, TeamUpdateViceLeaderRequest>();
             CreateMap<TeamContent, TeamDisbandRequest>();
+            CreateMap<TeamAddBulletinContent, TeamUpdateBulletinRequest>();
 
             CreateMap<TeamData, TeamDao>()
              .ForMember(dao => dao.CreateDate, options => options.MapFrom(table => Convert.ToDateTime(table.CreateDate)))
@@ -46,6 +48,7 @@ namespace DataInfo.AutoMapperProfiles
             CreateMap<TeamDao, TeamSearchView>();
             CreateMap<TeamActivityDao, TeamActivityListView>();
             CreateMap<TeamActivityDao, TeamActivityDetailView>();
+            CreateMap<TeamBulletinDao, TeamBullentiListView>();
         }
     }
 }

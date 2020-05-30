@@ -350,6 +350,11 @@
         UpdateInviteJoinList = 1007,
 
         /// <summary>
+        /// 更新公告
+        /// </summary>
+        UpdateBulletin = 1008,
+
+        /// <summary>
         /// 更新活動
         /// </summary>
         UpdateActivity = 1009,
@@ -405,6 +410,27 @@
         /// 更新成功
         /// </summary>
         Success = 1,
+    }
+
+    /// <summary>
+    /// 更新公告結果類別資料
+    /// </summary>
+    public enum UpdateBulletinResultType
+    {
+        /// <summary>
+        /// 更新失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 更新成功
+        /// </summary>
+        Success = 1,
+
+        /// <summary>
+        /// 權限不足
+        /// </summary>
+        AuthorityNotEnough = 2,
     }
 
     /// <summary>

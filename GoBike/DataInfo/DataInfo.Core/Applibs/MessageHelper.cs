@@ -337,6 +337,11 @@
             public string ActivityDateEmpty { get; set; }
 
             /// <summary>
+            /// Gets or sets ActivityDateError
+            /// </summary>
+            public string ActivityDateError { get; set; }
+
+            /// <summary>
             /// Gets or sets ActivityDistanceEmpty
             /// </summary>
             public string ActivityDistanceEmpty { get; set; }
@@ -350,6 +355,11 @@
             /// Gets or sets ActivityMeetTimeEmpty
             /// </summary>
             public string ActivityMeetTimeEmpty { get; set; }
+
+            /// <summary>
+            /// Gets or sets ActivityMeetTimeError
+            /// </summary>
+            public string ActivityMeetTimeError { get; set; }
 
             /// <summary>
             /// Gets or sets ActivityNotExist
@@ -370,6 +380,21 @@
             /// Gets or sets AvatarEmpty
             /// </summary>
             public string AvatarEmpty { get; set; }
+
+            /// <summary>
+            /// Gets or sets BulletinContentEmpty
+            /// </summary>
+            public string BulletinContentEmpty { get; set; }
+
+            /// <summary>
+            /// Gets or sets BulletinDayEmpty
+            /// </summary>
+            public string BulletinDayEmpty { get; set; }
+
+            /// <summary>
+            /// Gets or sets BulletinIDEmpty
+            /// </summary>
+            public string BulletinIDEmpty { get; set; }
 
             /// <summary>
             /// Gets or sets CountyEmpty

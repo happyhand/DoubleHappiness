@@ -25,20 +25,6 @@ namespace DataInfo.Repository.Managers.Team
         private readonly ILogger logger = LogManager.GetLogger("TeamActivityRepository");
 
         /// <summary>
-        /// mapper
-        /// </summary>
-        private readonly IMapper mapper;
-
-        /// <summary>
-        /// 建構式
-        /// </summary>
-        /// <param name="mapper">mapper</param>
-        public TeamActivityRepository(IMapper mapper)
-        {
-            this.mapper = mapper;
-        }
-
-        /// <summary>
         /// 轉換 TeamActivityDao
         /// </summary>
         /// <param name="query">query</param>

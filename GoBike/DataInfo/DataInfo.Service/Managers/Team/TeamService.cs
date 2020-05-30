@@ -136,7 +136,7 @@ namespace DataInfo.Service.Managers.Team
         /// </summary>
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
-        /// <returns>Tuple(string, MemberEditInfoRequest)</returns>
+        /// <returns>Tuple(string, TeamEditRequest)</returns>
         private async Task<Tuple<string, TeamEditRequest>> UpdateInfoHandler(string memberID, TeamEditContent content)
         {
             if (string.IsNullOrEmpty(content.TeamID))

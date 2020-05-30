@@ -16,7 +16,15 @@ namespace DataInfo.Service.Interfaces.Team
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> AddActivity(string memberID, TeamAddActivityContent content);
+        Task<ResponseResult> Add(string memberID, TeamAddActivityContent content);
+
+        /// <summary>
+        /// 更新車隊活動資料
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
+        /// <returns>ResponseResult</returns>
+        Task<ResponseResult> Edit(string memberID, TeamUpdateActivityContent content);
 
         /// <summary>
         /// 取得車隊活動明細資料
@@ -24,7 +32,7 @@ namespace DataInfo.Service.Interfaces.Team
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> GetTeamActivityDetail(string memberID, TeamActivityDetailContent content);
+        Task<ResponseResult> GetDetail(string memberID, TeamActivityDetailContent content);
 
         /// <summary>
         /// 取得車隊活動列表
@@ -32,7 +40,7 @@ namespace DataInfo.Service.Interfaces.Team
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> GetTeamActivityList(string memberID, TeamContent content);
+        Task<ResponseResult> GetList(string memberID, TeamContent content);
 
         /// <summary>
         /// 加入或離開車隊活動

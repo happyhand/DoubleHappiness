@@ -130,30 +130,4 @@
         /// </summary>
         Open = 1
     }
-
-    /// <summary>
-    /// 車隊搜尋狀態類別資料
-    /// </summary>
-    public enum TeamUpdateActivityType
-    {
-        /// <summary>
-        /// 刪除
-        /// </summary>
-        Delete = -1,
-
-        /// <summary>
-        /// 無設定
-        /// </summary>
-        None = 0,
-
-        /// <summary>
-        /// 新增
-        /// </summary>
-        Add = 1,
-
-        /// <summary>
-        /// 修改
-        /// </summary>
-        Edit = 2
-    }
 }

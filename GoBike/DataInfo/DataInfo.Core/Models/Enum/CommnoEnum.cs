@@ -19,6 +19,11 @@
         /// 新增
         /// </summary>
         Add = 1,
+
+        /// <summary>
+        /// 修改
+        /// </summary>
+        Edit = 2
     }
 
     /// <summary>

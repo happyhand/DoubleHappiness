@@ -69,12 +69,92 @@ namespace DataInfo.Service.Managers.Team
         }
 
         /// <summary>
+        /// 車隊活動資料更新處理
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
+        /// <returns>Tuple(string, TeamUpdateActivityRequest)</returns>
+        private async Task<Tuple<string, TeamUpdateActivityRequest>> UpdateHandler(string memberID, TeamUpdateActivityContent content)
+        {
+            if (string.IsNullOrEmpty(content.ActID))
+            {
+                return Tuple.Create<string, TeamUpdateActivityRequest>(MessageHelper.Message.ResponseMessage.Team.ActivityIDEmpty, null);
+            }
+
+            TeamUpdateActivityRequest request = new TeamUpdateActivityRequest
+            {
+                MemberID = memberID,
+                ActID = content.ActID,
+                Action = (int)ActionType.Edit
+            };
+
+            //// TODO 路線規劃及路線
+            if (!string.IsNullOrEmpty(content.Photo))
+            {
+                List<string> imgBase64s = new List<string>() { content.Photo };
+                IEnumerable<string> imgUris = await this.uploadService.UploadMemberImages(imgBase64s, true).ConfigureAwait(false);
+                if (imgUris == null || !imgUris.Any())
+                {
+                    return Tuple.Create<string, TeamUpdateActivityRequest>(MessageHelper.Message.ResponseMessage.Upload.PhotoFail, null);
+                }
+
+                if (!string.IsNullOrEmpty(content.Photo))
+                {
+                    string photo = imgUris.ElementAt(0);
+                    if (string.IsNullOrEmpty(photo))
+                    {
+                        return Tuple.Create<string, TeamUpdateActivityRequest>(MessageHelper.Message.ResponseMessage.Upload.PhotoFail, null);
+                    }
+
+                    request.Photo = photo;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(content.ActDate))
+            {
+                if (!DateTime.TryParse(content.ActDate, out DateTime actDate))
+                {
+                    return Tuple.Create<string, TeamUpdateActivityRequest>(MessageHelper.Message.ResponseMessage.Team.ActivityDateError, null);
+                }
+
+                request.ActDate = actDate.ToString("yyyy-MM-dd");
+            }
+
+            if (!string.IsNullOrEmpty(content.MeetTime))
+            {
+                if (!DateTime.TryParse(content.MeetTime, out DateTime meetTime))
+                {
+                    return Tuple.Create<string, TeamUpdateActivityRequest>(MessageHelper.Message.ResponseMessage.Team.ActivityMeetTimeError, null);
+                }
+
+                request.MeetTime = meetTime.ToString("HH:mm:ss");
+            }
+
+            if (content.MaxAltitude > default(float))
+            {
+                request.MaxAltitude = content.MaxAltitude;
+            }
+
+            if (content.TotalDistance > default(float))
+            {
+                request.TotalDistance = content.TotalDistance;
+            }
+
+            if (!string.IsNullOrEmpty(content.Title))
+            {
+                request.Title = content.Title;
+            }
+
+            return Tuple.Create(string.Empty, request);
+        }
+
+        /// <summary>
         /// 新增車隊活動
         /// </summary>
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> AddActivity(string memberID, TeamAddActivityContent content)
+        public async Task<ResponseResult> Add(string memberID, TeamAddActivityContent content)
         {
             try
             {
@@ -124,7 +204,7 @@ namespace DataInfo.Service.Managers.Team
                 TeamUpdateActivityRequest request = this.mapper.Map<TeamUpdateActivityRequest>(content);
                 request.MemberID = memberID;
                 request.MemberList = JsonConvert.SerializeObject(new string[] { memberID });
-                request.Action = (int)TeamUpdateActivityType.Add;
+                request.Action = (int)ActionType.Add;
 
                 CommandData<TeamUpdateActivityResponse> response = await this.serverService.DoAction<TeamUpdateActivityResponse>((int)TeamCommandIDType.UpdateActivity, CommandType.Team, request).ConfigureAwait(false);
                 this.logger.LogInfo("新增車隊活動結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
@@ -178,12 +258,93 @@ namespace DataInfo.Service.Managers.Team
         }
 
         /// <summary>
+        /// 更新車隊活動資料
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> Edit(string memberID, TeamUpdateActivityContent content)
+        {
+            try
+            {
+                #region 處理更新資料
+
+                Tuple<string, TeamUpdateActivityRequest> updateHandlerResult = await this.UpdateHandler(memberID, content).ConfigureAwait(false);
+                if (!string.IsNullOrEmpty(updateHandlerResult.Item1))
+                {
+                    this.logger.LogWarn("更新車隊活動資料結果", $"Result: 更新失敗({updateHandlerResult.Item1}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.InputError,
+                        Content = updateHandlerResult.Item1
+                    };
+                }
+
+                TeamUpdateActivityRequest request = updateHandlerResult.Item2;
+
+                #endregion 處理更新資料
+
+                #region 發送【更新活動】指令至後端
+
+                CommandData<TeamUpdateActivityResponse> response = await this.serverService.DoAction<TeamUpdateActivityResponse>((int)TeamCommandIDType.UpdateActivity, CommandType.Team, request).ConfigureAwait(false);
+                this.logger.LogInfo("新增車隊活動結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                switch (response.Data.Result)
+                {
+                    case (int)UpdateActivityResultType.Success:
+                        return new ResponseResult()
+                        {
+                            Result = true,
+                            ResultCode = (int)ResponseResultType.Success,
+                            Content = MessageHelper.Message.ResponseMessage.Add.Success
+                        };
+
+                    case (int)UpdateActivityResultType.Fail:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.CreateFail,
+                            Content = MessageHelper.Message.ResponseMessage.Add.Fail
+                        };
+
+                    case (int)UpdateActivityResultType.AuthorityNotEnough:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.DenyAccess,
+                            Content = MessageHelper.Message.ResponseMessage.Team.TeamAuthorityNotEnough
+                        };
+
+                    default:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.UnknownError,
+                            Content = MessageHelper.Message.ResponseMessage.Add.Fail
+                        };
+                }
+
+                #endregion 發送【更新活動】指令至後端
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("更新車隊資料發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = MessageHelper.Message.ResponseMessage.Update.Error
+                };
+            }
+        }
+
+        /// <summary>
         /// 取得車隊活動明細資料
         /// </summary>
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> GetTeamActivityDetail(string memberID, TeamActivityDetailContent content)
+        public async Task<ResponseResult> GetDetail(string memberID, TeamActivityDetailContent content)
         {
             try
             {
@@ -198,7 +359,7 @@ namespace DataInfo.Service.Managers.Team
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
+                        ResultCode = (int)ResponseResultType.DenyAccess,
                         Content = errorMessgae
                     };
                 }
@@ -248,7 +409,7 @@ namespace DataInfo.Service.Managers.Team
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> GetTeamActivityList(string memberID, TeamContent content)
+        public async Task<ResponseResult> GetList(string memberID, TeamContent content)
         {
             try
             {
@@ -263,7 +424,7 @@ namespace DataInfo.Service.Managers.Team
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
+                        ResultCode = (int)ResponseResultType.DenyAccess,
                         Content = errorMessgae
                     };
                 }
