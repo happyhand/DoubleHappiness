@@ -42,6 +42,37 @@ namespace DataInfo.Api.Controllers.Team
         }
 
         /// <summary>
+        /// 刪除車隊公告
+        /// </summary>
+        /// <param name="bulletinID">bulletinID</param>
+        /// <returns>IActionResult</returns>
+        [HttpDelete("{bulletinID}")]
+        public async Task<IActionResult> Delete(string bulletinID)
+        {
+            string memberID = this.GetMemberID();
+            try
+            {
+                this.logger.LogInfo("會員請求刪除車隊公告", $"MemberID: {memberID} BulletinID: {bulletinID}", null);
+                TeamBulletinContent content = new TeamBulletinContent()
+                {
+                    BulletinID = bulletinID
+                };
+                ResponseResult responseResult = await this.teamBulletinService.Delete(memberID, content).ConfigureAwait(false);
+                return Ok(responseResult);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("會員請求刪除車隊公告發生錯誤", $"MemberID: {memberID} BulletinID: {bulletinID}", ex);
+                return Ok(new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = MessageHelper.Message.ResponseMessage.Update.Error
+                });
+            }
+        }
+
+        /// <summary>
         /// 取得車隊公告列表
         /// </summary>
         /// <param name="teamID">teamID</param>

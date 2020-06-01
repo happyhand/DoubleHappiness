@@ -1,4 +1,5 @@
-﻿using DataInfo.Core.Models.Dao.Team;
+﻿using DataInfo.Core.Models.Dao.Member;
+using DataInfo.Core.Models.Dao.Team;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -24,18 +25,28 @@ namespace DataInfo.Repository.Interfaces.Team
         Task<IEnumerable<TeamDao>> Get(IEnumerable<string> teamIDs);
 
         /// <summary>
-        /// 取得申請車隊列表
+        /// 取得車隊成員列表
         /// </summary>
         /// <param name="memberID">memberID</param>
-        /// <returns>TeamDaos</returns>
-        Task<IEnumerable<TeamDao>> GetApplyTeamList(string memberID);
+        /// <param name="teamID">teamID</param>
+        /// <returns>MemberDaos</returns>
+        Task<IEnumerable<MemberDao>> GetMemberList(string memberID, string teamID);
 
         /// <summary>
-        /// 取得邀請車隊列表
+        /// 取得申請加入會員列表
         /// </summary>
         /// <param name="memberID">memberID</param>
-        /// <returns>TeamDaos</returns>
-        Task<IEnumerable<TeamDao>> GetInviteTeamList(string memberID);
+        /// <param name="teamID">teamID</param>
+        /// <returns>MemberDaos</returns>
+        Task<IEnumerable<MemberDao>> GetMemberOfApplyJoin(string memberID, string teamID);
+
+        /// <summary>
+        /// 取得邀請加入會員列表
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="teamID">teamID</param>
+        /// <returns>MemberDaos</returns>
+        Task<IEnumerable<MemberDao>> GetMemberOfInviteJoin(string memberID, string teamID);
 
         /// <summary>
         /// 取得附近車隊資料列表
@@ -55,6 +66,20 @@ namespace DataInfo.Repository.Interfaces.Team
         /// </summary>
         /// <returns>TeamDaos</returns>
         Task<IEnumerable<TeamDao>> GetRecommendTeam();
+
+        /// <summary>
+        /// 取得申請車隊列表
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>TeamDaos</returns>
+        Task<IEnumerable<TeamDao>> GetTeamOfApplyJoin(string memberID);
+
+        /// <summary>
+        /// 取得邀請車隊列表
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>TeamDaos</returns>
+        Task<IEnumerable<TeamDao>> GetTeamOfInviteJoin(string memberID);
 
         /// <summary>
         /// 搜尋車隊

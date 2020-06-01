@@ -32,6 +32,7 @@ namespace DataInfo.AutoMapperProfiles
              .ForMember(request => request.Action, options => options.MapFrom(content => content.ResponseType));
             CreateMap<TeamUpdateViceLeaderContent, TeamUpdateViceLeaderRequest>();
             CreateMap<TeamContent, TeamDisbandRequest>();
+            CreateMap<TeamBulletinContent, TeamUpdateBulletinRequest>();
             CreateMap<TeamAddBulletinContent, TeamUpdateBulletinRequest>();
 
             CreateMap<TeamData, TeamDao>()

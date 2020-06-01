@@ -19,6 +19,14 @@ namespace DataInfo.Service.Interfaces.Team
         Task<ResponseResult> Add(string memberID, TeamAddBulletinContent content);
 
         /// <summary>
+        /// 刪除車隊公告
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
+        /// <returns>ResponseResult</returns>
+        Task<ResponseResult> Delete(string memberID, TeamBulletinContent content);
+
+        /// <summary>
         /// 更新車隊公告
         /// </summary>
         /// <param name="memberID">memberID</param>

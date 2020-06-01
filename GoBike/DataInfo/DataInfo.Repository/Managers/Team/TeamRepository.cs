@@ -1,12 +1,16 @@
 ﻿using AutoMapper;
 using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
+using DataInfo.Core.Models.Dao.Member;
+using DataInfo.Core.Models.Dao.Member.Table;
 using DataInfo.Core.Models.Dao.Team;
 using DataInfo.Core.Models.Dao.Team.Table;
+using DataInfo.Repository.Interfaces.Member;
 using DataInfo.Repository.Interfaces.Team;
 using DataInfo.Repository.Managers.Base;
 using Newtonsoft.Json;
 using NLog;
+using SqlSugar;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,12 +34,19 @@ namespace DataInfo.Repository.Managers.Team
         private readonly IMapper mapper;
 
         /// <summary>
+        /// memberRepository
+        /// </summary>
+        private readonly IMemberRepository memberRepository;
+
+        /// <summary>
         /// 建構式
         /// </summary>
         /// <param name="mapper">mapper</param>
-        public TeamRepository(IMapper mapper)
+        /// <param name="memberRepository">memberRepository</param>
+        public TeamRepository(IMapper mapper, IMemberRepository memberRepository)
         {
             this.mapper = mapper;
+            this.memberRepository = memberRepository;
         }
 
         /// <summary>
@@ -83,46 +94,80 @@ namespace DataInfo.Repository.Managers.Team
         }
 
         /// <summary>
-        /// 取得申請車隊列表
+        /// 取得車隊成員列表
         /// </summary>
         /// <param name="memberID">memberID</param>
-        /// <returns>TeamDaos</returns>
-        public async Task<IEnumerable<TeamDao>> GetApplyTeamList(string memberID)
+        /// <param name="teamID">teamID</param>
+        /// <returns>MemberDaos</returns>
+        public async Task<IEnumerable<MemberDao>> GetMemberList(string memberID, string teamID)
         {
             try
             {
-                IEnumerable<TeamData> teamDatas = await this.Db.Queryable<TeamData>()
-                                              .Where(data => data.ApplyJoinList.Contains(memberID))
-                                              .ToListAsync().ConfigureAwait(false);
+                ISugarQueryable<UserAccount, UserInfo> query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID))
+                        .Where((ua, ui) => SqlFunc.Subqueryable<TeamData>()
+                        .Where(td => td.TeamID.Equals(teamID))
+                        .Where(td => td.Leader.Equals(memberID) || td.TeamViceLeaderIDs.Contains(memberID) || td.TeamMemberIDs.Contains(memberID))
+                        .Where(td => td.Leader.Equals(ua.MemberID) || td.TeamViceLeaderIDs.Contains(ua.MemberID) || td.TeamMemberIDs.Contains(ua.MemberID))
+                        .Any());
 
-                return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);
+                return await this.memberRepository.TransformMemberDao(query).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("取得申請車隊列表發生錯誤", $"MemberID: {JsonConvert.SerializeObject(memberID)}", ex);
-                return new List<TeamDao>();
+                this.logger.LogError("取得車隊成員列表發生錯誤", $"TeamID: {teamID}", ex);
+                return new List<MemberDao>();
             }
         }
 
         /// <summary>
-        /// 取得邀請車隊列表
+        /// 取得申請加入會員列表
         /// </summary>
         /// <param name="memberID">memberID</param>
-        /// <returns>TeamDaos</returns>
-        public async Task<IEnumerable<TeamDao>> GetInviteTeamList(string memberID)
+        /// <param name="teamID">teamID</param>
+        /// <returns>MemberDaos</returns>
+        public async Task<IEnumerable<MemberDao>> GetMemberOfApplyJoin(string memberID, string teamID)
         {
             try
             {
-                IEnumerable<TeamData> teamDatas = await this.Db.Queryable<TeamData>()
-                                              .Where(data => data.InviteJoinList.Contains(memberID))
-                                              .ToListAsync().ConfigureAwait(false);
+                ISugarQueryable<UserAccount, UserInfo> query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID))
+                        .Where((ua, ui) => SqlFunc.Subqueryable<TeamData>()
+                        .Where(td => td.TeamID.Equals(teamID))
+                        .Where(td => td.Leader.Equals(memberID) || td.TeamViceLeaderIDs.Contains(memberID))
+                        .Where(td => td.ApplyJoinList.Contains(ua.MemberID))
+                        .Any());
 
-                return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);
+                return await this.memberRepository.TransformMemberDao(query).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("取得邀請車隊列表發生錯誤", $"MemberID: {JsonConvert.SerializeObject(memberID)}", ex);
-                return new List<TeamDao>();
+                this.logger.LogError("取得申請加入會員列表發生錯誤", $"TeamID: {teamID}", ex);
+                return new List<MemberDao>();
+            }
+        }
+
+        /// <summary>
+        /// 取得邀請加入會員列表
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="teamID">teamID</param>
+        /// <returns>MemberDaos</returns>
+        public async Task<IEnumerable<MemberDao>> GetMemberOfInviteJoin(string memberID, string teamID)
+        {
+            try
+            {
+                ISugarQueryable<UserAccount, UserInfo> query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID))
+                                                               .Where((ua, ui) => SqlFunc.Subqueryable<TeamData>()
+                                                               .Where(td => td.TeamID.Equals(teamID))
+                                                               .Where(td => td.Leader.Equals(memberID) || td.TeamViceLeaderIDs.Contains(memberID))
+                                                               .Where(td => td.InviteJoinList.Contains(ua.MemberID))
+                                                               .Any());
+
+                return await this.memberRepository.TransformMemberDao(query).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得邀請加入會員列表發生錯誤", $"TeamID: {teamID}", ex);
+                return new List<MemberDao>();
             }
         }
 
@@ -191,6 +236,50 @@ namespace DataInfo.Repository.Managers.Team
             catch (Exception ex)
             {
                 this.logger.LogError("取得推薦車隊資料列表發生錯誤", string.Empty, ex);
+                return new List<TeamDao>();
+            }
+        }
+
+        /// <summary>
+        /// 取得申請加入車隊列表
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>TeamDaos</returns>
+        public async Task<IEnumerable<TeamDao>> GetTeamOfApplyJoin(string memberID)
+        {
+            try
+            {
+                IEnumerable<TeamData> teamDatas = await this.Db.Queryable<TeamData>()
+                                              .Where(data => data.ApplyJoinList.Contains(memberID))
+                                              .ToListAsync().ConfigureAwait(false);
+
+                return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得申請加入車隊列表發生錯誤", $"MemberID: {JsonConvert.SerializeObject(memberID)}", ex);
+                return new List<TeamDao>();
+            }
+        }
+
+        /// <summary>
+        /// 取得邀請加入車隊列表
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>TeamDaos</returns>
+        public async Task<IEnumerable<TeamDao>> GetTeamOfInviteJoin(string memberID)
+        {
+            try
+            {
+                IEnumerable<TeamData> teamDatas = await this.Db.Queryable<TeamData>()
+                                              .Where(data => data.InviteJoinList.Contains(memberID))
+                                              .ToListAsync().ConfigureAwait(false);
+
+                return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得邀請加入車隊列表發生錯誤", $"MemberID: {JsonConvert.SerializeObject(memberID)}", ex);
                 return new List<TeamDao>();
             }
         }

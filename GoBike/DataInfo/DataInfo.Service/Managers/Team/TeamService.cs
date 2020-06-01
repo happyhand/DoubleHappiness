@@ -3,6 +3,7 @@ using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dao.Member;
 using DataInfo.Core.Models.Dao.Team;
+using DataInfo.Core.Models.Dto.Member.View;
 using DataInfo.Core.Models.Dto.Response;
 using DataInfo.Core.Models.Dto.Server;
 using DataInfo.Core.Models.Dto.Team.Content;
@@ -51,6 +52,11 @@ namespace DataInfo.Service.Managers.Team
         private readonly IServerService serverService;
 
         /// <summary>
+        /// teamBulletinRepository
+        /// </summary>
+        private readonly ITeamBulletinRepository teamBulletinRepository;
+
+        /// <summary>
         /// teamRepository
         /// </summary>
         private readonly ITeamRepository teamRepository;
@@ -68,16 +74,16 @@ namespace DataInfo.Service.Managers.Team
         /// <param name="serverService">serverService</param>
         /// <param name="memberRepository">memberRepository</param>
         /// <param name="teamRepository">teamRepository</param>
-        public TeamService(IMapper mapper, IUploadService uploadService, IServerService serverService, IMemberRepository memberRepository, ITeamRepository teamRepository)
+        /// <param name="teamBulletinRepository">teamBulletinRepository</param>
+        public TeamService(IMapper mapper, IUploadService uploadService, IServerService serverService, IMemberRepository memberRepository, ITeamRepository teamRepository, ITeamBulletinRepository teamBulletinRepository)
         {
             this.mapper = mapper;
             this.uploadService = uploadService;
             this.serverService = serverService;
             this.memberRepository = memberRepository;
             this.teamRepository = teamRepository;
+            this.teamBulletinRepository = teamBulletinRepository;
         }
-
-        #region 車隊資料
 
         /// <summary>
         /// 取得車隊互動狀態
@@ -643,8 +649,8 @@ namespace DataInfo.Service.Managers.Team
                 }
 
                 Task<IEnumerable<TeamDao>> joinTeamDaosTask = this.teamRepository.Get(memberDao.TeamList);
-                Task<IEnumerable<TeamDao>> applyTeamDaosTask = this.teamRepository.GetApplyTeamList(memberID);
-                Task<IEnumerable<TeamDao>> inviteTeamDaosTask = this.teamRepository.GetInviteTeamList(memberID);
+                Task<IEnumerable<TeamDao>> applyTeamDaosTask = this.teamRepository.GetTeamOfApplyJoin(memberID);
+                Task<IEnumerable<TeamDao>> inviteTeamDaosTask = this.teamRepository.GetTeamOfInviteJoin(memberID);
                 IEnumerable<TeamDropMenuView> joinTeamDropMenuView = this.mapper.Map<IEnumerable<TeamDropMenuView>>(await joinTeamDaosTask.ConfigureAwait(false));
                 IEnumerable<TeamDropMenuView> applyTeamDropMenuView = this.mapper.Map<IEnumerable<TeamDropMenuView>>(await applyTeamDaosTask.ConfigureAwait(false));
                 IEnumerable<TeamDropMenuView> inviteTeamDropMenuView = this.mapper.Map<IEnumerable<TeamDropMenuView>>(await inviteTeamDaosTask.ConfigureAwait(false));
@@ -695,7 +701,7 @@ namespace DataInfo.Service.Managers.Team
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
+                        ResultCode = (int)ResponseResultType.DenyAccess,
                         Content = errorMessgae
                     };
                 }
@@ -753,6 +759,72 @@ namespace DataInfo.Service.Managers.Team
             catch (Exception ex)
             {
                 this.logger.LogError("取得車隊資訊發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                };
+            }
+        }
+
+        /// <summary>
+        /// 取得車隊訊息
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> GetTeamMessage(string memberID, TeamContent content)
+        {
+            try
+            {
+                #region 驗證資料
+
+                TeamContentValidator teamContentValidator = new TeamContentValidator();
+                ValidationResult validationResult = teamContentValidator.Validate(content);
+                if (!validationResult.IsValid)
+                {
+                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
+                    this.logger.LogWarn("取得車隊訊息結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.DenyAccess,
+                        Content = errorMessgae
+                    };
+                }
+
+                #endregion 驗證資料
+
+                #region 取得資料
+
+                Task<IEnumerable<TeamBulletinDao>> teamBulletinDaos = this.teamBulletinRepository.Get(memberID, content.TeamID);
+                Task<IEnumerable<MemberDao>> memberOfApplyJoinList = this.teamRepository.GetMemberOfApplyJoin(memberID, content.TeamID);
+                Task<IEnumerable<MemberDao>> memberOfInviteJoinList = this.teamRepository.GetMemberOfInviteJoin(memberID, content.TeamID);
+                Task<IEnumerable<MemberDao>> memberOfTeamList = this.teamRepository.GetMemberList(memberID, content.TeamID);
+
+                IEnumerable<TeamBullentiListView> teamBullentiListViews = this.mapper.Map<IEnumerable<TeamBullentiListView>>(await teamBulletinDaos.ConfigureAwait(false));
+                IEnumerable<MemberSimpleInfoView> applyJoinViews = this.mapper.Map<IEnumerable<MemberSimpleInfoView>>(await memberOfApplyJoinList.ConfigureAwait(false));
+                IEnumerable<MemberSimpleInfoView> inviteJoinViews = this.mapper.Map<IEnumerable<MemberSimpleInfoView>>(await memberOfInviteJoinList.ConfigureAwait(false));
+                IEnumerable<MemberSimpleInfoView> teamMemberViews = this.mapper.Map<IEnumerable<MemberSimpleInfoView>>(await memberOfTeamList.ConfigureAwait(false));
+                return new ResponseResult()
+                {
+                    Result = true,
+                    ResultCode = (int)ResponseResultType.Success,
+                    Content = new TeamMessageView()
+                    {
+                        BullentiList = teamBullentiListViews,
+                        ApplyJoinList = applyJoinViews,
+                        InviteJoinList = inviteJoinViews,
+                        MemberList = teamMemberViews
+                    }
+                };
+
+                #endregion 取得資料
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得車隊訊息發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
                 return new ResponseResult()
                 {
                     Result = false,
@@ -894,7 +966,5 @@ namespace DataInfo.Service.Managers.Team
                 };
             }
         }
-
-        #endregion 車隊資料
     }
 }

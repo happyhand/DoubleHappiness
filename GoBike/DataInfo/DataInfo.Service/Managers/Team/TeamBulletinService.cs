@@ -173,6 +173,91 @@ namespace DataInfo.Service.Managers.Team
         }
 
         /// <summary>
+        /// 刪除車隊公告
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> Delete(string memberID, TeamBulletinContent content)
+        {
+            try
+            {
+                #region 驗證資料
+
+                TeamBulletinContentValidator contentValidator = new TeamBulletinContentValidator();
+                ValidationResult validationResult = contentValidator.Validate(content);
+                if (!validationResult.IsValid)
+                {
+                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
+                    this.logger.LogWarn("刪除車隊公告結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = (int)ResponseResultType.DenyAccess,
+                        Content = errorMessgae
+                    };
+                }
+
+                #endregion 驗證資料
+
+                #region 發送【更新公告】指令至後端
+
+                TeamUpdateBulletinRequest request = this.mapper.Map<TeamUpdateBulletinRequest>(content);
+                request.MemberID = memberID;
+                request.Action = (int)ActionType.Delete;
+
+                CommandData<TeamUpdateBulletinResponse> response = await this.serverService.DoAction<TeamUpdateBulletinResponse>((int)TeamCommandIDType.UpdateBulletin, CommandType.Team, request).ConfigureAwait(false);
+                this.logger.LogInfo("刪除車隊公告結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                switch (response.Data.Result)
+                {
+                    case (int)UpdateBulletinResultType.Success:
+                        return new ResponseResult()
+                        {
+                            Result = true,
+                            ResultCode = (int)ResponseResultType.Success,
+                            Content = MessageHelper.Message.ResponseMessage.Update.Success
+                        };
+
+                    case (int)UpdateBulletinResultType.Fail:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.UpdateFail,
+                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                        };
+
+                    case (int)UpdateBulletinResultType.AuthorityNotEnough:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.DenyAccess,
+                            Content = MessageHelper.Message.ResponseMessage.Team.TeamAuthorityNotEnough
+                        };
+
+                    default:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.UnknownError,
+                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                        };
+                }
+
+                #endregion 發送【更新公告】指令至後端
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("刪除車隊公告發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = (int)ResponseResultType.UnknownError,
+                    Content = MessageHelper.Message.ResponseMessage.Update.Error
+                };
+            }
+        }
+
+        /// <summary>
         /// 更新車隊公告
         /// </summary>
         /// <param name="memberID">memberID</param>

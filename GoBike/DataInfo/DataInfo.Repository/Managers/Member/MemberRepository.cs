@@ -41,38 +41,6 @@ namespace DataInfo.Repository.Managers.Member
         }
 
         /// <summary>
-        /// 轉換 MemberDao
-        /// </summary>
-        /// <param name="query">query</param>
-        /// <returns>MemberDaos</returns>
-        private async Task<IEnumerable<MemberDao>> TransformMemberDao(ISugarQueryable<UserAccount, UserInfo> query)
-        {
-            return await query.Select((ua, ui) =>
-            new MemberDao()
-            {
-                Avatar = ui.Avatar,
-                Birthday = ui.Birthday,
-                BodyHeight = ui.BodyHeight,
-                BodyWeight = ui.BodyWeight,
-                County = ui.County,
-                Email = ua.Email,
-                FBToken = ua.FBToken,
-                FrontCover = ui.FrontCover,
-                Gender = ui.Gender,
-                GoogleToken = ua.GoogleToken,
-                MemberID = ua.MemberID,
-                Mobile = ui.Mobile,
-                Nickname = ui.NickName,
-                RegisterDate = ua.RegisterDate,
-                RegisterSource = ua.RegisterSource,
-                Photo = ui.Photo,
-                TeamListDataJson = ui.TeamList,
-                FriendListDataJson = ui.FriendList,
-                BlackListDataJson = ui.TeamList,
-            }).ToListAsync().ConfigureAwait(false);
-        }
-
-        /// <summary>
         /// 取得會員資料
         /// </summary>
         /// <param name="memberID">memberID</param>
@@ -181,6 +149,38 @@ namespace DataInfo.Repository.Managers.Member
         {
             string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{AppSettingHelper.Appsetting.Redis.Flag.LastLogin}-{memberID}";
             return await this.redisRepository.IsExist(cacheKey).ConfigureAwait(false) ? (int)OnlineStatusType.Online : (int)OnlineStatusType.Offline;
+        }
+
+        /// <summary>
+        /// 轉換 MemberDao
+        /// </summary>
+        /// <param name="query">query</param>
+        /// <returns>MemberDaos</returns>
+        public async Task<IEnumerable<MemberDao>> TransformMemberDao(ISugarQueryable<UserAccount, UserInfo> query)
+        {
+            return await query.Select((ua, ui) =>
+            new MemberDao()
+            {
+                Avatar = ui.Avatar,
+                Birthday = ui.Birthday,
+                BodyHeight = ui.BodyHeight,
+                BodyWeight = ui.BodyWeight,
+                County = ui.County,
+                Email = ua.Email,
+                FBToken = ua.FBToken,
+                FrontCover = ui.FrontCover,
+                Gender = ui.Gender,
+                GoogleToken = ua.GoogleToken,
+                MemberID = ua.MemberID,
+                Mobile = ui.Mobile,
+                Nickname = ui.NickName,
+                RegisterDate = ua.RegisterDate,
+                RegisterSource = ua.RegisterSource,
+                Photo = ui.Photo,
+                TeamListDataJson = ui.TeamList,
+                FriendListDataJson = ui.FriendList,
+                BlackListDataJson = ui.TeamList,
+            }).ToListAsync().ConfigureAwait(false);
         }
     }
 }

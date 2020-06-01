@@ -1,4 +1,6 @@
 ﻿using DataInfo.Core.Models.Dao.Member;
+using DataInfo.Core.Models.Dao.Member.Table;
+using SqlSugar;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -39,5 +41,12 @@ namespace DataInfo.Repository.Interfaces.Member
         /// <param name="memberID">memberID</param>
         /// <returns>int</returns>
         Task<int> GetOnlineType(string memberID);
+
+        /// <summary>
+        /// 轉換 MemberDao
+        /// </summary>
+        /// <param name="query">query</param>
+        /// <returns>MemberDaos</returns>
+        Task<IEnumerable<MemberDao>> TransformMemberDao(ISugarQueryable<UserAccount, UserInfo> query);
     }
 }

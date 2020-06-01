@@ -66,6 +66,14 @@ namespace DataInfo.Service.Interfaces.Team
         Task<ResponseResult> GetTeamInfo(string memberID, TeamContent content);
 
         /// <summary>
+        /// 取得車隊訊息
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
+        /// <returns>ResponseResult</returns>
+        Task<ResponseResult> GetTeamMessage(string memberID, TeamContent content);
+
+        /// <summary>
         /// 搜尋車隊
         /// </summary>
         /// <param name="memberID">memberID</param>
