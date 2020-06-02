@@ -53,9 +53,9 @@ namespace DataInfo.Core.Models.Dto.Team.Content
         public TeamCreateContentValidator()
         {
             ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
-            RuleFor(content => content.Avatar)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.AvatarEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Team.AvatarEmpty);
+            //RuleFor(content => content.Avatar)
+            //.NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.AvatarEmpty)
+            //.NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Team.AvatarEmpty);
 
             RuleFor(content => content.FrontCover)
             .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.FrontCoverEmpty)
