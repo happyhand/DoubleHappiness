@@ -38,11 +38,6 @@ namespace DataInfo.Core.Models.Dao.Team.Table
         public string FrontCover { get; set; }
 
         /// <summary>
-        /// Gets or sets 邀請列表
-        /// </summary>
-        public string InviteJoinList { get; set; }
-
-        /// <summary>
         /// Gets or sets 車隊隊長 ID
         /// </summary>
         public string Leader { get; set; }

@@ -13,6 +13,11 @@ namespace DataInfo.Core.Models.Dto.Team.View
         public string Avatar { get; set; }
 
         /// <summary>
+        /// Gets or sets 車隊封面
+        /// </summary>
+        public string FrontCover { get; set; }
+
+        /// <summary>
         /// Gets or sets 互動狀態
         /// </summary>
         public int InteractiveStatus { get; set; }

@@ -1,4 +1,7 @@
-﻿namespace DataInfo.Core.Models.Dto.Team.Content
+﻿using DataInfo.Core.Models.Dto.Team.Content.data;
+using System.Collections.Generic;
+
+namespace DataInfo.Core.Models.Dto.Team.Content
 {
     /// <summary>
     /// 更新車隊活動內容
@@ -31,6 +34,11 @@
         public string Photo { get; set; }
 
         /// <summary>
+        /// Gets or sets 路線
+        /// </summary>
+        public IEnumerable<Route> Routes { get; set; }
+
+        /// <summary>
         /// Gets or sets 標題
         /// </summary>
         public string Title { get; set; }
@@ -39,7 +47,5 @@
         /// Gets or sets 總距離
         /// </summary>
         public float TotalDistance { get; set; }
-
-        //// TODO 路線、路線描述
     }
 }

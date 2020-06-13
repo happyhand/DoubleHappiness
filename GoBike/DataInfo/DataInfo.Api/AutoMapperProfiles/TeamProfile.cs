@@ -4,6 +4,7 @@ using DataInfo.Core.Models.Dao.Team.Table;
 using DataInfo.Core.Models.Dto.Team.Content;
 using DataInfo.Core.Models.Dto.Team.Request;
 using DataInfo.Core.Models.Dto.Team.View;
+using DataInfo.Core.Models.Dto.Team.View.data;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -23,12 +24,11 @@ namespace DataInfo.AutoMapperProfiles
             CreateMap<TeamCreateContent, TeamCreateRequest>();
             CreateMap<TeamActivityContent, TeamJoinOrLeaveActivityRequest>();
             CreateMap<TeamAddActivityContent, TeamUpdateActivityRequest>()
+             .ForMember(request => request.Route, options => options.MapFrom(content => JsonConvert.SerializeObject(content.Routes)))
              .ForMember(request => request.ActDate, options => options.MapFrom(content => Convert.ToDateTime(content.ActDate).ToString("yyyy-MM-dd")))
              .ForMember(request => request.MeetTime, options => options.MapFrom(content => Convert.ToDateTime(content.MeetTime).ToString("HH:mm:ss")));
             CreateMap<TeamChangeLeaderContent, TeamChangeLeaderRequest>();
             CreateMap<TeamResponseApplyJoinContent, TeamJoinOrLeaveRequest>()
-             .ForMember(request => request.Action, options => options.MapFrom(content => content.ResponseType));
-            CreateMap<TeamResponseInviteJoinContent, TeamJoinOrLeaveRequest>()
              .ForMember(request => request.Action, options => options.MapFrom(content => content.ResponseType));
             CreateMap<TeamUpdateViceLeaderContent, TeamUpdateViceLeaderRequest>();
             CreateMap<TeamContent, TeamDisbandRequest>();
@@ -39,8 +39,7 @@ namespace DataInfo.AutoMapperProfiles
              .ForMember(dao => dao.CreateDate, options => options.MapFrom(table => Convert.ToDateTime(table.CreateDate)))
              .ForMember(dao => dao.TeamViceLeaderIDs, options => options.MapFrom(table => JsonConvert.DeserializeObject<IEnumerable<string>>(table.TeamViceLeaderIDs)))
              .ForMember(dao => dao.TeamMemberIDs, options => options.MapFrom(table => JsonConvert.DeserializeObject<IEnumerable<string>>(table.TeamMemberIDs)))
-             .ForMember(dao => dao.ApplyJoinList, options => options.MapFrom(table => JsonConvert.DeserializeObject<IEnumerable<string>>(table.ApplyJoinList)))
-             .ForMember(dao => dao.InviteJoinList, options => options.MapFrom(table => JsonConvert.DeserializeObject<IEnumerable<string>>(table.InviteJoinList)));
+             .ForMember(dao => dao.ApplyJoinList, options => options.MapFrom(table => JsonConvert.DeserializeObject<IEnumerable<string>>(table.ApplyJoinList)));
 
             CreateMap<TeamActivity, TeamActivityDao>();
 
@@ -48,7 +47,8 @@ namespace DataInfo.AutoMapperProfiles
             CreateMap<TeamDao, TeamInfoView>();
             CreateMap<TeamDao, TeamSearchView>();
             CreateMap<TeamActivityDao, TeamActivityListView>();
-            CreateMap<TeamActivityDao, TeamActivityDetailView>();
+            CreateMap<TeamActivityDao, TeamActivityDetailView>()
+                .ForMember(view => view.Routes, options => options.MapFrom(dao => JsonConvert.DeserializeObject<IEnumerable<RouteView>>(dao.Route)));
             CreateMap<TeamBulletinDao, TeamBullentiListView>();
         }
     }

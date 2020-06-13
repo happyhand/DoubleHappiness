@@ -345,34 +345,29 @@
         UpdateApplyJoinList = 1006,
 
         /// <summary>
-        /// 更新邀請加入車隊列表
-        /// </summary>
-        UpdateInviteJoinList = 1007,
-
-        /// <summary>
         /// 更新公告
         /// </summary>
-        UpdateBulletin = 1008,
+        UpdateBulletin = 1007,
 
         /// <summary>
         /// 更新活動
         /// </summary>
-        UpdateActivity = 1009,
+        UpdateActivity = 1008,
 
         /// <summary>
         /// 解散車隊
         /// </summary>
-        DeleteTeam = 1010,
+        DeleteTeam = 1009,
 
         /// <summary>
         /// 加入或離開車隊活動
         /// </summary>
-        JoinOrLeaveTeamActivity = 1011,
+        JoinOrLeaveTeamActivity = 1010,
 
         /// <summary>
         /// 加入或離開車隊
         /// </summary>
-        JoinOrLeaveTeam = 1012
+        JoinOrLeaveTeam = 1011
     }
 
     /// <summary>
@@ -431,22 +426,6 @@
         /// 權限不足
         /// </summary>
         AuthorityNotEnough = 2,
-    }
-
-    /// <summary>
-    /// 更新邀請加入車隊列表結果類別資料
-    /// </summary>
-    public enum UpdateInviteJoinListResultType
-    {
-        /// <summary>
-        /// 更新失敗
-        /// </summary>
-        Fail = 0,
-
-        /// <summary>
-        /// 更新成功
-        /// </summary>
-        Success = 1,
     }
 
     /// <summary>

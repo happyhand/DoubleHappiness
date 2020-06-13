@@ -52,7 +52,7 @@ namespace DataInfo.Api.Controllers.Ride
             try
             {
                 this.logger.LogInfo("會員請求取得騎乘記錄", $"MemberID: {memberID}", null);
-                ResponseResult responseResult = await rideService.GetRideRecord(memberID).ConfigureAwait(false);
+                ResponseResult responseResult = await this.rideService.GetRideRecord(memberID).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)

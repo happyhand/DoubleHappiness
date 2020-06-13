@@ -176,7 +176,7 @@ namespace DataInfo.Service.Managers.Interactive
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
+                        ResultCode = (int)ResponseResultType.DenyAccess,
                         Content = errorMessgae
                     };
                 }
@@ -211,7 +211,7 @@ namespace DataInfo.Service.Managers.Interactive
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.InputError,
+                            ResultCode = (int)ResponseResultType.DenyAccess,
                             Content = MessageHelper.Message.ResponseMessage.Update.Fail
                         };
                 }
@@ -232,7 +232,7 @@ namespace DataInfo.Service.Managers.Interactive
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.CreateFail,
+                            ResultCode = (int)ResponseResultType.UpdateFail,
                             Content = MessageHelper.Message.ResponseMessage.Update.Fail
                         };
 

@@ -41,14 +41,6 @@ namespace DataInfo.Repository.Interfaces.Team
         Task<IEnumerable<MemberDao>> GetMemberOfApplyJoin(string memberID, string teamID);
 
         /// <summary>
-        /// 取得邀請加入會員列表
-        /// </summary>
-        /// <param name="memberID">memberID</param>
-        /// <param name="teamID">teamID</param>
-        /// <returns>MemberDaos</returns>
-        Task<IEnumerable<MemberDao>> GetMemberOfInviteJoin(string memberID, string teamID);
-
-        /// <summary>
         /// 取得附近車隊資料列表
         /// </summary>
         /// <param name="county">county</param>
@@ -73,13 +65,6 @@ namespace DataInfo.Repository.Interfaces.Team
         /// <param name="memberID">memberID</param>
         /// <returns>TeamDaos</returns>
         Task<IEnumerable<TeamDao>> GetTeamOfApplyJoin(string memberID);
-
-        /// <summary>
-        /// 取得邀請車隊列表
-        /// </summary>
-        /// <param name="memberID">memberID</param>
-        /// <returns>TeamDaos</returns>
-        Task<IEnumerable<TeamDao>> GetTeamOfInviteJoin(string memberID);
 
         /// <summary>
         /// 搜尋車隊

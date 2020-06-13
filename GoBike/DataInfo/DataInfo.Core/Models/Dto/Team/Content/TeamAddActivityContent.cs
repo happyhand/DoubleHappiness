@@ -1,6 +1,8 @@
 ﻿using DataInfo.Core.Applibs;
+using DataInfo.Core.Models.Dto.Team.Content.data;
 using FluentValidation;
 using System;
+using System.Collections.Generic;
 
 namespace DataInfo.Core.Models.Dto.Team.Content
 {
@@ -30,6 +32,11 @@ namespace DataInfo.Core.Models.Dto.Team.Content
         public string Photo { get; set; }
 
         /// <summary>
+        /// Gets or sets 路線
+        /// </summary>
+        public IEnumerable<Route> Routes { get; set; }
+
+        /// <summary>
         /// Gets or sets 車隊 ID
         /// </summary>
         public string TeamID { get; set; }
@@ -43,8 +50,6 @@ namespace DataInfo.Core.Models.Dto.Team.Content
         /// Gets or sets 總距離
         /// </summary>
         public float TotalDistance { get; set; }
-
-        //// TODO 路線、路線描述
     }
 
     /// <summary>

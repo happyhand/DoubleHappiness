@@ -15,7 +15,7 @@ namespace DataInfo.Core.Models.Dto.Ride.View
         /// <summary>
         /// Gets or sets 建立日期
         /// </summary>
-        public DateTime CreateDate { get; set; }
+        public string CreateDate { get; set; }
 
         /// <summary>
         /// Gets or sets 騎乘距離

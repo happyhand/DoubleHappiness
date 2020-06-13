@@ -26,7 +26,7 @@ namespace DataInfo.Core.Models.Dao.Team
         /// <summary>
         /// Gets or sets 建立時間
         /// </summary>
-        public DateTime CreateDate { get; set; }
+        public string CreateDate { get; set; }
 
         /// <summary>
         /// Gets or sets 審核狀態(1:開，-1:關)
@@ -37,11 +37,6 @@ namespace DataInfo.Core.Models.Dao.Team
         /// Gets or sets 車隊封面
         /// </summary>
         public string FrontCover { get; set; }
-
-        /// <summary>
-        /// Gets or sets 邀請列表
-        /// </summary>
-        public IEnumerable<string> InviteJoinList { get; set; }
 
         /// <summary>
         /// Gets or sets 車隊隊長 ID

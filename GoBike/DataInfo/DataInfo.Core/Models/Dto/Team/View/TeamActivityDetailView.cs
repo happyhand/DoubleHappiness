@@ -1,4 +1,7 @@
-﻿namespace DataInfo.Core.Models.Dto.Team.View
+﻿using DataInfo.Core.Models.Dto.Team.View.data;
+using System.Collections.Generic;
+
+namespace DataInfo.Core.Models.Dto.Team.View
 {
     /// <summary>
     /// 車隊活動明細可視資料
@@ -48,7 +51,7 @@
         /// <summary>
         /// Gets or sets 路線
         /// </summary>
-        public string Route { get; set; }
+        public IEnumerable<RouteView> Routes { get; set; }
 
         /// <summary>
         /// Gets or sets 車隊 ID

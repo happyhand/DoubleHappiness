@@ -57,9 +57,9 @@ namespace DataInfo.Core.Models.Dto.Team.Content
             //.NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.AvatarEmpty)
             //.NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Team.AvatarEmpty);
 
-            RuleFor(content => content.FrontCover)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.FrontCoverEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Team.FrontCoverEmpty);
+            //RuleFor(content => content.FrontCover)
+            //.NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.FrontCoverEmpty)
+            //.NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Team.FrontCoverEmpty);
 
             RuleFor(content => content.County)
             .Must(County =>
@@ -79,9 +79,9 @@ namespace DataInfo.Core.Models.Dto.Team.Content
                return searchStatus != (int)TeamSearchStatusType.None;
            }).WithMessage(MessageHelper.Message.ResponseMessage.Team.SearchStatusEmpty);
 
-            RuleFor(content => content.TeamInfo)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.TeamInfoEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Team.TeamInfoEmpty);
+            //RuleFor(content => content.TeamInfo)
+            //.NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.TeamInfoEmpty)
+            //.NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Team.TeamInfoEmpty);
 
             RuleFor(content => content.TeamName)
             .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.TeamNameEmpty)

@@ -249,7 +249,7 @@ namespace DataInfo.Service.Managers.Member
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.InputError,
+                            ResultCode = (int)ResponseResultType.DenyAccess,
                             Content = MessageHelper.Message.ResponseMessage.Login.Fail
                         };
 

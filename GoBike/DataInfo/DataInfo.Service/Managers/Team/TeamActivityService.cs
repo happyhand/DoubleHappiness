@@ -5,6 +5,7 @@ using DataInfo.Core.Models.Dao.Team;
 using DataInfo.Core.Models.Dto.Response;
 using DataInfo.Core.Models.Dto.Server;
 using DataInfo.Core.Models.Dto.Team.Content;
+using DataInfo.Core.Models.Dto.Team.Content.data;
 using DataInfo.Core.Models.Dto.Team.Request;
 using DataInfo.Core.Models.Dto.Team.Response;
 using DataInfo.Core.Models.Dto.Team.View;
@@ -88,19 +89,33 @@ namespace DataInfo.Service.Managers.Team
                 Action = (int)ActionType.Edit
             };
 
-            //// TODO 路線規劃及路線
-            if (!string.IsNullOrEmpty(content.Photo))
+            IEnumerable<string> imgBase64s = (content.Routes != null && content.Routes.Any()) ?
+                                             content.Routes.Select(route => route.Photo) : string.IsNullOrEmpty(content.Photo) ?
+                                             null : new List<string>() { content.Photo };
+
+            if (imgBase64s != null && imgBase64s.Any())
             {
-                List<string> imgBase64s = new List<string>() { content.Photo };
-                IEnumerable<string> imgUris = await this.uploadService.UploadMemberImages(imgBase64s, true).ConfigureAwait(false);
+                IEnumerable<string> imgUris = await this.uploadService.UploadTeamActivityImages(imgBase64s, true).ConfigureAwait(false);
                 if (imgUris == null || !imgUris.Any())
                 {
                     return Tuple.Create<string, TeamUpdateActivityRequest>(MessageHelper.Message.ResponseMessage.Upload.PhotoFail, null);
                 }
 
+                for (int i = 0; i < content.Routes.Count(); i++)
+                {
+                    string imgUrl = imgUris.ElementAt(i);
+                    if (string.IsNullOrEmpty(imgUrl))
+                    {
+                        return Tuple.Create<string, TeamUpdateActivityRequest>(MessageHelper.Message.ResponseMessage.Upload.PhotoFail, null);
+                    }
+
+                    Route route = content.Routes.ElementAt(i);
+                    route.Photo = imgUrl;
+                }
+
                 if (!string.IsNullOrEmpty(content.Photo))
                 {
-                    string photo = imgUris.ElementAt(0);
+                    string photo = imgUris.LastOrDefault();
                     if (string.IsNullOrEmpty(photo))
                     {
                         return Tuple.Create<string, TeamUpdateActivityRequest>(MessageHelper.Message.ResponseMessage.Upload.PhotoFail, null);
@@ -145,6 +160,11 @@ namespace DataInfo.Service.Managers.Team
                 request.Title = content.Title;
             }
 
+            if (content.Routes != null && content.Routes.Any())
+            {
+                request.Route = JsonConvert.SerializeObject(content.Routes);
+            }
+
             return Tuple.Create(string.Empty, request);
         }
 
@@ -178,23 +198,58 @@ namespace DataInfo.Service.Managers.Team
 
                 #region 上傳圖片
 
-                List<string> imgBase64s = new List<string>() { content.Photo };
-                IEnumerable<string> imgUris = await this.uploadService.UploadTeamActivityImages(imgBase64s, true).ConfigureAwait(false);
-                if (imgUris == null || !imgUris.Any())
-                {
-                    this.logger.LogWarn("新增車隊活動結果", $"Result: 上傳圖片失敗 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = MessageHelper.Message.ResponseMessage.Upload.PhotoFail
-                    };
-                }
+                IEnumerable<string> imgBase64s = (content.Routes != null && content.Routes.Any()) ?
+                                             content.Routes.Select(route => route.Photo) : string.IsNullOrEmpty(content.Photo) ?
+                                             null : new List<string>() { content.Photo };
 
-                content.Photo = imgUris.ElementAtOrDefault(0);
-                if (string.IsNullOrEmpty(content.Photo))
+                if (imgBase64s != null && imgBase64s.Any())
                 {
-                    this.logger.LogWarn("新增車隊活動結果", $"Result: 活動圖片轉換失敗 MemberID: {memberID} Photo: {content.Photo}", null);
+                    IEnumerable<string> imgUris = await this.uploadService.UploadTeamActivityImages(imgBase64s, true).ConfigureAwait(false);
+                    if (imgUris == null || !imgUris.Any())
+                    {
+                        this.logger.LogWarn("新增車隊活動結果", $"Result: 上傳圖片失敗 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.InputError,
+                            Content = MessageHelper.Message.ResponseMessage.Upload.PhotoFail
+                        };
+                    }
+
+                    for (int i = 0; i < content.Routes.Count(); i++)
+                    {
+                        string imgUrl = imgUris.ElementAt(i);
+                        if (string.IsNullOrEmpty(imgUrl))
+                        {
+                            this.logger.LogWarn("新增車隊活動結果", $"Result: 上傳路線圖片失敗 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                            return new ResponseResult()
+                            {
+                                Result = false,
+                                ResultCode = (int)ResponseResultType.InputError,
+                                Content = MessageHelper.Message.ResponseMessage.Upload.PhotoFail
+                            };
+                        }
+
+                        Route route = content.Routes.ElementAt(i);
+                        route.Photo = imgUrl;
+                    }
+
+                    if (!string.IsNullOrEmpty(content.Photo))
+                    {
+                        string photo = imgUris.LastOrDefault();
+                        if (string.IsNullOrEmpty(photo))
+                        {
+                            this.logger.LogWarn("新增車隊活動結果", $"Result: 上傳活動圖片失敗 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                            return new ResponseResult()
+                            {
+                                Result = false,
+                                ResultCode = (int)ResponseResultType.InputError,
+                                Content = MessageHelper.Message.ResponseMessage.Upload.PhotoFail
+                            };
+                        }
+
+                        content.Photo = photo;
+                    }
                 }
 
                 #endregion 上傳圖片

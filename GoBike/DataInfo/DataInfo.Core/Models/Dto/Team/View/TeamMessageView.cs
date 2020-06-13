@@ -19,11 +19,6 @@ namespace DataInfo.Core.Models.Dto.Team.View
         public IEnumerable<TeamBullentiListView> BullentiList { get; set; }
 
         /// <summary>
-        /// Gets or sets 邀請加入列表
-        /// </summary>
-        public IEnumerable<MemberSimpleInfoView> InviteJoinList { get; set; }
-
-        /// <summary>
         /// Gets or sets 成員列表
         /// </summary>
         public IEnumerable<MemberSimpleInfoView> MemberList { get; set; }

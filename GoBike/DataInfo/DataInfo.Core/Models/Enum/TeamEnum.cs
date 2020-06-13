@@ -53,14 +53,9 @@
         ApplyJoin = 1,
 
         /// <summary>
-        /// 邀請加入
-        /// </summary>
-        InviteJoin = 2,
-
-        /// <summary>
         /// 成員
         /// </summary>
-        Member = 3
+        Member = 2
     }
 
     /// <summary>

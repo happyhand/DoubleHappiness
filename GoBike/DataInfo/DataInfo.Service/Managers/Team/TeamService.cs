@@ -97,10 +97,6 @@ namespace DataInfo.Service.Managers.Team
             {
                 return TeamInteractiveType.ApplyJoin;
             }
-            else if (teamDao.InviteJoinList.Contains(memberID))
-            {
-                return TeamInteractiveType.InviteJoin;
-            }
             else if (teamDao.Leader.Equals(memberID) || teamDao.TeamViceLeaderIDs.Contains(memberID) || teamDao.TeamMemberIDs.Contains(memberID))
             {
                 return TeamInteractiveType.Member;
@@ -327,24 +323,54 @@ namespace DataInfo.Service.Managers.Team
 
                 #region 上傳圖片
 
-                List<string> imgBase64s = new List<string>() { content.Avatar, content.FrontCover };
-                IEnumerable<string> imgUris = await this.uploadService.UploadTeamImages(imgBase64s, true).ConfigureAwait(false);
-                if (imgUris == null || !imgUris.Any())
+                if (!string.IsNullOrEmpty(content.Avatar) || !string.IsNullOrEmpty(content.FrontCover))
                 {
-                    this.logger.LogWarn("建立車隊結果", $"Result: 上傳圖片失敗 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                    return new ResponseResult()
+                    List<string> imgBase64s = new List<string>() { content.Avatar, content.FrontCover };
+                    IEnumerable<string> imgUris = await this.uploadService.UploadTeamImages(imgBase64s, true).ConfigureAwait(false);
+                    if (imgUris == null || !imgUris.Any())
                     {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = MessageHelper.Message.ResponseMessage.Upload.PhotoFail
-                    };
-                }
+                        this.logger.LogWarn("建立車隊結果", $"Result: 上傳圖片失敗 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = (int)ResponseResultType.InputError,
+                            Content = MessageHelper.Message.ResponseMessage.Upload.PhotoFail
+                        };
+                    }
 
-                content.Avatar = imgUris.ElementAtOrDefault(0);
-                content.FrontCover = imgUris.ElementAtOrDefault(1);
-                if (string.IsNullOrEmpty(content.Avatar) || string.IsNullOrEmpty(content.FrontCover))
-                {
-                    this.logger.LogWarn("建立車隊結果", $"Result: 車隊圖片轉換失敗 MemberID: {memberID} Avatar: {content.Avatar} FrontCover: {content.FrontCover}", null);
+                    if (!string.IsNullOrEmpty(content.Avatar))
+                    {
+                        string avatar = imgUris.ElementAt(0);
+                        if (string.IsNullOrEmpty(avatar))
+                        {
+                            this.logger.LogWarn("建立車隊結果", $"Result: 車隊頭像轉換失敗 MemberID: {memberID} Avatar: {content.Avatar} FrontCover: {content.FrontCover}", null);
+                            return new ResponseResult()
+                            {
+                                Result = false,
+                                ResultCode = (int)ResponseResultType.InputError,
+                                Content = MessageHelper.Message.ResponseMessage.Upload.PhotoFail
+                            };
+                        }
+
+                        content.Avatar = avatar;
+                    }
+
+                    if (!string.IsNullOrEmpty(content.FrontCover))
+                    {
+                        string frontCover = imgUris.ElementAt(1);
+                        if (string.IsNullOrEmpty(frontCover))
+                        {
+                            this.logger.LogWarn("建立車隊結果", $"Result: 車隊封面轉換失敗 MemberID: {memberID} Avatar: {content.Avatar} FrontCover: {content.FrontCover}", null);
+                            return new ResponseResult()
+                            {
+                                Result = false,
+                                ResultCode = (int)ResponseResultType.InputError,
+                                Content = MessageHelper.Message.ResponseMessage.Upload.PhotoFail
+                            };
+                        }
+
+                        content.FrontCover = frontCover;
+                    }
                 }
 
                 #endregion 上傳圖片
@@ -591,7 +617,7 @@ namespace DataInfo.Service.Managers.Team
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
+                        ResultCode = (int)ResponseResultType.DenyAccess,
                         Content = errorMessgae
                     };
                 }
@@ -650,10 +676,8 @@ namespace DataInfo.Service.Managers.Team
 
                 Task<IEnumerable<TeamDao>> joinTeamDaosTask = this.teamRepository.Get(memberDao.TeamList);
                 Task<IEnumerable<TeamDao>> applyTeamDaosTask = this.teamRepository.GetTeamOfApplyJoin(memberID);
-                Task<IEnumerable<TeamDao>> inviteTeamDaosTask = this.teamRepository.GetTeamOfInviteJoin(memberID);
                 IEnumerable<TeamDropMenuView> joinTeamDropMenuView = this.mapper.Map<IEnumerable<TeamDropMenuView>>(await joinTeamDaosTask.ConfigureAwait(false));
                 IEnumerable<TeamDropMenuView> applyTeamDropMenuView = this.mapper.Map<IEnumerable<TeamDropMenuView>>(await applyTeamDaosTask.ConfigureAwait(false));
-                IEnumerable<TeamDropMenuView> inviteTeamDropMenuView = this.mapper.Map<IEnumerable<TeamDropMenuView>>(await inviteTeamDaosTask.ConfigureAwait(false));
 
                 //// TODO 已加入的車隊需顯示是否有新的訊息
 
@@ -664,7 +688,6 @@ namespace DataInfo.Service.Managers.Team
                     Content = new List<IEnumerable<TeamDropMenuView>>() {
                     joinTeamDropMenuView,
                     applyTeamDropMenuView,
-                    inviteTeamDropMenuView
                     }
                 };
             }
@@ -800,12 +823,10 @@ namespace DataInfo.Service.Managers.Team
 
                 Task<IEnumerable<TeamBulletinDao>> teamBulletinDaos = this.teamBulletinRepository.Get(memberID, content.TeamID);
                 Task<IEnumerable<MemberDao>> memberOfApplyJoinList = this.teamRepository.GetMemberOfApplyJoin(memberID, content.TeamID);
-                Task<IEnumerable<MemberDao>> memberOfInviteJoinList = this.teamRepository.GetMemberOfInviteJoin(memberID, content.TeamID);
                 Task<IEnumerable<MemberDao>> memberOfTeamList = this.teamRepository.GetMemberList(memberID, content.TeamID);
 
                 IEnumerable<TeamBullentiListView> teamBullentiListViews = this.mapper.Map<IEnumerable<TeamBullentiListView>>(await teamBulletinDaos.ConfigureAwait(false));
                 IEnumerable<MemberSimpleInfoView> applyJoinViews = this.mapper.Map<IEnumerable<MemberSimpleInfoView>>(await memberOfApplyJoinList.ConfigureAwait(false));
-                IEnumerable<MemberSimpleInfoView> inviteJoinViews = this.mapper.Map<IEnumerable<MemberSimpleInfoView>>(await memberOfInviteJoinList.ConfigureAwait(false));
                 IEnumerable<MemberSimpleInfoView> teamMemberViews = this.mapper.Map<IEnumerable<MemberSimpleInfoView>>(await memberOfTeamList.ConfigureAwait(false));
                 return new ResponseResult()
                 {
@@ -815,7 +836,6 @@ namespace DataInfo.Service.Managers.Team
                     {
                         BullentiList = teamBullentiListViews,
                         ApplyJoinList = applyJoinViews,
-                        InviteJoinList = inviteJoinViews,
                         MemberList = teamMemberViews
                     }
                 };
