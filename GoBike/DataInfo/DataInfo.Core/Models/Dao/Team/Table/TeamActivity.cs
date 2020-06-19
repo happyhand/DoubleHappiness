@@ -24,11 +24,6 @@ namespace DataInfo.Core.Models.Dao.Team.Table
         public string CreateDate { get; set; }
 
         /// <summary>
-        /// Gets or sets 路線描述
-        /// </summary>
-        public string Description { get; set; }
-
-        /// <summary>
         /// Gets or sets 最高海拔
         /// </summary>
         public float MaxAltitude { get; set; }

@@ -32,7 +32,7 @@ namespace DataInfo.Api.Controllers.Common
                 {
                     Result = true,
                     ResultCode = (int)ResponseResultType.Success,
-                    Content = "1.0.0.14" //// 大版本、Hotfix、Bug、develop
+                    Content = "1.0.0.15" //// 大版本、Hotfix、Bug、develop
                 });
             }
             catch (Exception ex)

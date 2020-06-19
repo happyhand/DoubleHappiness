@@ -37,7 +37,6 @@ namespace DataInfo.Repository.Managers.Team
                 ActDate = ta.ActDate,
                 ActID = ta.ActID,
                 CreateDate = ta.CreateDate,
-                Description = ta.Description,
                 FounderID = ui.MemberID,
                 FounderName = ui.NickName,
                 FounderAvatar = ui.Avatar,

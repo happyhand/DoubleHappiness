@@ -27,11 +27,6 @@ namespace DataInfo.Core.Models.Dto.Team.Content
         public string MeetTime { get; set; }
 
         /// <summary>
-        /// Gets or sets 活動圖片
-        /// </summary>
-        public string Photo { get; set; }
-
-        /// <summary>
         /// Gets or sets 路線
         /// </summary>
         public IEnumerable<Route> Routes { get; set; }
@@ -96,10 +91,6 @@ namespace DataInfo.Core.Models.Dto.Team.Content
             RuleFor(content => content.TeamID)
            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.TeamIDEmpty)
            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Team.TeamIDEmpty);
-
-            RuleFor(content => content.Photo)
-           .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.ActivityPhotoEmpty)
-           .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Team.ActivityPhotoEmpty);
         }
     }
 }

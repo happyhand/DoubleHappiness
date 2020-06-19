@@ -303,17 +303,6 @@ namespace DataInfo.Service.Managers.Team
                 }
 
                 TeamDao teamDao = await this.teamRepository.Get(content.TeamID).ConfigureAwait(false);
-                if (this.MemberHasJoinTeam(content.MemberID, teamDao))
-                {
-                    this.logger.LogWarn("回覆申請加入車隊結果", $"Result: 會員已加入車隊 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = MessageHelper.Message.ResponseMessage.Update.Fail
-                    };
-                }
-
                 if (!teamDao.ApplyJoinList.Contains(content.MemberID))
                 {
                     this.logger.LogWarn("回覆申請加入車隊結果", $"Result: 會員未申請加入車隊 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
@@ -334,6 +323,20 @@ namespace DataInfo.Service.Managers.Team
                         ResultCode = (int)ResponseResultType.DenyAccess,
                         Content = MessageHelper.Message.ResponseMessage.Team.TeamAuthorityNotEnough
                     };
+                }
+
+                if (content.ResponseType.Equals((int)ActionType.Add))
+                {
+                    if (this.MemberHasJoinTeam(content.MemberID, teamDao))
+                    {
+                        this.logger.LogWarn("回覆申請加入車隊結果", $"Result: 會員已加入車隊，直接回應成功 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                        return new ResponseResult()
+                        {
+                            Result = true,
+                            ResultCode = (int)ResponseResultType.Success,
+                            Content = MessageHelper.Message.ResponseMessage.Update.Success
+                        };
+                    }
                 }
 
                 #endregion 驗證資料

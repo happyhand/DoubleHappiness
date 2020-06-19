@@ -89,9 +89,7 @@ namespace DataInfo.Service.Managers.Team
                 Action = (int)ActionType.Edit
             };
 
-            IEnumerable<string> imgBase64s = (content.Routes != null && content.Routes.Any()) ?
-                                             content.Routes.Select(route => route.Photo) : string.IsNullOrEmpty(content.Photo) ?
-                                             null : new List<string>() { content.Photo };
+            IEnumerable<string> imgBase64s = (content.Routes != null && content.Routes.Any()) ? content.Routes.Select(route => route.Photo) : null;
 
             if (imgBase64s != null && imgBase64s.Any())
             {
@@ -103,25 +101,10 @@ namespace DataInfo.Service.Managers.Team
 
                 for (int i = 0; i < content.Routes.Count(); i++)
                 {
+                    //// 有的路線可能不附圖片，允許空字串
                     string imgUrl = imgUris.ElementAt(i);
-                    if (string.IsNullOrEmpty(imgUrl))
-                    {
-                        return Tuple.Create<string, TeamUpdateActivityRequest>(MessageHelper.Message.ResponseMessage.Upload.PhotoFail, null);
-                    }
-
                     Route route = content.Routes.ElementAt(i);
                     route.Photo = imgUrl;
-                }
-
-                if (!string.IsNullOrEmpty(content.Photo))
-                {
-                    string photo = imgUris.LastOrDefault();
-                    if (string.IsNullOrEmpty(photo))
-                    {
-                        return Tuple.Create<string, TeamUpdateActivityRequest>(MessageHelper.Message.ResponseMessage.Upload.PhotoFail, null);
-                    }
-
-                    request.Photo = photo;
                 }
             }
 
@@ -198,9 +181,7 @@ namespace DataInfo.Service.Managers.Team
 
                 #region 上傳圖片
 
-                IEnumerable<string> imgBase64s = (content.Routes != null && content.Routes.Any()) ?
-                                             content.Routes.Select(route => route.Photo) : string.IsNullOrEmpty(content.Photo) ?
-                                             null : new List<string>() { content.Photo };
+                IEnumerable<string> imgBase64s = (content.Routes != null && content.Routes.Any()) ? content.Routes.Select(route => route.Photo) : null;
 
                 if (imgBase64s != null && imgBase64s.Any())
                 {
@@ -218,37 +199,10 @@ namespace DataInfo.Service.Managers.Team
 
                     for (int i = 0; i < content.Routes.Count(); i++)
                     {
+                        //// 有的路線可能不附圖片，允許空字串
                         string imgUrl = imgUris.ElementAt(i);
-                        if (string.IsNullOrEmpty(imgUrl))
-                        {
-                            this.logger.LogWarn("新增車隊活動結果", $"Result: 上傳路線圖片失敗 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                            return new ResponseResult()
-                            {
-                                Result = false,
-                                ResultCode = (int)ResponseResultType.InputError,
-                                Content = MessageHelper.Message.ResponseMessage.Upload.PhotoFail
-                            };
-                        }
-
                         Route route = content.Routes.ElementAt(i);
                         route.Photo = imgUrl;
-                    }
-
-                    if (!string.IsNullOrEmpty(content.Photo))
-                    {
-                        string photo = imgUris.LastOrDefault();
-                        if (string.IsNullOrEmpty(photo))
-                        {
-                            this.logger.LogWarn("新增車隊活動結果", $"Result: 上傳活動圖片失敗 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                            return new ResponseResult()
-                            {
-                                Result = false,
-                                ResultCode = (int)ResponseResultType.InputError,
-                                Content = MessageHelper.Message.ResponseMessage.Upload.PhotoFail
-                            };
-                        }
-
-                        content.Photo = photo;
                     }
                 }
 
@@ -279,14 +233,6 @@ namespace DataInfo.Service.Managers.Team
                             Result = false,
                             ResultCode = (int)ResponseResultType.CreateFail,
                             Content = MessageHelper.Message.ResponseMessage.Add.Fail
-                        };
-
-                    case (int)UpdateActivityResultType.AuthorityNotEnough:
-                        return new ResponseResult()
-                        {
-                            Result = false,
-                            ResultCode = (int)ResponseResultType.DenyAccess,
-                            Content = MessageHelper.Message.ResponseMessage.Team.TeamAuthorityNotEnough
                         };
 
                     default:
@@ -343,7 +289,7 @@ namespace DataInfo.Service.Managers.Team
                 #region 發送【更新活動】指令至後端
 
                 CommandData<TeamUpdateActivityResponse> response = await this.serverService.DoAction<TeamUpdateActivityResponse>((int)TeamCommandIDType.UpdateActivity, CommandType.Team, request).ConfigureAwait(false);
-                this.logger.LogInfo("新增車隊活動結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                this.logger.LogInfo("更新車隊活動資料結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                 switch (response.Data.Result)
                 {
                     case (int)UpdateActivityResultType.Success:
@@ -358,7 +304,7 @@ namespace DataInfo.Service.Managers.Team
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.CreateFail,
+                            ResultCode = (int)ResponseResultType.UpdateFail,
                             Content = MessageHelper.Message.ResponseMessage.Add.Fail
                         };
 
