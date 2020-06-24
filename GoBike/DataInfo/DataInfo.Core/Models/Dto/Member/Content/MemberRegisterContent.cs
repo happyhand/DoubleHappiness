@@ -1,4 +1,5 @@
 ﻿using DataInfo.Core.Applibs;
+using DataInfo.Core.Models.Enum;
 using FluentValidation;
 
 namespace DataInfo.Core.Models.Dto.Member.Content
@@ -29,25 +30,48 @@ namespace DataInfo.Core.Models.Dto.Member.Content
     /// </summary>
     public class MemberRegisterContentValidator : AbstractValidator<MemberRegisterContent>
     {
-        public MemberRegisterContentValidator(bool isValidatePassword)
+        public MemberRegisterContentValidator()
         {
-            ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
+            this.CascadeMode = CascadeMode.StopOnFirstFailure;
             RuleFor(content => content.Email)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Member.EmailEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Member.EmailEmpty)
-            .EmailAddress().WithMessage(MessageHelper.Message.ResponseMessage.Member.EmailFormatError);
-
-            if (isValidatePassword)
-            {
-                RuleFor(content => content.Password)
-                  .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordEmpty)
-                  .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordEmpty)
-                  .Must(password => { return Utility.ValidatePassword(password); }).WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordFormatError);
-                RuleFor(content => content.ConfirmPassword)
-                  .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordNotMatch)
-                  .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordNotMatch)
-                  .Equal(content => content.Password).WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordNotMatch);
-            }
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.EmailEmpty}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.EmailEmpty}";
+              })
+              .EmailAddress().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.EmailFormatError}|Email: {content.Email}";
+              });
+            RuleFor(content => content.Password)
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.PasswordEmpty}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.PasswordEmpty}";
+              })
+              .Must(password => { return Utility.ValidatePassword(password); }).WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.PasswordFormatError}|Password: {content.Password}";
+              });
+            RuleFor(content => content.ConfirmPassword)
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.ConfirmPasswordEmpty}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.ConfirmPasswordEmpty}";
+              })
+              .Equal(content => content.Password).WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.ConfirmPasswordNotMatch}|Password: {content.Password} ConfirmPassword: {content.ConfirmPassword}";
+              });
         }
     }
 }

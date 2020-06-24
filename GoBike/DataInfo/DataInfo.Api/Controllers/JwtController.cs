@@ -11,7 +11,7 @@ namespace DataInfo.Api.Controllers
     /// Jwt Controller
     /// </summary>
     [ApiController]
-    public class JwtController : ApiController
+    public class JwtController : BaseController
     {
         /// <summary>
         /// jwtService

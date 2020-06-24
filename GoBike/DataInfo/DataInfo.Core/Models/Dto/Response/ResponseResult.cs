@@ -80,5 +80,10 @@
         /// Gets or sets ResultCode
         /// </summary>
         public int ResultCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets ResultCode
+        /// </summary>
+        public string ResultMessage { get; set; }
     }
 }

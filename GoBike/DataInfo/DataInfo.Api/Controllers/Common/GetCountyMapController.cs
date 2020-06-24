@@ -12,7 +12,7 @@ namespace DataInfo.Api.Controllers.Common
     /// </summary>
     [Route("api/Common/[controller]")]
     [ApiController]
-    public class GetCountyMapController : ApiController
+    public class GetCountyMapController : BaseController
     {
         /// <summary>
         /// logger

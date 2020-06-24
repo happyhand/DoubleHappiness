@@ -32,11 +32,10 @@ namespace DataInfo.Service.Interfaces.Member
         /// 會員註冊
         /// </summary>
         /// <param name="content">content</param>
-        /// <param name="isValidatePassword">isValidatePassword</param>
         /// <param name="fbToken">fbToken</param>
         /// <param name="googleToken">googleToken</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> Register(MemberRegisterContent content, bool isValidatePassword, string fbToken, string googleToken);
+        Task<ResponseResult> Register(MemberRegisterContent content, string fbToken, string googleToken);
 
         /// <summary>
         /// 會員登入(重新登入)

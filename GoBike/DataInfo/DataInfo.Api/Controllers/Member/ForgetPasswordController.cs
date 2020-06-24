@@ -16,7 +16,7 @@ namespace DataInfo.Api.Controllers.Member
     /// </summary>
     [ApiController]
     [Route("api/Member/[controller]")]
-    public class ForgetPasswordController : ApiController
+    public class ForgetPasswordController : BaseController
     {
         /// <summary>
         /// logger

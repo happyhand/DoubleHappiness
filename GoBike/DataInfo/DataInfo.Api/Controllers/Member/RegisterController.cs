@@ -1,14 +1,14 @@
 ﻿using DataInfo.Core.Extensions;
-using DataInfo.Service.Interfaces.Common;
-using DataInfo.Service.Interfaces.Member;
 using DataInfo.Core.Models.Dto.Member.Content;
 using DataInfo.Core.Models.Dto.Response;
+using DataInfo.Core.Models.Enum;
+using DataInfo.Service.Interfaces.Member;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Threading.Tasks;
-using DataInfo.Core.Applibs;
 
 namespace DataInfo.Api.Controllers.Member
 {
@@ -17,7 +17,7 @@ namespace DataInfo.Api.Controllers.Member
     /// </summary>
     [ApiController]
     [Route("api/Member/[controller]")]
-    public class RegisterController : ApiController
+    public class RegisterController : BaseController
     {
         /// <summary>
         /// logger
@@ -49,18 +49,20 @@ namespace DataInfo.Api.Controllers.Member
             try
             {
                 this.logger.LogInfo("會員請求註冊", $"Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await memberService.Register(content, true, string.Empty, string.Empty).ConfigureAwait(false);
-                return Ok(responseResult);
+                ResponseResult responseResult = await memberService.Register(content, string.Empty, string.Empty).ConfigureAwait(false);
+                return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求註冊發生錯誤", $"Content: {JsonConvert.SerializeObject(content)}", ex);
-                return Ok(new ResponseResult()
+                ResponseResult errorResponseResult = new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Register.Error
-                });
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                };
+
+                return this.ResponseHandler(errorResponseResult);
             }
         }
     }

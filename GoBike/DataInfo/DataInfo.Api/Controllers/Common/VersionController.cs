@@ -12,7 +12,7 @@ namespace DataInfo.Api.Controllers.Common
     /// </summary>
     [Route("api/Common/[controller]")]
     [ApiController]
-    public class VersionController : ApiController
+    public class VersionController : BaseController
     {
         /// <summary>
         /// logger
@@ -32,7 +32,7 @@ namespace DataInfo.Api.Controllers.Common
                 {
                     Result = true,
                     ResultCode = (int)ResponseResultType.Success,
-                    Content = "1.0.0.15" //// 大版本、Hotfix、Bug、develop
+                    Content = "1.0.0.16" //// 大版本、Hotfix、Bug、develop
                 });
             }
             catch (Exception ex)

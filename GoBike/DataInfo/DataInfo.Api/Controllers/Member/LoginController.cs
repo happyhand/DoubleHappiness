@@ -10,6 +10,10 @@ using NLog;
 using System;
 using System.Threading.Tasks;
 using DataInfo.Core.Applibs;
+using Microsoft.AspNetCore.Http;
+using System.Net;
+using DataInfo.Api.Middlewares;
+using DataInfo.Core.Models.Enum;
 
 namespace DataInfo.Api.Controllers.Member
 {
@@ -115,17 +119,19 @@ namespace DataInfo.Api.Controllers.Member
             {
                 this.logger.LogInfo("會員請求登入(重新登入)", $"MemberID: {memberID}", null);
                 ResponseResult responseResult = await memberService.Relogin(memberID).ConfigureAwait(false);
-                return Ok(responseResult);
+                return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求登入發生錯誤(重新登入)", $"MemberID: {memberID}", ex);
-                return Ok(new ResponseResult()
+                ResponseResult errorResponseResult = new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Login.Error
-                });
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                };
+
+                return this.ResponseHandler(errorResponseResult);
             }
         }
 
@@ -142,17 +148,19 @@ namespace DataInfo.Api.Controllers.Member
             {
                 this.logger.LogInfo("會員請求登入(一般登入)", $"Content: {JsonConvert.SerializeObject(content)}", null);
                 ResponseResult responseResult = await memberService.Login(content).ConfigureAwait(false);
-                return Ok(responseResult);
+                return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求登入發生錯誤(一般登入)", $"Content: {JsonConvert.SerializeObject(content)}", ex);
-                return Ok(new ResponseResult()
+                ResponseResult errorResponseResult = new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Login.Error
-                });
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                };
+
+                return this.ResponseHandler(errorResponseResult);
             }
         }
     }

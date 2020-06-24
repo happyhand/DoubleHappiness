@@ -19,11 +19,13 @@ using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Member;
 using DataInfo.Service.Interfaces.Server;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -190,24 +192,6 @@ namespace DataInfo.Service.Managers.Member
         {
             try
             {
-                #region 驗證資料
-
-                MemberLoginContentValidator memberLoginContentValidator = new MemberLoginContentValidator();
-                ValidationResult validationResult = memberLoginContentValidator.Validate(content);
-                if (!validationResult.IsValid)
-                {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("會員登入結果(一般登入)", $"Result: 驗證失敗({errorMessgae}) Email: {content.Email} Password: {content.Password}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = errorMessgae
-                    };
-                }
-
-                #endregion 驗證資料
-
                 #region 發送【使用者登入】指令至後端
 
                 MemberLoginRequest request = new MemberLoginRequest()
@@ -232,7 +216,7 @@ namespace DataInfo.Service.Managers.Member
                         return new ResponseResult()
                         {
                             Result = true,
-                            ResultCode = (int)ResponseResultType.Success,
+                            ResultCode = StatusCodes.Status200OK,
                             Content = new MemberLoginView() { Token = this.GenerateJwtToken(memberDao) }
                         };
 
@@ -240,8 +224,8 @@ namespace DataInfo.Service.Managers.Member
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.DenyAccess,
-                            Content = MessageHelper.Message.ResponseMessage.Login.Fail
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.LoginFail.ToString()
                         };
 
                     case (int)UserLoginResultType.EmailError:
@@ -249,16 +233,16 @@ namespace DataInfo.Service.Managers.Member
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.DenyAccess,
-                            Content = MessageHelper.Message.ResponseMessage.Login.Fail
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.EmailOrPasswordNotMatch.ToString()
                         };
 
                     default:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.UnknownError,
-                            Content = MessageHelper.Message.ResponseMessage.Login.Fail
+                            ResultCode = StatusCodes.Status500InternalServerError,
+                            ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                         };
                 }
 
@@ -270,8 +254,8 @@ namespace DataInfo.Service.Managers.Member
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Login.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }
@@ -280,32 +264,13 @@ namespace DataInfo.Service.Managers.Member
         /// 會員註冊
         /// </summary>
         /// <param name="content">content</param>
-        /// <param name="isValidatePassword">isValidatePassword</param>
         /// <param name="fbToken">fbToken</param>
         /// <param name="googleToken">googleToken</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> Register(MemberRegisterContent content, bool isValidatePassword, string fbToken, string googleToken)
+        public async Task<ResponseResult> Register(MemberRegisterContent content, string fbToken, string googleToken)
         {
             try
             {
-                #region 驗證資料
-
-                MemberRegisterContentValidator memberRegisterContentValidator = new MemberRegisterContentValidator(isValidatePassword);
-                ValidationResult validationResult = memberRegisterContentValidator.Validate(content);
-                if (!validationResult.IsValid)
-                {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("會員註冊結果", $"Result: 驗證失敗({errorMessgae}) Email: {content.Email} Password: {content.Password} ConfirmPassword: {content.ConfirmPassword} IsValidatePassword: {isValidatePassword} FbToken: {fbToken} GoogleToken: {googleToken}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = errorMessgae
-                    };
-                }
-
-                #endregion 驗證資料
-
                 #region 發送【使用者註冊】指令至後端
 
                 MemberRegisterRequest request = new MemberRegisterRequest()
@@ -319,48 +284,40 @@ namespace DataInfo.Service.Managers.Member
                 };
 
                 CommandData<MemberRegisterResponse> response = await this.serverService.DoAction<MemberRegisterResponse>((int)UserCommandIDType.UserRegistered, CommandType.User, request).ConfigureAwait(false);
-                this.logger.LogInfo("會員註冊結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} Email: {content.Email} Password: {content.Password} ConfirmPassword: {content.ConfirmPassword} IsValidatePassword: {isValidatePassword} FbToken: {fbToken} GoogleToken: {googleToken}", null);
+                this.logger.LogInfo("會員註冊結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)}", null);
                 switch (response.Data.Result)
                 {
                     case (int)UserRegisteredResultType.Success:
                         return new ResponseResult()
                         {
                             Result = true,
-                            ResultCode = (int)ResponseResultType.Success,
-                            Content = MessageHelper.Message.ResponseMessage.Register.Success
+                            ResultCode = StatusCodes.Status200OK
                         };
 
                     case (int)UserRegisteredResultType.Fail:
-                        return new ResponseResult()
-                        {
-                            Result = false,
-                            ResultCode = (int)ResponseResultType.CreateFail,
-                            Content = MessageHelper.Message.ResponseMessage.Register.Fail
-                        };
-
                     case (int)UserRegisteredResultType.EmailError:
                     case (int)UserRegisteredResultType.PasswordError:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.InputError,
-                            Content = MessageHelper.Message.ResponseMessage.Register.Fail
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.RegisterFail.ToString()
                         };
 
                     case (int)UserRegisteredResultType.Repeat:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.Existed,
-                            Content = MessageHelper.Message.ResponseMessage.Register.EmailExist
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.EmailRepeat.ToString()
                         };
 
                     default:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.UnknownError,
-                            Content = MessageHelper.Message.ResponseMessage.Register.Fail
+                            ResultCode = StatusCodes.Status500InternalServerError,
+                            ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                         };
                 }
 
@@ -368,12 +325,12 @@ namespace DataInfo.Service.Managers.Member
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員註冊發生錯誤", $"Email: {content.Email} Password: {content.Password} ConfirmPassword: {content.ConfirmPassword} IsValidatePassword: {isValidatePassword} FbToken: {fbToken} GoogleToken: {googleToken}", ex);
+                this.logger.LogError("會員註冊發生錯誤", $"Content: {JsonConvert.SerializeObject(content)} FbToken: {fbToken} GoogleToken: {googleToken}", ex);
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Register.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }
@@ -396,8 +353,8 @@ namespace DataInfo.Service.Managers.Member
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.Missed,
-                        Content = MessageHelper.Message.ResponseMessage.Member.MemberNotExist
+                        ResultCode = StatusCodes.Status409Conflict,
+                        ResultMessage = ResponseErrorMessageType.LoginFail.ToString()
                     };
                 }
 
@@ -413,7 +370,7 @@ namespace DataInfo.Service.Managers.Member
                 return new ResponseResult()
                 {
                     Result = true,
-                    ResultCode = (int)ResponseResultType.Success,
+                    ResultCode = StatusCodes.Status200OK,
                     Content = new MemberLoginView() { Token = this.GenerateJwtToken(memberDao) }
                 };
             }
@@ -423,8 +380,8 @@ namespace DataInfo.Service.Managers.Member
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Login.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    Content = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }

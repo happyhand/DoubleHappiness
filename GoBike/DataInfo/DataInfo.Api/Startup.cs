@@ -1,5 +1,7 @@
 using AutoMapper;
+using DataInfo.Api.Filters;
 using DataInfo.Core.Applibs;
+using DataInfo.Core.Models.Dto.Member.Content;
 using DataInfo.Repository.Interfaces.Common;
 using DataInfo.Repository.Interfaces.Interactive;
 using DataInfo.Repository.Interfaces.Member;
@@ -22,9 +24,12 @@ using DataInfo.Service.Managers.Member;
 using DataInfo.Service.Managers.Ride;
 using DataInfo.Service.Managers.Server;
 using DataInfo.Service.Managers.Team;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -123,6 +128,26 @@ namespace DataInfo.Api
         }
 
         /// <summary>
+        /// FluentValidation 處理器
+        /// </summary>
+        private void FluentValidationHandler(IServiceCollection services)
+        {
+            //// 註冊 API 內容檢測
+            services.AddMvc(setup =>
+            {
+                setup.Filters.Add(new ContentAttribute());
+            }).AddFluentValidation();
+            //// 註冊 Content Validator
+            services.AddTransient<IValidator<MemberRegisterContent>, MemberRegisterContentValidator>();
+            services.AddTransient<IValidator<MemberLoginContent>, MemberLoginContentValidator>();
+            //// 忽略 Model Binding 驗證不過跳 400 Error 的功能，以便客製化回應訊息
+            services.Configure<ApiBehaviorOptions>(options =>
+            {
+                options.SuppressModelStateInvalidFilter = true;
+            });
+        }
+
+        /// <summary>
         /// Swagger 處理器
         /// </summary>
         /// <param name="services">services</param>
@@ -173,7 +198,7 @@ namespace DataInfo.Api
             {
                 app.UseHsts();
             }
-
+            //app.UseMiddleware<ContentMiddleware>();
             //app.UseHttpsRedirection(); // 強制使用 HTTPS Cors (先註解掉，等有憑證再回來試)
             app.UseRouting();
             app.UseCors("ProductNoPolicy"); // 必須建立在  app.UseMvc 之前
@@ -208,6 +233,7 @@ namespace DataInfo.Api
             this.ConfigurationHandler();
             this.AuthHandler(services);
             this.DependencyInjectionHandler(services);
+            this.FluentValidationHandler(services);
             this.SwaggerHandler(services);
             services.AddCors(options =>
             {
