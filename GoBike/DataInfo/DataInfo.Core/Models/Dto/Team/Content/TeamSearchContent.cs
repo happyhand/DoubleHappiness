@@ -19,6 +19,9 @@ namespace DataInfo.Core.Models.Dto.Team.Content
     /// </summary>
     public class TeamSearchContentValidator : AbstractValidator<TeamSearchContent>
     {
+        /// <summary>
+        /// 建構式
+        /// </summary>
         public TeamSearchContentValidator()
         {
             ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;

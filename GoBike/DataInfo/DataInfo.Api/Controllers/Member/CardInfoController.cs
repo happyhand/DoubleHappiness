@@ -1,10 +1,11 @@
-﻿using DataInfo.Core.Applibs;
-using DataInfo.Core.Extensions;
+﻿using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dto.Member.Content;
 using DataInfo.Core.Models.Dto.Response;
+using DataInfo.Core.Models.Enum;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Member;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NLog;
 using System;
@@ -51,17 +52,19 @@ namespace DataInfo.Api.Controllers.Member
             {
                 MemberCardInfoContent content = new MemberCardInfoContent() { MemberID = memberID };
                 ResponseResult responseResult = await this.memberService.GetCardInfo(content).ConfigureAwait(false);
-                return Ok(responseResult);
+                return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求取得名片資訊發生錯誤", $"MemberID: {memberID}", ex);
-                return Ok(new ResponseResult()
+                ResponseResult errorResponseResult = new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Get.Error
-                });
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                };
+
+                return this.ResponseHandler(errorResponseResult);
             }
         }
 
@@ -84,6 +87,7 @@ namespace DataInfo.Api.Controllers.Member
         [HttpGet("{memberID}")]
         public Task<IActionResult> Get(string memberID)
         {
+            //// TODO 待確認有沒有要限制其他會員可不可以搜尋到資料
             return this.GetData(memberID);
         }
     }

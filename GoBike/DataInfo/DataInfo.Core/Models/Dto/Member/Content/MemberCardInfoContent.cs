@@ -1,4 +1,5 @@
 ﻿using DataInfo.Core.Applibs;
+using DataInfo.Core.Models.Enum;
 using FluentValidation;
 
 namespace DataInfo.Core.Models.Dto.Member.Content
@@ -19,12 +20,21 @@ namespace DataInfo.Core.Models.Dto.Member.Content
     /// </summary>
     public class MemberCardInfoContentValidator : AbstractValidator<MemberCardInfoContent>
     {
+        /// <summary>
+        /// 建構式
+        /// </summary>
         public MemberCardInfoContentValidator()
         {
-            ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
+            this.CascadeMode = CascadeMode.StopOnFirstFailure;
             RuleFor(content => content.MemberID)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Member.MemberIDEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Member.MemberIDEmpty);
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.MemberIDError}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.MemberIDError}";
+              });
         }
     }
 }

@@ -38,7 +38,6 @@ namespace DataInfo.Core.Models.Dto.Member.Content
         /// <summary>
         /// 建構式
         /// </summary>
-        /// <param name="isValidateVerifierCode">isValidateVerifierCode</param>
         public MemberForgetPasswordContentValidator()
         {
             this.CascadeMode = CascadeMode.StopOnFirstFailure;

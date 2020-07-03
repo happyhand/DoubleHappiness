@@ -32,6 +32,11 @@
         SystemError,
 
         /// <summary>
+        /// 會員 ID 不正確
+        /// </summary>
+        MemberIDError,
+
+        /// <summary>
         /// 請輸入電子郵件
         /// </summary>
         EmailEmpty,
@@ -115,6 +120,11 @@
         /// 資料更新失敗，請稍後再試
         /// </summary>
         UpdateFail,
+
+        /// <summary>
+        /// 無法取得資料，請稍後再試
+        /// </summary>
+        GetFail,
 
         /// <summary>
         /// 驗證碼驗證失敗，請重新輸入

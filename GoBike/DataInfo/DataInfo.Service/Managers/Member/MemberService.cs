@@ -619,41 +619,33 @@ namespace DataInfo.Service.Managers.Member
         {
             try
             {
-                #region 驗證資料
+                //// TODO 待確認有沒有要限制其他會員可不可以搜尋到資料
 
-                MemberCardInfoContentValidator memberCardInfoContentValidator = new MemberCardInfoContentValidator();
-                ValidationResult validationResult = memberCardInfoContentValidator.Validate(content);
-                if (!validationResult.IsValid)
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{content.MemberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.CardInfo}";
+                MemberCardInfoView memberCardInfoView = await this.redisRepository.GetCache<MemberCardInfoView>(cacheKey).ConfigureAwait(false);
+                if (memberCardInfoView == null)
                 {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("取得會員名片資訊結果", $"Result: 驗證失敗({errorMessgae}) Content: {JsonConvert.SerializeObject(content)} SearchMemberID: {searchMemberID}", null);
-                    return new ResponseResult()
+                    MemberDao memberDao = await this.memberRepository.Get(content.MemberID, MemberSearchType.MemberID).ConfigureAwait(false);
+                    if (memberDao == null)
                     {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = errorMessgae
-                    };
-                }
+                        this.logger.LogWarn("取得會員名片資訊失敗，無會員資料", $"Content: {JsonConvert.SerializeObject(content)} SearchMemberID: {searchMemberID}", null);
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.GetFail.ToString()
+                        };
+                    }
 
-                #endregion 驗證資料
-
-                MemberDao memberDao = await this.memberRepository.Get(content.MemberID).ConfigureAwait(false);
-                if (memberDao == null)
-                {
-                    this.logger.LogWarn("取得會員名片資訊結果", $"Result: 無會員資料 Content: {JsonConvert.SerializeObject(content)} SearchMemberID: {searchMemberID}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.Missed,
-                        Content = MessageHelper.Message.ResponseMessage.Member.MemberNotExist
-                    };
+                    memberCardInfoView = this.mapper.Map<MemberCardInfoView>(memberDao);
+                    this.redisRepository.SetCache(cacheKey, JsonConvert.SerializeObject(memberCardInfoView), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
                 }
 
                 return new ResponseResult()
                 {
                     Result = true,
-                    ResultCode = (int)ResponseResultType.Success,
-                    Content = this.mapper.Map<MemberCardInfoView>(memberDao)
+                    ResultCode = StatusCodes.Status200OK,
+                    Content = memberCardInfoView
                 };
             }
             catch (Exception ex)
@@ -662,8 +654,8 @@ namespace DataInfo.Service.Managers.Member
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }

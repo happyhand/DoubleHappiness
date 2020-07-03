@@ -24,6 +24,9 @@ namespace DataInfo.Core.Models.Dto.Member.Content
     /// </summary>
     public class MemberSearchContentValidator : AbstractValidator<MemberSearchContent>
     {
+        /// <summary>
+        /// 建構式
+        /// </summary>
         public MemberSearchContentValidator()
         {
             ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;

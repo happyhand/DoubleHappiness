@@ -307,6 +307,16 @@ namespace DataInfo.Core.Applibs
             /// Gets or sets HomeInfo
             /// </summary>
             public string HomeInfo { get; set; }
+
+            /// <summary>
+            /// Gets or sets CardInfo
+            /// </summary>
+            public string CardInfo { get; set; }
+
+            /// <summary>
+            /// Gets or sets RideRecord
+            /// </summary>
+            public string RideRecord { get; set; }
         }
 
         /// <summary>

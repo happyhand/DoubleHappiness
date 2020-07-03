@@ -30,6 +30,9 @@ namespace DataInfo.Core.Models.Dto.Member.Content
     /// </summary>
     public class MemberRegisterContentValidator : AbstractValidator<MemberRegisterContent>
     {
+        /// <summary>
+        /// 建構式
+        /// </summary>
         public MemberRegisterContentValidator()
         {
             this.CascadeMode = CascadeMode.StopOnFirstFailure;

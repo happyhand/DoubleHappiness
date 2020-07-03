@@ -2,9 +2,11 @@
 using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dto.Response;
 using DataInfo.Core.Models.Dto.Ride.Content;
+using DataInfo.Core.Models.Enum;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Ride;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using NLog;
@@ -53,17 +55,19 @@ namespace DataInfo.Api.Controllers.Ride
             {
                 this.logger.LogInfo("會員請求取得騎乘記錄", $"MemberID: {memberID}", null);
                 ResponseResult responseResult = await this.rideService.GetRideRecord(memberID).ConfigureAwait(false);
-                return Ok(responseResult);
+                return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求取得騎乘記錄發生錯誤", $"MemberID: {memberID}", ex);
-                return Ok(new ResponseResult()
+                ResponseResult errorResponseResult = new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Get.Error
-                });
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                };
+
+                return this.ResponseHandler(errorResponseResult);
             }
         }
 

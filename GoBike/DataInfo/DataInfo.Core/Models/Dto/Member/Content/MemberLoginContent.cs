@@ -25,35 +25,38 @@ namespace DataInfo.Core.Models.Dto.Member.Content
     /// </summary>
     public class MemberLoginContentValidator : AbstractValidator<MemberLoginContent>
     {
+        /// <summary>
+        /// 建構式
+        /// </summary>
         public MemberLoginContentValidator()
         {
             this.CascadeMode = CascadeMode.StopOnFirstFailure;
             RuleFor(content => content.Email)
-            .NotNull().WithMessage(content =>
-            {
-                return $"{ResponseErrorMessageType.EmailEmpty}";
-            })
-            .NotEmpty().WithMessage(content =>
-            {
-                return $"{ResponseErrorMessageType.EmailEmpty}";
-            })
-            .EmailAddress().WithMessage(content =>
-            {
-                return $"{ResponseErrorMessageType.EmailFormatError}|Email: {content.Email}";
-            });
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.EmailEmpty}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.EmailEmpty}";
+              })
+              .EmailAddress().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.EmailFormatError}|Email: {content.Email}";
+              });
             RuleFor(content => content.Password)
-            .NotNull().WithMessage(content =>
-            {
-                return $"{ResponseErrorMessageType.PasswordEmpty}";
-            })
-            .NotEmpty().WithMessage(content =>
-            {
-                return $"{ResponseErrorMessageType.PasswordEmpty}";
-            })
-            .Must(password => { return Utility.ValidatePassword(password); }).WithMessage(content =>
-            {
-                return $"{ResponseErrorMessageType.PasswordFormatError}|Password: {content.Password}";
-            });
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.PasswordEmpty}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.PasswordEmpty}";
+              })
+              .Must(password => { return Utility.ValidatePassword(password); }).WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.PasswordFormatError}|Password: {content.Password}";
+              });
         }
     }
 }

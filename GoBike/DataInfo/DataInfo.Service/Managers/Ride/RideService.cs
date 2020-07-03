@@ -281,12 +281,20 @@ namespace DataInfo.Service.Managers.Ride
         {
             try
             {
-                IEnumerable<RideDao> rideDaos = await this.rideRepository.GetRecordList(memberID).ConfigureAwait(false);
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{content.MemberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.RideRecord}";
+                IEnumerable<RideSimpleRecordView> rideSimpleRecordViews = await this.redisRepository.GetCache<IEnumerable<RideSimpleRecordView>>(cacheKey).ConfigureAwait(false);
+                if (rideSimpleRecordViews == null)
+                {
+                    IEnumerable<RideDao> rideDaos = await this.rideRepository.GetRecordList(memberID).ConfigureAwait(false);
+                    rideSimpleRecordViews = this.mapper.Map<IEnumerable<RideSimpleRecordView>>(rideDaos);
+                    this.redisRepository.SetCache(cacheKey, JsonConvert.SerializeObject(rideSimpleRecordViews), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
+                }
+
                 return new ResponseResult()
                 {
                     Result = true,
-                    ResultCode = (int)ResponseResultType.Success,
-                    Content = this.mapper.Map<IEnumerable<RideSimpleRecordView>>(rideDaos)
+                    ResultCode = StatusCodes.Status200OK,
+                    Content = rideSimpleRecordViews
                 };
             }
             catch (Exception ex)
@@ -295,8 +303,8 @@ namespace DataInfo.Service.Managers.Ride
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }

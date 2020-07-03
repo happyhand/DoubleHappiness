@@ -259,3 +259,4 @@ namespace DataInfo.Core.Applibs
 
         #endregion 取得週日期
     }
+}
