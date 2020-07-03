@@ -1,9 +1,10 @@
-﻿using DataInfo.Core.Applibs;
-using DataInfo.Core.Extensions;
+﻿using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dto.Response;
+using DataInfo.Core.Models.Enum;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Member;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NLog;
 using System;
@@ -51,17 +52,19 @@ namespace DataInfo.Api.Controllers.Member
             {
                 this.logger.LogInfo("會員請求首頁資訊", $"MemberID: {memberID}", null);
                 ResponseResult responseResult = await memberService.HomeInfo(memberID).ConfigureAwait(false);
-                return Ok(responseResult);
+                return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求首頁資訊發生錯誤", $"MemberID: {memberID}", ex);
-                return Ok(new ResponseResult()
+                ResponseResult errorResponseResult = new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Login.Error
-                });
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                };
+
+                return this.ResponseHandler(errorResponseResult);
             }
         }
     }

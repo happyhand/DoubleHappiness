@@ -41,8 +41,8 @@ namespace DataInfo.Repository.Managers.Ride
         /// <summary>
         /// 取得騎乘記錄列表
         /// </summary>
-        /// <param name="memberIDs">memberIDs</param>
-        /// <returns>RideDistanceDao</returns>
+        /// <param name="memberID">memberID</param>
+        /// <returns>RideDaos</returns>
         public async Task<IEnumerable<RideDao>> GetRecordList(string memberID)
         {
             try
@@ -72,7 +72,7 @@ namespace DataInfo.Repository.Managers.Ride
                 RideData rideData = await this.Db.Queryable<RideData>().Where(data => data.MemberID.Equals(memberID)).FirstAsync().ConfigureAwait(false);
                 if (rideData == null)
                 {
-                    this.logger.LogWarn("取得總里程失敗", $"Result: 無騎乘資料 MemberID: {memberID}", null);
+                    this.logger.LogWarn("取得總里程失敗，無騎乘資料", $"MemberID: {memberID}", null);
                     return null;
                 }
 
@@ -107,7 +107,7 @@ namespace DataInfo.Repository.Managers.Ride
                                                          .FirstAsync().ConfigureAwait(false);
                 if (weekRideData == null)
                 {
-                    this.logger.LogWarn("取得週里程失敗", $"Result: 無騎乘資料 MemberID: {memberID} NowDate: {nowDate}", null);
+                    this.logger.LogWarn("取得週里程失敗，無騎乘資料", $"MemberID: {memberID} NowDate: {nowDate}", null);
                     return null;
                 }
 
@@ -128,7 +128,7 @@ namespace DataInfo.Repository.Managers.Ride
         /// 取得週里程
         /// </summary>
         /// <param name="memberIDs">memberIDs</param>
-        /// <returns>RideDistanceDao</returns>
+        /// <returns>RideDistanceDaos</returns>
         public async Task<IEnumerable<RideDistanceDao>> GetWeekDistance(IEnumerable<string> memberIDs)
         {
             DateTime nowDate = DateTime.UtcNow;

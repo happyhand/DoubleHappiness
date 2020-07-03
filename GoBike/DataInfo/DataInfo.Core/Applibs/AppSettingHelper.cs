@@ -12,15 +12,6 @@ namespace DataInfo.Core.Applibs
         /// </summary>
         public static AppSettingHelper Appsetting;
 
-        #region MemberID Flag
-
-        /// <summary>
-        /// Gets or sets MemberIDFlag
-        /// </summary>
-        public string MemberIDFlag { get; set; }
-
-        #endregion MemberID Flag
-
         #region 縣市對照表
 
         /// <summary>
@@ -218,14 +209,30 @@ namespace DataInfo.Core.Applibs
 
         #endregion KeepOnline 設定資料
 
-        #region 驗證碼時間設定資料
+        #region 驗證碼設定資料
 
         /// <summary>
-        /// Gets or sets VerifierCodeExpirationDate
+        /// Gets or sets VerifierCode
         /// </summary>
-        public int VerifierCodeExpirationDate { get; set; }
+        public VerifierCodeSetting VerifierCode { get; set; }
 
-        #endregion 驗證碼時間設定資料
+        /// <summary>
+        /// VerifierCodeSetting
+        /// </summary>
+        public class VerifierCodeSetting
+        {
+            /// <summary>
+            /// Gets or sets ExpirationDate
+            /// </summary>
+            public int ExpirationDate { get; set; }
+
+            /// <summary>
+            /// Gets or sets Length
+            /// </summary>
+            public int Length { get; set; }
+        }
+
+        #endregion 驗證碼設定資料
 
         #region 第三方平台設定資料
 
@@ -271,15 +278,10 @@ namespace DataInfo.Core.Applibs
         public RedisSetting Redis { get; set; }
 
         /// <summary>
-        /// RedisSetting
+        /// RedisFlag
         /// </summary>
         public class RedisFlag
         {
-            /// <summary>
-            /// Gets or sets LastLogin
-            /// </summary>
-            public string LastLogin { get; set; }
-
             /// <summary>
             /// Gets or sets Member
             /// </summary>
@@ -289,6 +291,22 @@ namespace DataInfo.Core.Applibs
             /// Gets or sets VerifierCode
             /// </summary>
             public string VerifierCode { get; set; }
+        }
+
+        /// <summary>
+        /// RedisSubFlag
+        /// </summary>
+        public class RedisSubFlag
+        {
+            /// <summary>
+            /// Gets or sets LastLogin
+            /// </summary>
+            public string LastLogin { get; set; }
+
+            /// <summary>
+            /// Gets or sets HomeInfo
+            /// </summary>
+            public string HomeInfo { get; set; }
         }
 
         /// <summary>
@@ -307,9 +325,19 @@ namespace DataInfo.Core.Applibs
             public int DB { get; set; }
 
             /// <summary>
+            /// Gets or sets ExpirationDate
+            /// </summary>
+            public int ExpirationDate { get; set; }
+
+            /// <summary>
             /// Gets or sets Flag
             /// </summary>
             public RedisFlag Flag { get; set; }
+
+            /// <summary>
+            /// Gets or sets SubFlag
+            /// </summary>
+            public RedisSubFlag SubFlag { get; set; }
         }
 
         #endregion Redis 設定資料
@@ -402,18 +430,34 @@ namespace DataInfo.Core.Applibs
 
         #endregion Command Server 設定資料
 
-        #region 瀏覽車隊設定資料
+        #region 規則設定資料
 
         /// <summary>
-        /// Gets or sets DaysOfNewCreation
+        /// Gets or sets RuleSetting
         /// </summary>
-        public int DaysOfNewCreation { get; set; }
+        public RuleSetting Rule { get; set; }
 
         /// <summary>
-        /// Gets or sets TakeBrowseCount
+        /// RuleSetting
         /// </summary>
-        public int TakeBrowseCount { get; set; }
+        public class RuleSetting
+        {
+            /// <summary>
+            /// Gets or sets NicknameLength
+            /// </summary>
+            public int NicknameLength { get; set; }
 
-        #endregion 瀏覽車隊設定資料
+            /// <summary>
+            /// Gets or sets DaysOfNewCreation
+            /// </summary>
+            public int DaysOfNewCreation { get; set; }
+
+            /// <summary>
+            /// Gets or sets TakeBrowseCount
+            /// </summary>
+            public int TakeBrowseCount { get; set; }
+        }
+
+        #endregion 規則設定資料
     }
 }

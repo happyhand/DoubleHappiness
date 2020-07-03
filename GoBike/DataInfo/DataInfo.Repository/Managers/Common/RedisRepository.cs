@@ -1,6 +1,7 @@
 ﻿using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
 using DataInfo.Repository.Interfaces.Common;
+using Microsoft.EntityFrameworkCore.Internal;
 using Newtonsoft.Json;
 using NLog;
 using StackExchange.Redis;
@@ -74,14 +75,33 @@ namespace DataInfo.Repository.Managers.Common
             try
             {
                 string dataJson = await this.database.StringGetAsync(cacheKey).ConfigureAwait(false);
-                this.logger.LogInfo("讀取快取資料", $"dataJson: {dataJson}", null);
-
                 return string.IsNullOrEmpty(dataJson) ? default : JsonConvert.DeserializeObject<T>(dataJson);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("讀取快取資料發生錯誤", $"CacheKey: {cacheKey}", ex);
                 return default;
+            }
+        }
+
+        /// <summary>
+        /// 讀取多筆快取資料
+        /// </summary>
+        /// <param name="cacheKeys">cacheKeys</param>
+        /// <returns>T Map</returns>
+        public async Task<Dictionary<string, T>> GetCache<T>(IEnumerable<string> cacheKeys)
+        {
+            try
+            {
+                RedisKey[] redisKeys = cacheKeys.Select(key => (RedisKey)key).ToArray();
+                RedisValue[] redisValues = await this.database.StringGetAsync(redisKeys).ConfigureAwait(false);
+                IEnumerable<T> datas = redisValues.Select(redisValue => string.IsNullOrEmpty(redisValue) ? default : JsonConvert.DeserializeObject<T>(redisValue));
+                return cacheKeys.Select((key, index) => new { key, index }).ToDictionary(data => data.key, data => datas.ElementAtOrDefault(data.index));
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("讀取多筆快取資料發生錯誤", $"CacheKeys: {JsonConvert.SerializeObject(cacheKeys)}", ex);
+                return new Dictionary<string, T>();
             }
         }
 
@@ -120,16 +140,24 @@ namespace DataInfo.Repository.Managers.Common
         /// 檢查資料是否存在
         /// </summary>
         /// <param name="cacheKey">cacheKey</param>
+        /// <param name="isFuzzy">isFuzzy</param>
         /// <returns>bool</returns>
-        public async Task<bool> IsExist(string cacheKey)
+        public async Task<bool> IsExist(string cacheKey, bool isFuzzy)
         {
             try
             {
-                return await this.database.KeyExistsAsync(cacheKey).ConfigureAwait(false);
+                if (isFuzzy)
+                {
+                    return this.GetRedisKeys(cacheKey).Any();
+                }
+                else
+                {
+                    return await this.database.KeyExistsAsync(cacheKey).ConfigureAwait(false);
+                }
             }
             catch (Exception ex)
             {
-                this.logger.LogError("檢查資料是否存在發生錯誤", $"CacheKey: {cacheKey}", ex);
+                this.logger.LogError("檢查資料是否存在發生錯誤", $"CacheKey: {cacheKey} IsFuzzy: {isFuzzy}", ex);
                 return false;
             }
         }

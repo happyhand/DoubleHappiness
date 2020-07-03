@@ -1,4 +1,5 @@
 ﻿using DataInfo.Core.Applibs;
+using DataInfo.Core.Models.Enum;
 using FluentValidation;
 
 namespace DataInfo.Core.Models.Dto.Member.Content
@@ -40,25 +41,62 @@ namespace DataInfo.Core.Models.Dto.Member.Content
         /// <param name="isValidateVerifierCode">isValidateVerifierCode</param>
         public MemberForgetPasswordContentValidator()
         {
-            ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
+            this.CascadeMode = CascadeMode.StopOnFirstFailure;
             RuleFor(content => content.Email)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Member.EmailEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Member.EmailEmpty)
-            .EmailAddress().WithMessage(MessageHelper.Message.ResponseMessage.Member.EmailFormatError);
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.EmailEmpty}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.EmailEmpty}";
+              })
+              .EmailAddress().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.EmailFormatError}|Email: {content.Email}";
+              });
 
             RuleFor(content => content.VerifierCode)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.VerifyCode.VerifyCodeEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.VerifyCode.VerifyCodeEmpty);
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.VerifyCodeEmpty}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.VerifyCodeEmpty}";
+              })
+              .Length(AppSettingHelper.Appsetting.VerifierCode.Length).WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.VerifyCodeFormatError}|{content.VerifierCode}";
+              });
 
             RuleFor(content => content.Password)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordEmpty)
-            .Must(password => { return Utility.ValidatePassword(password); }).WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordFormatError);
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.PasswordEmpty}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.PasswordEmpty}";
+              })
+              .Must(password => { return Utility.ValidatePassword(password); }).WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.PasswordFormatError}|Password: {content.Password}";
+              });
 
             RuleFor(content => content.ConfirmPassword)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordNotMatch)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordNotMatch)
-            .Equal(content => content.Password).WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordNotMatch);
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.ConfirmPasswordEmpty}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.ConfirmPasswordEmpty}";
+              })
+              .Equal(content => content.Password).WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.ConfirmPasswordNotMatch}|Password: {content.Password} ConfirmPassword: {content.ConfirmPassword}";
+              });
         }
     }
 }

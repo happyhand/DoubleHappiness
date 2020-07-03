@@ -216,6 +216,16 @@ namespace DataInfo.Core.Applibs
                 RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250));
         }
 
+        /// <summary>
+        /// Nickname 格式驗證
+        /// </summary>
+        /// <param name="length">length</param>
+        /// <returns>bool</returns>
+        public static bool ValidateNickname(string nickname, int length)
+        {
+            return Regex.IsMatch(nickname, @"^\S{1," + $"{length}" + "}$", RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250));
+        }
+
         #endregion 驗證功能
 
         #region 取得週日期
@@ -249,4 +259,3 @@ namespace DataInfo.Core.Applibs
 
         #endregion 取得週日期
     }
-}

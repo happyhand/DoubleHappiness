@@ -57,7 +57,7 @@ namespace DataInfo.Core.Models.Dto.Common
                 Body = $"<p>親愛的用戶您好</p>" +
                        $"<p>您的驗證碼為</p>" +
                        $"<p><span style='font-weight:bold; color:blue;'>{verifierCode}</span></p>" +
-                       $"<p>請於 <span style='font-weight:bold; color:blue;'>{AppSettingHelper.Appsetting.VerifierCodeExpirationDate}分鐘</span> 內於APP輸入此驗證碼以獲取新密碼</p>" +
+                       $"<p>請於 <span style='font-weight:bold; color:blue;'>{AppSettingHelper.Appsetting.VerifierCode.ExpirationDate}分鐘</span> 內於APP輸入此驗證碼以獲取新密碼</p>" +
                        $"<br><br><br>" +
                        $"<p>※本電子郵件係由系統自動發送，請勿直接回覆本郵件。</p>",
                 Subject = "GoBike 查詢密碼"
@@ -78,7 +78,7 @@ namespace DataInfo.Core.Models.Dto.Common
                 Body = $"<p>親愛的用戶您好</p>" +
                        $"<p>您的驗證碼為</p>" +
                        $"<p><span style='font-weight:bold; color:blue;'>{verifierCode}</span></p>" +
-                       $"<p>請於 <span style='font-weight:bold; color:blue;'>{AppSettingHelper.Appsetting.VerifierCodeExpirationDate}分鐘</span> 內於APP輸入此驗證碼以綁定行動電話</p>" +
+                       $"<p>請於 <span style='font-weight:bold; color:blue;'>{AppSettingHelper.Appsetting.VerifierCode.ExpirationDate}分鐘</span> 內於APP輸入此驗證碼以綁定行動電話</p>" +
                        $"<br><br><br>" +
                        $"<p>※本電子郵件係由系統自動發送，請勿直接回覆本郵件。</p>",
                 Subject = "GoBike 行動電話綁定作業"

@@ -8,6 +8,8 @@ using NLog;
 using System;
 using System.Threading.Tasks;
 using DataInfo.Core.Applibs;
+using Microsoft.AspNetCore.Http;
+using DataInfo.Core.Models.Enum;
 
 namespace DataInfo.Api.Controllers.Member
 {
@@ -50,17 +52,19 @@ namespace DataInfo.Api.Controllers.Member
             try
             {
                 ResponseResult responseResult = await this.memberService.KeepOnline(memberID).ConfigureAwait(false);
-                return Ok(responseResult);
+                return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求保持在線發生錯誤", $"MemberID: {memberID}", ex);
-                return Ok(new ResponseResult()
+                ResponseResult errorResponseResult = new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Update.Error
-                });
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                };
+
+                return this.ResponseHandler(errorResponseResult);
             }
         }
     }

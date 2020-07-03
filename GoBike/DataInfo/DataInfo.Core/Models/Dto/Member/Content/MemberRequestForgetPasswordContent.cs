@@ -1,4 +1,5 @@
 ﻿using DataInfo.Core.Applibs;
+using DataInfo.Core.Models.Enum;
 using FluentValidation;
 
 namespace DataInfo.Core.Models.Dto.Member.Content
@@ -24,11 +25,20 @@ namespace DataInfo.Core.Models.Dto.Member.Content
         /// </summary>
         public MemberRequestForgetPasswordContentValidator()
         {
-            ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
+            this.CascadeMode = CascadeMode.StopOnFirstFailure;
             RuleFor(content => content.Email)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Member.EmailEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Member.EmailEmpty)
-            .EmailAddress().WithMessage(MessageHelper.Message.ResponseMessage.Member.EmailFormatError);
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.EmailEmpty}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.EmailEmpty}";
+              })
+              .EmailAddress().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.EmailFormatError}|Email: {content.Email}";
+              });
         }
     }
 }

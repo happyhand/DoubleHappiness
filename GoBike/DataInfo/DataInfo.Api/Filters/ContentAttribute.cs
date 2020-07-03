@@ -33,18 +33,18 @@ namespace DataInfo.Api.Filters
         {
             if (!context.ModelState.IsValid)
             {
-                string[] errorMessages = context.ModelState.Values.FirstOrDefault().Errors.FirstOrDefault().ErrorMessage.Split("|");
-                string errorMessage = errorMessages.ElementAtOrDefault(0);
-                string content = errorMessages.ElementAtOrDefault(1);
+                string[] errorDatas = context.ModelState.Values.FirstOrDefault().Errors.FirstOrDefault().ErrorMessage.Split("|");
+                string message = errorDatas.ElementAtOrDefault(0);
+                string data = errorDatas.ElementAtOrDefault(1);
                 ResponseResult responseResult = new ResponseResult()
                 {
                     Result = false,
                     ResultCode = StatusCodes.Status400BadRequest,
-                    ResultMessage = errorMessage
+                    ResultMessage = message
                 };
 
                 context.Result = new BadRequestObjectResult(responseResult);
-                this.logger.LogWarn("API 內容驗證失敗", $"Paht: {context.HttpContext.Request.Path} ErrorMessage: {errorMessage} Content: {content}", null);
+                this.logger.LogWarn("API 請求內容資料驗證失敗", $"Paht: {context.HttpContext.Request.Path} Message: {message} Data: {data}", null);
                 return;
             }
 

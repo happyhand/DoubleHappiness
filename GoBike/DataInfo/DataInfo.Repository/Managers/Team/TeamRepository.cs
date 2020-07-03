@@ -154,9 +154,10 @@ namespace DataInfo.Repository.Managers.Team
         {
             try
             {
+                int takeBrowseCount = AppSettingHelper.Appsetting.Rule.TakeBrowseCount;
                 IEnumerable<TeamData> teamDatas = await this.Db.Queryable<TeamData>()
                                               .Where(data => data.County.Equals(county))
-                                              .Take(AppSettingHelper.Appsetting.TakeBrowseCount)
+                                              .Take(takeBrowseCount)
                                               .ToListAsync().ConfigureAwait(false);
 
                 return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);
@@ -174,12 +175,14 @@ namespace DataInfo.Repository.Managers.Team
         /// <returns>TeamDaos</returns>
         public async Task<IEnumerable<TeamDao>> GetNewCreationTeam()
         {
-            DateTime expiredDate = DateTime.UtcNow.AddDays(AppSettingHelper.Appsetting.DaysOfNewCreation * -1);
+            int daysOfNewCreation = AppSettingHelper.Appsetting.Rule.DaysOfNewCreation;
+            int takeBrowseCount = AppSettingHelper.Appsetting.Rule.TakeBrowseCount;
+            DateTime expiredDate = DateTime.UtcNow.AddDays(daysOfNewCreation * -1);
             try
             {
                 IEnumerable<TeamData> teamDatas = await this.Db.Queryable<TeamData>()
                                               .Where(data => Convert.ToDateTime(data).Ticks - expiredDate.Ticks > 0)
-                                              .Take(AppSettingHelper.Appsetting.TakeBrowseCount)
+                                              .Take(takeBrowseCount)
                                               .ToListAsync().ConfigureAwait(false);
 
                 return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);
@@ -199,10 +202,11 @@ namespace DataInfo.Repository.Managers.Team
         {
             try
             {
+                int takeBrowseCount = AppSettingHelper.Appsetting.Rule.TakeBrowseCount;
                 //// TODO 待確認推薦標準
                 IEnumerable<TeamData> teamDatas = await this.Db.Queryable<TeamData>()
                                               .Where(data => data.TeamViceLeaderIDs.Length + data.TeamMemberIDs.Length >= 50)
-                                              .Take(AppSettingHelper.Appsetting.TakeBrowseCount)
+                                              .Take(takeBrowseCount)
                                               .ToListAsync().ConfigureAwait(false);
 
                 return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);

@@ -1,4 +1,5 @@
 ﻿using DataInfo.Core.Applibs;
+using DataInfo.Core.Models.Enum;
 using FluentValidation;
 
 namespace DataInfo.Core.Models.Dto.Member.Content
@@ -32,23 +33,50 @@ namespace DataInfo.Core.Models.Dto.Member.Content
         /// <summary>
         /// 建構式
         /// </summary>
-        public MemberUpdatePasswordContentValidator(bool isIgnoreOldPassword)
+        public MemberUpdatePasswordContentValidator()
         {
-            ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
-            if (!isIgnoreOldPassword)
-            {
-                RuleFor(content => content.Password)
-                .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordEmpty)
-                .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordEmpty);
-            }
+            this.CascadeMode = CascadeMode.StopOnFirstFailure;
+            RuleFor(content => content.Password)
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.PasswordEmpty}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.PasswordEmpty}";
+              })
+              .Must(password => { return Utility.ValidatePassword(password); }).WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.PasswordFormatError}|Password: {content.Password}";
+              });
 
             RuleFor(content => content.NewPassword)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordEmpty);
+             .NotNull().WithMessage(content =>
+             {
+                 return $"{ResponseErrorMessageType.NewPasswordEmpty}";
+             })
+             .NotEmpty().WithMessage(content =>
+             {
+                 return $"{ResponseErrorMessageType.NewPasswordEmpty}";
+             })
+             .Must(password => { return Utility.ValidatePassword(password); }).WithMessage(content =>
+             {
+                 return $"{ResponseErrorMessageType.NewPasswordFormatError}|NewPassword: {content.NewPassword}";
+             });
+
             RuleFor(content => content.ConfirmPassword)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordNotMatch)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordNotMatch)
-            .Equal(content => content.NewPassword).WithMessage(MessageHelper.Message.ResponseMessage.Member.PasswordNotMatch);
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.ConfirmPasswordEmpty}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.ConfirmPasswordEmpty}";
+              })
+              .Equal(content => content.NewPassword).WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.ConfirmPasswordNotMatch}|NewPassword: {content.NewPassword} ConfirmPassword: {content.ConfirmPassword}";
+              });
         }
     }
 }

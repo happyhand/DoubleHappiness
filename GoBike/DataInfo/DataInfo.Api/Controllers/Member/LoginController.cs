@@ -21,6 +21,7 @@ namespace DataInfo.Api.Controllers.Member
     /// 會員登入
     /// </summary>
     [ApiController]
+    [Route("api/Member/[controller]")]
     public class LoginController : JwtController
     {
         /// <summary>
@@ -111,7 +112,6 @@ namespace DataInfo.Api.Controllers.Member
         /// <returns>IActionResult</returns>
         [HttpGet]
         [Authorize]
-        [Route("api/Member/[controller]")]
         public async Task<IActionResult> Get()
         {
             string memberID = this.GetMemberID();
@@ -141,7 +141,6 @@ namespace DataInfo.Api.Controllers.Member
         /// <param name="content">content</param>
         /// <returns>IActionResult</returns>
         [HttpPost]
-        [Route("api/Member/[controller]")]
         public async Task<IActionResult> Post(MemberLoginContent content)
         {
             try

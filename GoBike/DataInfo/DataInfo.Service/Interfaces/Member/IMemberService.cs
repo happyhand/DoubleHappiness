@@ -22,7 +22,7 @@ namespace DataInfo.Service.Interfaces.Member
         Task<ResponseResult> KeepOnline(string memberID);
 
         /// <summary>
-        /// 會員登入(一般登入)
+        /// 會員登入
         /// </summary>
         /// <param name="content">content</param>
         /// <returns>ResponseResult</returns>
@@ -38,7 +38,7 @@ namespace DataInfo.Service.Interfaces.Member
         Task<ResponseResult> Register(MemberRegisterContent content, string fbToken, string googleToken);
 
         /// <summary>
-        /// 會員登入(重新登入)
+        /// 會員重新登入
         /// </summary>
         /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>

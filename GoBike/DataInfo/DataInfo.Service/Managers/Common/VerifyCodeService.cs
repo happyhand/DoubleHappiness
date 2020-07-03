@@ -1,10 +1,10 @@
 ﻿using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
-using DataInfo.Core.Models.Dto.Common;
 using DataInfo.Core.Models.Dto.Response;
+using DataInfo.Core.Models.Enum;
 using DataInfo.Repository.Interfaces.Common;
 using DataInfo.Service.Interfaces.Common;
-using FluentValidation.Results;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using NLog;
 using System;
@@ -39,109 +39,72 @@ namespace DataInfo.Service.Managers.Common
         /// <summary>
         /// 刪除驗證碼
         /// </summary>
-        /// <param name="verifierCode">verifierCode</param>
-        public void Delete(string verifierCode)
+        /// <param name="email">email</param>
+        public void Delete(string email)
         {
             try
             {
-                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.VerifierCode}-{verifierCode}";
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.VerifierCode}-{email}";
                 this.redisRepository.DeleteCache(cacheKey);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("刪除驗證碼發生錯誤", $"VerifierCode: {verifierCode}", ex);
+                this.logger.LogError("刪除驗證碼發生錯誤", $"Email: {email}", ex);
             }
         }
 
         /// <summary>
         /// 生產驗證碼
         /// </summary>
+        /// <param name="email">email</param>
         /// <returns>string</returns>
-        public async Task<string> Generate()
+        public string Generate(string email)
         {
             try
             {
-                string verifierCode = Guid.NewGuid().ToString().Substring(0, 6);
-                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.VerifierCode}-{verifierCode}";
-                bool isExist = await this.redisRepository.IsExist(cacheKey).ConfigureAwait(false);
-                if (isExist)
-                {
-                    return await this.Generate().ConfigureAwait(false);
-                }
-
-                this.redisRepository.SetCache(cacheKey, JsonConvert.SerializeObject(verifierCode), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.VerifierCodeExpirationDate));
+                string verifierCode = Guid.NewGuid().ToString().Substring(0, AppSettingHelper.Appsetting.VerifierCode.Length);
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.VerifierCode}-{email}";
+                this.redisRepository.SetCache(cacheKey, JsonConvert.SerializeObject(verifierCode), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.VerifierCode.ExpirationDate));
                 return verifierCode;
             }
             catch (Exception ex)
             {
-                this.logger.LogError("生產驗證碼發生錯誤", string.Empty, ex);
+                this.logger.LogError("生產驗證碼發生錯誤", $"Email: {email}", ex);
                 return string.Empty;
             }
         }
 
         /// <summary>
-        /// 驗證驗證碼
+        /// 是否已產生驗證碼
         /// </summary>
-        /// <param name="content">content</param>
-        /// <param name="isDelete">isDelete</param>
-        /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> Validate(VerifyCodeContent content, bool isDelete)
+        /// <param name="email">email</param>
+        /// <returns>bool</returns>
+        public async Task<bool> IsGenerate(string email)
         {
             try
             {
-                #region 驗證資料
-
-                VerifyCodeContentValidator verifyCodeContentValidator = new VerifyCodeContentValidator();
-                ValidationResult validationResult = verifyCodeContentValidator.Validate(content);
-                if (!validationResult.IsValid)
-                {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("驗證驗證碼結果", $"Result: 驗證失敗({errorMessgae}) Content: {JsonConvert.SerializeObject(content)} IsDelete: {isDelete}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = errorMessgae
-                    };
-                }
-
-                #endregion 驗證資料
-
-                return await this.Validate(content.VerifierCode, isDelete);
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.VerifierCode}-{email}";
+                return await this.redisRepository.IsExist(cacheKey, false).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("驗證驗證碼發生錯誤", $"Content: {JsonConvert.SerializeObject(content)} IsDelete: {isDelete}", ex);
-                return new ResponseResult()
-                {
-                    Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.VerifyCode.MatchFail
-                };
+                this.logger.LogError("是否已產生驗證碼發生錯誤", $"Email: {email}", ex);
+                return false;
             }
         }
 
         /// <summary>
         /// 驗證驗證碼
         /// </summary>
+        /// <param name="email">email</param>
         /// <param name="verifierCode">verifierCode</param>
         /// <param name="isDelete">isDelete</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> Validate(string verifierCode, bool isDelete)
+        public async Task<ResponseResult> Validate(string email, string verifierCode, bool isDelete)
         {
             try
             {
-                if (string.IsNullOrEmpty(verifierCode))
-                {
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = MessageHelper.Message.ResponseMessage.VerifyCode.MatchFail
-                    };
-                }
-
-                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.VerifierCode}-{verifierCode}";
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.VerifierCode}-{email}";
                 string matchCode = await this.redisRepository.GetCache<string>(cacheKey).ConfigureAwait(false);
                 bool result = verifierCode.Equals(matchCode);
                 if (result && isDelete)
@@ -152,18 +115,18 @@ namespace DataInfo.Service.Managers.Common
                 return new ResponseResult()
                 {
                     Result = result,
-                    ResultCode = result ? (int)ResponseResultType.Success : (int)ResponseResultType.InputError,
-                    Content = result ? MessageHelper.Message.ResponseMessage.VerifyCode.MatchSuccess : MessageHelper.Message.ResponseMessage.VerifyCode.MatchFail
+                    ResultCode = result ? StatusCodes.Status200OK : StatusCodes.Status409Conflict,
+                    ResultMessage = result ? string.Empty : ResponseErrorMessageType.VerifyCodeFail.ToString()
                 };
             }
             catch (Exception ex)
             {
-                this.logger.LogError("驗證驗證碼發生錯誤", $"VerifierCode: {verifierCode} IsDelete: {isDelete}", ex);
+                this.logger.LogError("驗證驗證碼發生錯誤", $"Email: {email} VerifierCode: {verifierCode} IsDelete: {isDelete}", ex);
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.VerifyCode.MatchFail
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }

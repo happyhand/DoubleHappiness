@@ -1,5 +1,6 @@
 ﻿using DataInfo.Core.Models.Dao.Member;
 using DataInfo.Core.Models.Dao.Member.Table;
+using DataInfo.Core.Models.Enum;
 using SqlSugar;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -12,20 +13,19 @@ namespace DataInfo.Repository.Interfaces.Member
     public interface IMemberRepository
     {
         /// <summary>
-        /// 取得會員資料
+        /// 取得指定會員資料
         /// </summary>
         /// <param name="memberID">memberID</param>
-        /// <returns>MemberDaos</returns>
-        Task<MemberDao> Get(string memberID);
+        /// <returns>MemberDao</returns>
+        Task<MemberDao> Get(string key, MemberSearchType type);
 
         /// <summary>
-        /// 取得會員資料
+        /// 模糊查詢會員資料
         /// </summary>
         /// <param name="searchKey">searchKey</param>
-        /// <param name="isFuzzy">isFuzzy</param>
         /// <param name="ignoreMemberIDs">ignoreMemberIDs</param>
         /// <returns>MemberDaos</returns>
-        Task<IEnumerable<MemberDao>> Get(string searchKey, bool isFuzzy, IEnumerable<string> ignoreMemberIDs);
+        Task<IEnumerable<MemberDao>> Get(string key, IEnumerable<string> ignoreMemberIDs);
 
         /// <summary>
         /// 取得會員資料列表

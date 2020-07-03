@@ -17,6 +17,13 @@ namespace DataInfo.Repository.Interfaces.Common
         Task<bool> DeleteCache(string cacheKey);
 
         /// <summary>
+        /// 讀取多筆快取資料
+        /// </summary>
+        /// <param name="cacheKeys">cacheKeys</param>
+        /// <returns>T Map</returns>
+        Task<Dictionary<string, T>> GetCache<T>(IEnumerable<string> cacheKeys);
+
+        /// <summary>
         /// 讀取快取資料
         /// </summary>
         /// <param name="cacheKey">cacheKey</param>
@@ -42,8 +49,9 @@ namespace DataInfo.Repository.Interfaces.Common
         /// 檢查資料是否存在
         /// </summary>
         /// <param name="cacheKey">cacheKey</param>
+        /// <param name="isFuzzy">isFuzzy</param>
         /// <returns>bool</returns>
-        Task<bool> IsExist(string cacheKey);
+        Task<bool> IsExist(string cacheKey, bool isFuzzy);
 
         /// <summary>
         /// 寫入快取資料

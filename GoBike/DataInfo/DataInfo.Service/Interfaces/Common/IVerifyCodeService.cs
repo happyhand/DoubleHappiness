@@ -1,5 +1,4 @@
-﻿using DataInfo.Core.Models.Dto.Common;
-using DataInfo.Core.Models.Dto.Response;
+﻿using DataInfo.Core.Models.Dto.Response;
 using System.Threading.Tasks;
 
 namespace DataInfo.Service.Interfaces.Common
@@ -12,29 +11,30 @@ namespace DataInfo.Service.Interfaces.Common
         /// <summary>
         /// 刪除驗證碼
         /// </summary>
-        /// <param name="verifierCode">verifierCode</param>
-        void Delete(string verifierCode);
+        /// <param name="email">email</param>
+        void Delete(string email);
+
+        /// <summary>
+        /// 是否已產生驗證碼
+        /// </summary>
+        /// <param name="email">email</param>
+        /// <returns>bool</returns>
+        Task<bool> IsGenerate(string email);
 
         /// <summary>
         /// 生產驗證碼
         /// </summary>
+        /// <param name="email">email</param>
         /// <returns>string</returns>
-        Task<string> Generate();
+        string Generate(string email);
 
         /// <summary>
         /// 驗證驗證碼
         /// </summary>
-        /// <param name="content">content</param>
-        /// <param name="isDelete">isDelete</param>
-        /// <returns>ResponseResult</returns>
-        Task<ResponseResult> Validate(VerifyCodeContent content, bool isDelete);
-
-        /// <summary>
-        /// 驗證驗證碼
-        /// </summary>
+        /// <param name="email">email</param>
         /// <param name="verifierCode">verifierCode</param>
         /// <param name="isDelete">isDelete</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> Validate(string verifierCode, bool isDelete);
+        Task<ResponseResult> Validate(string email, string verifierCode, bool isDelete);
     }
 }
