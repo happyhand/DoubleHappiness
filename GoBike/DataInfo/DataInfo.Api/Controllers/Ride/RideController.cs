@@ -60,14 +60,12 @@ namespace DataInfo.Api.Controllers.Ride
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求取得騎乘記錄發生錯誤", $"MemberID: {memberID}", ex);
-                ResponseResult errorResponseResult = new ResponseResult()
+                return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,
                     ResultCode = StatusCodes.Status500InternalServerError,
                     ResultMessage = ResponseErrorMessageType.SystemError.ToString()
-                };
-
-                return this.ResponseHandler(errorResponseResult);
+                });
             }
         }
 

@@ -124,14 +124,12 @@ namespace DataInfo.Api.Controllers.Member
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求登入發生錯誤(重新登入)", $"MemberID: {memberID}", ex);
-                ResponseResult errorResponseResult = new ResponseResult()
+                return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,
                     ResultCode = StatusCodes.Status500InternalServerError,
                     ResultMessage = ResponseErrorMessageType.SystemError.ToString()
-                };
-
-                return this.ResponseHandler(errorResponseResult);
+                });
             }
         }
 
@@ -152,14 +150,12 @@ namespace DataInfo.Api.Controllers.Member
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求登入發生錯誤(一般登入)", $"Content: {JsonConvert.SerializeObject(content)}", ex);
-                ResponseResult errorResponseResult = new ResponseResult()
+                return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,
                     ResultCode = StatusCodes.Status500InternalServerError,
                     ResultMessage = ResponseErrorMessageType.SystemError.ToString()
-                };
-
-                return this.ResponseHandler(errorResponseResult);
+                });
             }
         }
     }

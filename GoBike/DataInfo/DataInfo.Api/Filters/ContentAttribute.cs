@@ -10,6 +10,7 @@ using System.IO;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Text;
+using DataInfo.Service.Interfaces.Common;
 
 namespace DataInfo.Api.Filters
 {
@@ -19,9 +20,23 @@ namespace DataInfo.Api.Filters
     public class ContentAttribute : IAsyncActionFilter
     {
         /// <summary>
+        /// jwtService
+        /// </summary>
+        private readonly IJwtService jwtService;
+
+        /// <summary>
         /// logger
         /// </summary>
         private readonly ILogger logger = LogManager.GetLogger("ContentAttribute");
+
+        /// <summary>
+        /// 建構式
+        /// </summary>
+        /// <param name="jwtService">jwtService</param>
+        public ContentAttribute(IJwtService jwtService)
+        {
+            this.jwtService = jwtService;
+        }
 
         /// <summary>
         /// 檢測篩檢
@@ -44,7 +59,8 @@ namespace DataInfo.Api.Filters
                 };
 
                 context.Result = new BadRequestObjectResult(responseResult);
-                this.logger.LogWarn("API 請求內容資料驗證失敗", $"Paht: {context.HttpContext.Request.Path} Message: {message} Data: {data}", null);
+                string memberID = this.jwtService.GetPayloadAppointValue(context.HttpContext.User, "MemberID");
+                this.logger.LogWarn("API 請求內容資料驗證失敗", $"MemberID: {memberID} Paht: {context.HttpContext.Request.Path} Message: {message} Data: {data}", null);
                 return;
             }
 

@@ -1,4 +1,5 @@
 ﻿using DataInfo.Core.Applibs;
+using DataInfo.Core.Models.Enum;
 using FluentValidation;
 
 namespace DataInfo.Core.Models.Dto.Member.Content
@@ -24,11 +25,20 @@ namespace DataInfo.Core.Models.Dto.Member.Content
         /// </summary>
         public MemberRequestMobileBindContentValidator()
         {
-            ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
+            this.CascadeMode = CascadeMode.StopOnFirstFailure;
             RuleFor(content => content.Mobile)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Member.MobileEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Member.MobileEmpty)
-            .Must(mobile => { return Utility.ValidateMobile(mobile); }).WithMessage(MessageHelper.Message.ResponseMessage.Member.MobileFormatError);
+             .NotNull().WithMessage(content =>
+             {
+                 return $"{ResponseErrorMessageType.MobileEmpty}";
+             })
+             .NotEmpty().WithMessage(content =>
+             {
+                 return $"{ResponseErrorMessageType.MobileEmpty}";
+             })
+             .Must(mobile => { return Utility.ValidateMobile(mobile); }).WithMessage(content =>
+             {
+                 return $"{ResponseErrorMessageType.MobileFormatError}|Mobile: {content.Mobile}";
+             });
         }
     }
 }

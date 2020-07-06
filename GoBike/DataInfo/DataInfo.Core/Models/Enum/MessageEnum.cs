@@ -97,6 +97,21 @@
         OldPasswordError,
 
         /// <summary>
+        /// 請輸入手機號碼
+        /// </summary>
+        MobileEmpty,
+
+        /// <summary>
+        /// 手機號碼格式不正確，請重新輸入
+        /// </summary>
+        MobileFormatError,
+
+        /// <summary>
+        /// 手機號碼已被綁定，請勿重複綁定
+        /// </summary>
+        MobileRepeat,
+
+        /// <summary>
         /// 請輸入驗證碼
         /// </summary>
         VerifyCodeEmpty,

@@ -105,9 +105,10 @@ namespace DataInfo.Service.Interfaces.Member
         /// 發送會員手機綁定驗證碼
         /// </summary>
         /// <param name="memberID">memberID</param>
+        /// <param name="email">email</param>
         /// <param name="content">content</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> SendMobileBindVerifierCode(string memberID, MemberRequestMobileBindContent content);
+        Task<ResponseResult> SendMobileBindVerifierCode(string memberID, string email, MemberRequestMobileBindContent content);
 
         /// <summary>
         /// 搜尋會員(嚴格比對)

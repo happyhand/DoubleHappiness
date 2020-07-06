@@ -108,7 +108,12 @@ namespace DataInfo.Service.Managers.Common
         {
             try
             {
-                string claimJson = user.Claims.Where(data => data.Type.Equals("Payload")).FirstOrDefault().Value;
+                string claimJson = user.Claims.Where(data => data.Type.Equals("Payload")).FirstOrDefault()?.Value;
+                if (string.IsNullOrEmpty(claimJson))
+                {
+                    return null;
+                }
+
                 JwtClaims jwtClaimsDto = JsonConvert.DeserializeObject<JwtClaims>(claimJson);
                 return jwtClaimsDto.GetType().GetProperty(key).GetValue(jwtClaimsDto);
             }

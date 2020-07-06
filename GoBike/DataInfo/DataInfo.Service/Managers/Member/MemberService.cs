@@ -707,64 +707,58 @@ namespace DataInfo.Service.Managers.Member
         /// 會員手機綁定
         /// </summary>
         /// <param name="memberID">memberID</param>
+        /// <param name="email">email</param>
         /// <param name="content">content</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> MobileBind(string memberID, MemberMobileBindContent content)
+        public async Task<ResponseResult> MobileBind(string memberID, string email, MemberMobileBindContent content)
         {
             try
             {
                 #region 驗證資料
 
-                MemberMobileBindContentValidator memberMobileBindContentValidator = new MemberMobileBindContentValidator();
-                ValidationResult validationResult = memberMobileBindContentValidator.Validate(content);
-                if (!validationResult.IsValid)
+                ResponseResult validateVerifyCodeResult = await this.verifyCodeService.Validate(email, content.VerifierCode, false).ConfigureAwait(false);
+                if (!validateVerifyCodeResult.Result)
                 {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("會員手機綁定結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = errorMessgae
-                    };
+                    this.logger.LogWarn("會員手機綁定失敗，驗證碼錯誤", $"ResultCode: {validateVerifyCodeResult.ResultCode} ResultMessage: {validateVerifyCodeResult.ResultMessage} MemberID: {memberID} Email: {email} Content: {JsonConvert.SerializeObject(content)}", null);
+                    return validateVerifyCodeResult;
                 }
 
                 #endregion 驗證資料
 
-                #region 比對驗證碼
-
-                ResponseResult validateVerifyCodeResult = await this.verifyCodeService.Validate(content.VerifierCode, false).ConfigureAwait(false);
-                if (!validateVerifyCodeResult.Result)
-                {
-                    this.logger.LogWarn("會員手機綁定結果", $"Result: 驗證碼錯誤, MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                    return validateVerifyCodeResult;
-                }
-
-                #endregion 比對驗證碼
-
                 #region 檢查手機是否已被綁定
 
-                MemberDao memberDao = (await this.memberRepository.Get(content.Mobile, false, null).ConfigureAwait(false)).FirstOrDefault();
+                MemberDao memberDao = await this.memberRepository.Get(content.Mobile, MemberSearchType.Mobile).ConfigureAwait(false);
                 if (memberDao != null)
                 {
-                    this.logger.LogWarn("會員手機綁定結果", $"Result: 該手機已被綁定 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} BindMemberID:{memberDao.MemberID}", null);
+                    this.logger.LogWarn("會員手機綁定失敗，該手機已被綁定", $"MemberID: {memberID} Email: {email} Content: {JsonConvert.SerializeObject(content)} BindMemberID:{memberDao.MemberID}", null);
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = MessageHelper.Message.ResponseMessage.Member.MobileBind
+                        ResultCode = StatusCodes.Status409Conflict,
+                        ResultMessage = ResponseErrorMessageType.MobileRepeat.ToString()
                     };
                 }
 
-                memberDao = (await this.memberRepository.Get(memberID, false, null).ConfigureAwait(false)).FirstOrDefault();
-                if (!string.IsNullOrEmpty(memberDao.Mobile))
+                memberDao = await this.memberRepository.Get(memberID, MemberSearchType.MemberID).ConfigureAwait(false);
+                if (memberDao == null)
                 {
-                    this.logger.LogWarn("發送會員手機綁定驗證碼結果", $"Result: 會員已綁定手機 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} BindMobile:{memberDao.Mobile}", null);
+                    this.logger.LogWarn("會員手機綁定失敗，無會員資料", $"MemberID: {memberID} Email: {email} Content: {JsonConvert.SerializeObject(content)}", null);
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = MessageHelper.Message.ResponseMessage.Member.MemberHasBindMobile
+                        ResultCode = StatusCodes.Status409Conflict,
+                        ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
+                    };
+                }
+
+                if (!string.IsNullOrEmpty(memberDao.Mobile))
+                {
+                    this.logger.LogWarn("會員手機綁定失敗，會員已綁定手機", $"MemberID: {memberID} Email: {email} Content: {JsonConvert.SerializeObject(content)} BindMobile:{memberDao.Mobile}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = StatusCodes.Status409Conflict,
+                        ResultMessage = ResponseErrorMessageType.MobileRepeat.ToString()
                     };
                 }
 
@@ -790,13 +784,14 @@ namespace DataInfo.Service.Managers.Member
                         #region 刪除 Redis 驗證碼
 
                         this.verifyCodeService.Delete(content.VerifierCode);
+                        //// TODO 刪除 Member 的 Redis
 
                         #endregion 刪除 Redis 驗證碼
 
                         return new ResponseResult()
                         {
                             Result = true,
-                            ResultCode = (int)ResponseResultType.Success,
+                            ResultCode = StatusCodes.Status200OK,
                             Content = this.GenerateJwtToken(memberDao)
                         };
 
@@ -804,16 +799,16 @@ namespace DataInfo.Service.Managers.Member
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.UpdateFail,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
                         };
 
                     default:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.UnknownError,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            ResultCode = StatusCodes.Status502BadGateway,
+                            ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                         };
                 }
 
@@ -821,12 +816,12 @@ namespace DataInfo.Service.Managers.Member
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員手機綁定發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                this.logger.LogError("會員手機綁定發生錯誤", $"MemberID: {memberID} Email: {email} Content: {JsonConvert.SerializeObject(content)}", ex);
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Update.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }
@@ -845,7 +840,7 @@ namespace DataInfo.Service.Managers.Member
                 ResponseResult validateVerifyCodeResult = await this.verifyCodeService.Validate(content.Email, content.VerifierCode, false).ConfigureAwait(false);
                 if (!validateVerifyCodeResult.Result)
                 {
-                    this.logger.LogWarn("重置會員密碼失敗，驗證碼驗證失敗", $"ResultCode: {validateVerifyCodeResult.ResultCode} ResultMessage: {validateVerifyCodeResult.ResultMessage}", null);
+                    this.logger.LogWarn("重置會員密碼失敗，驗證碼錯誤", $"ResultCode: {validateVerifyCodeResult.ResultCode} ResultMessage: {validateVerifyCodeResult.ResultMessage} Content: {JsonConvert.SerializeObject(content)}", null);
                     return validateVerifyCodeResult;
                 }
 
@@ -920,6 +915,10 @@ namespace DataInfo.Service.Managers.Member
                     };
                 }
 
+                #endregion 驗證資料
+
+                #region 發送驗證碼
+
                 bool isGenerate = await this.verifyCodeService.IsGenerate(content.Email).ConfigureAwait(false);
                 if (isGenerate)
                 {
@@ -930,10 +929,6 @@ namespace DataInfo.Service.Managers.Member
                         ResultMessage = ResponseSuccessMessageType.SendVerifierCode.ToString()
                     };
                 }
-
-                #endregion 驗證資料
-
-                #region 發送驗證碼
 
                 string verifierCode = this.verifyCodeService.Generate(content.Email);
                 EmailContext emailContext = EmailContext.GetVerifierCodetEmailContextForForgetPassword(content.Email, verifierCode);
@@ -975,97 +970,97 @@ namespace DataInfo.Service.Managers.Member
         /// 發送會員手機綁定驗證碼
         /// </summary>
         /// <param name="memberID">memberID</param>
+        /// <param name="email">email</param>
         /// <param name="content">content</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> SendMobileBindVerifierCode(string memberID, MemberRequestMobileBindContent content)
+        public async Task<ResponseResult> SendMobileBindVerifierCode(string memberID, string email, MemberRequestMobileBindContent content)
         {
             try
             {
-                #region 驗證資料
-
-                MemberRequestMobileBindContentValidator memberRequestMobileBindContentValidator = new MemberRequestMobileBindContentValidator();
-                ValidationResult validationResult = memberRequestMobileBindContentValidator.Validate(content);
-                if (!validationResult.IsValid)
-                {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("發送會員手機綁定驗證碼結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = errorMessgae
-                    };
-                }
-
-                #endregion 驗證資料
-
                 #region 檢查手機是否已被綁定
 
-                MemberDao memberDao = (await this.memberRepository.Get(content.Mobile, false, null).ConfigureAwait(false)).FirstOrDefault();
+                MemberDao memberDao = await this.memberRepository.Get(content.Mobile, MemberSearchType.Mobile).ConfigureAwait(false);
                 if (memberDao != null)
                 {
-                    this.logger.LogWarn("發送會員手機綁定驗證碼結果", $"Result: 該手機已被綁定 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} BindMemberID:{memberDao.MemberID}", null);
+                    this.logger.LogWarn("發送會員手機綁定驗證碼失敗，該手機已被綁定", $"MemberID: {memberID} Email: {email} Content: {JsonConvert.SerializeObject(content)} BindMemberID:{memberDao.MemberID}", null);
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = MessageHelper.Message.ResponseMessage.Member.MobileBind
+                        ResultCode = StatusCodes.Status409Conflict,
+                        ResultMessage = ResponseErrorMessageType.MobileRepeat.ToString()
                     };
                 }
 
-                memberDao = (await this.memberRepository.Get(memberID, false, null).ConfigureAwait(false)).FirstOrDefault();
-                if (!string.IsNullOrEmpty(memberDao.Mobile))
+                memberDao = await this.memberRepository.Get(memberID, MemberSearchType.MemberID).ConfigureAwait(false);
+                if (memberDao == null)
                 {
-                    this.logger.LogWarn("發送會員手機綁定驗證碼結果", $"Result: 會員已綁定手機 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} BindMobile:{memberDao.Mobile}", null);
+                    this.logger.LogWarn("發送會員手機綁定驗證碼失敗，無會員資料", $"MemberID: {memberID} Email: {email} Content: {JsonConvert.SerializeObject(content)}", null);
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = MessageHelper.Message.ResponseMessage.Member.MemberHasBindMobile
+                        ResultCode = StatusCodes.Status409Conflict,
+                        ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
+                    };
+                }
+
+                if (!string.IsNullOrEmpty(memberDao.Mobile))
+                {
+                    this.logger.LogWarn("發送會員手機綁定驗證碼失敗，會員已綁定手機", $"MemberID: {memberID} Email: {email} Content: {JsonConvert.SerializeObject(content)} BindMobile:{memberDao.Mobile}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = StatusCodes.Status409Conflict,
+                        ResultMessage = ResponseErrorMessageType.MobileRepeat.ToString()
                     };
                 }
 
                 #endregion 檢查手機是否已被綁定
 
-                #region 產生驗證碼
-
-                string verifierCode = await this.verifyCodeService.Generate().ConfigureAwait(false);
-
-                #endregion 產生驗證碼
-
                 #region 發送驗證碼
 
+                bool isGenerate = await this.verifyCodeService.IsGenerate(email).ConfigureAwait(false);
+                if (isGenerate)
+                {
+                    return new ResponseResult()
+                    {
+                        Result = true,
+                        ResultCode = StatusCodes.Status200OK,
+                        ResultMessage = ResponseSuccessMessageType.SendVerifierCode.ToString()
+                    };
+                }
+
+                string verifierCode = this.verifyCodeService.Generate(email);
                 EmailContext emailContext = EmailContext.GetVerifierCodetEmailContextForMobileBind(memberDao.Email, verifierCode);
                 string postData = JsonConvert.SerializeObject(emailContext);
                 HttpResponseMessage httpResponseMessage = await Utility.ApiPost(AppSettingHelper.Appsetting.SmtpServer.Domain, AppSettingHelper.Appsetting.SmtpServer.Api, postData).ConfigureAwait(false);
                 if (!httpResponseMessage.IsSuccessStatusCode)
                 {
-                    this.logger.LogWarn("發送會員手機綁定驗證碼結果", $"Result: 發送郵件失敗({httpResponseMessage.Content}) EmailContext: {JsonConvert.SerializeObject(emailContext)}  MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    this.logger.LogWarn("發送會員手機綁定驗證碼失敗，無法發送郵件", $"Address: {emailContext.Address} Subject: {emailContext.Subject} Body: {emailContext.Body}", null);
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = MessageHelper.Message.ResponseMessage.VerifyCode.SendVerifyCodeFail
+                        ResultCode = StatusCodes.Status502BadGateway,
+                        ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                     };
                 }
 
                 return new ResponseResult()
                 {
                     Result = true,
-                    ResultCode = (int)ResponseResultType.Success,
-                    Content = MessageHelper.Message.ResponseMessage.VerifyCode.SendVerifyCodeSuccess
+                    ResultCode = StatusCodes.Status200OK,
+                    ResultMessage = ResponseSuccessMessageType.SendVerifierCode.ToString()
                 };
 
                 #endregion 發送驗證碼
             }
             catch (Exception ex)
             {
-                this.logger.LogError("發送會員手機綁定驗證碼發生錯誤", $" MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                this.logger.LogError("發送會員手機綁定驗證碼發生錯誤", $"MemberID: {memberID} Email: {email} Content: {JsonConvert.SerializeObject(content)}", ex);
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.VerifyCode.SendVerifyCodeError
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }
