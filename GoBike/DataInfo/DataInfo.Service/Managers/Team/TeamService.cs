@@ -17,6 +17,7 @@ using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Server;
 using DataInfo.Service.Interfaces.Team;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using NLog;
 using System;
@@ -767,6 +768,21 @@ namespace DataInfo.Service.Managers.Team
                     teamMemberViews.Add(teamMemberView);
                 }
 
+                teamMemberViews.Sort((view1, view2) =>
+                {
+                    if (view1.Role > view2.Role)
+                    {
+                        return -1;
+                    }
+                    else if (view1.Role < view2.Role)
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        return 0;
+                    }
+                });
                 teamInfoView.MemberList = teamMemberViews;
                 teamInfoView.InteractiveStatus = (int)this.GetTeamInteractiveStatus(memberID, teamDao);
 
@@ -850,6 +866,66 @@ namespace DataInfo.Service.Managers.Team
                     Result = false,
                     ResultCode = (int)ResponseResultType.UnknownError,
                     Content = MessageHelper.Message.ResponseMessage.Get.Error
+                };
+            }
+        }
+
+        /// <summary>
+        /// 取得車隊設定資訊
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="teamID">teamID</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> GetTeamSetting(string memberID, string teamID)
+        {
+            try
+            {
+                #region 驗證資料
+
+                if (string.IsNullOrEmpty(teamID))
+                {
+                    this.logger.LogWarn("取得車隊設定資訊失敗，無車隊 ID", $"MemberID: {memberID} TeamID: {teamID}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = StatusCodes.Status400BadRequest,
+                        ResultMessage = MessageHelper.Message.ResponseMessage.Get.Fail
+                    };
+                }
+
+                #endregion 驗證資料
+
+                #region 取得車隊資料
+
+                TeamDao teamDao = await this.teamRepository.Get(teamID).ConfigureAwait(false);
+                if (teamDao == null)
+                {
+                    this.logger.LogWarn("取得車隊設定資訊失敗，無車隊資料", $"MemberID: {memberID} TeamID: {teamID}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = StatusCodes.Status409Conflict,
+                        ResultMessage = MessageHelper.Message.ResponseMessage.Get.Fail
+                    };
+                }
+
+                #endregion 取得車隊資料
+
+                return new ResponseResult()
+                {
+                    Result = true,
+                    ResultCode = StatusCodes.Status200OK,
+                    Content = this.mapper.Map<TeamSettingView>(teamDao)
+                };
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得車隊設定資訊失敗發生錯誤", $"MemberID: {memberID} TeamID: {teamID}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = MessageHelper.Message.ResponseMessage.Get.Error
                 };
             }
         }
