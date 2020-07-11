@@ -46,6 +46,11 @@
         public string FrontCover { get; set; }
 
         /// <summary>
+        /// Gets or sets SpecificationModel
+        /// </summary>
+        public string SpecificationModel { get; set; }
+
+        /// <summary>
         /// Gets or sets Gender
         /// </summary>
         public int Gender { get; set; }

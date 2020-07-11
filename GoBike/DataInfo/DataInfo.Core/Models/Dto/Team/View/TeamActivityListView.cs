@@ -41,6 +41,11 @@
         public string Title { get; set; }
 
         /// <summary>
+        /// Gets or sets 最高海拔
+        /// </summary>
+        public float MaxAltitude { get; set; }
+
+        /// <summary>
         /// Gets or sets 總距離
         /// </summary>
         public float TotalDistance { get; set; }

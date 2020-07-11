@@ -72,17 +72,24 @@ namespace DataInfo.Api.Controllers.Team
         /// 車隊功能 - 取得車隊資訊
         /// </summary>
         /// <param name="teamID">teamID</param>
+        /// <param name="infoType">infoType</param>
         /// <returns>IActionResult</returns>
         [HttpGet("{teamID}")]
-        public async Task<IActionResult> Get(string teamID)
+        public async Task<IActionResult> Get(string teamID, int infoType)
         {
             string memberID = this.GetMemberID();
             try
             {
                 this.logger.LogInfo("會員請求取得車隊資訊", $"MemberID: {memberID} TeamID: {teamID}", null);
                 TeamContent content = new TeamContent() { TeamID = teamID };
-                ResponseResult responseResult = await teamService.GetTeamInfo(memberID, content).ConfigureAwait(false);
-                return Ok(responseResult);
+                if (infoType == 1)
+                {
+                    return Ok(await teamService.GetTeamSetting(memberID, teamID).ConfigureAwait(false));
+                }
+                else
+                {
+                    return Ok(await teamService.GetTeamInfo(memberID, content).ConfigureAwait(false));
+                }
             }
             catch (Exception ex)
             {

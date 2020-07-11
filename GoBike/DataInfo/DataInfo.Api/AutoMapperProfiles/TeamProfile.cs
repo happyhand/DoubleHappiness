@@ -55,6 +55,7 @@ namespace DataInfo.AutoMapperProfiles
 
             CreateMap<TeamDao, TeamDropMenuView>();
             CreateMap<TeamDao, TeamInfoView>();
+            CreateMap<TeamDao, TeamSettingView>();
             CreateMap<TeamDao, TeamSearchView>();
             CreateMap<TeamActivityDao, TeamActivityListView>();
             CreateMap<TeamActivityDao, TeamActivityDetailView>()

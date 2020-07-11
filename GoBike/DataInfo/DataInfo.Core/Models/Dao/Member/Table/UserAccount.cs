@@ -39,6 +39,11 @@ namespace DataInfo.Core.Models.Dao.Member.Table
         public string RegisterDate { get; set; }
 
         /// <summary>
+        /// Gets or sets NotifyToken
+        /// </summary>
+        public string NotifyToken { get; set; }
+
+        /// <summary>
         /// Gets or sets RegisterSource
         /// </summary>
         public int RegisterSource { get; set; }
