@@ -1,17 +1,16 @@
 ﻿using DataInfo.Core.Extensions;
-using DataInfo.Service.Interfaces.Common;
-using DataInfo.Service.Interfaces.Member;
 using DataInfo.Core.Models.Dto.Member.Content;
 using DataInfo.Core.Models.Dto.Response;
+using DataInfo.Core.Models.Enum;
+using DataInfo.Service.Interfaces.Common;
+using DataInfo.Service.Interfaces.Member;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Threading.Tasks;
-using DataInfo.Core.Applibs;
-using Microsoft.AspNetCore.Http;
-using DataInfo.Core.Models.Enum;
 
 namespace DataInfo.Api.Controllers.Member
 {
@@ -55,7 +54,7 @@ namespace DataInfo.Api.Controllers.Member
             try
             {
                 this.logger.LogInfo("會員請求更新密碼", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await this.memberService.UpdatePassword(memberID, content, false).ConfigureAwait(false);
+                ResponseResult responseResult = await this.memberService.UpdatePassword(content, memberID, false).ConfigureAwait(false);
                 return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)

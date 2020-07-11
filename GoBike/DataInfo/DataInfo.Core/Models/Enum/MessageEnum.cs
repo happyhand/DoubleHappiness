@@ -175,5 +175,10 @@
         /// 暱稱格式不符，請重新輸入
         /// </summary>
         NicknameFormatError,
+
+        /// <summary>
+        /// 請輸入搜尋關鍵字
+        /// </summary>
+        SearchKeyEmpty,
     }
 }

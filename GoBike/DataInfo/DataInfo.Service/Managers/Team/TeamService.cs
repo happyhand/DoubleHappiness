@@ -662,7 +662,7 @@ namespace DataInfo.Service.Managers.Team
         {
             try
             {
-                MemberDao memberDao = await this.memberRepository.Get(memberID).ConfigureAwait(false);
+                MemberDao memberDao = await this.memberRepository.Get(memberID, MemberSearchType.MemberID).ConfigureAwait(false);
                 if (memberDao == null)
                 {
                     this.logger.LogWarn("取得車隊下拉選單結果", $"Result: 無會員資料 MemberID: {memberID}", null);

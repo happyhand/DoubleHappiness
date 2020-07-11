@@ -54,7 +54,7 @@ namespace DataInfo.Api.Controllers.Member
             try
             {
                 this.logger.LogInfo("會員請求編輯資訊", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await this.memberService.EditInfo(memberID, content).ConfigureAwait(false);
+                ResponseResult responseResult = await this.memberService.EditInfo(content, memberID).ConfigureAwait(false);
                 return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)

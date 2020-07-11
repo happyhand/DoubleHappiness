@@ -15,20 +15,22 @@ namespace DataInfo.Repository.Interfaces.Member
         /// <summary>
         /// 取得指定會員資料
         /// </summary>
-        /// <param name="memberID">memberID</param>
+        /// <param name="key">key</param>
+        /// <param name="type">type</param>
         /// <returns>MemberDao</returns>
         Task<MemberDao> Get(string key, MemberSearchType type);
 
         /// <summary>
-        /// 模糊查詢會員資料
+        /// 搜詢會員資料
         /// </summary>
         /// <param name="searchKey">searchKey</param>
+        /// <param name="isFuzzy">isFuzzy</param>
         /// <param name="ignoreMemberIDs">ignoreMemberIDs</param>
         /// <returns>MemberDaos</returns>
-        Task<IEnumerable<MemberDao>> Get(string key, IEnumerable<string> ignoreMemberIDs);
+        Task<IEnumerable<MemberDao>> Search(string key, bool isFuzzy, IEnumerable<string> ignoreMemberIDs);
 
         /// <summary>
-        /// 取得會員資料列表
+        /// 取得指定會員資料列表
         /// </summary>
         /// <param name="memberIDs">memberIDs</param>
         /// <param name="ignoreMemberIDs">ignoreMemberIDs</param>

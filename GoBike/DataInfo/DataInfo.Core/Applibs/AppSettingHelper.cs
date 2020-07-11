@@ -314,6 +314,11 @@ namespace DataInfo.Core.Applibs
             public string CardInfo { get; set; }
 
             /// <summary>
+            /// Gets or sets Search
+            /// </summary>
+            public string Search { get; set; }
+
+            /// <summary>
             /// Gets or sets RideRecord
             /// </summary>
             public string RideRecord { get; set; }

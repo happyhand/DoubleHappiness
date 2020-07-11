@@ -43,12 +43,14 @@ namespace DataInfo.Repository.Managers.Member
         /// <summary>
         /// 取得指定會員資料
         /// </summary>
-        /// <param name="memberID">memberID</param>
+        /// <param name="key">key</param>
+        /// <param name="type">type</param>
         /// <returns>MemberDao</returns>
         public async Task<MemberDao> Get(string key, MemberSearchType type)
         {
             try
             {
+                //// TODO 待確認是否要啟用 "是否可被搜尋" 功能
                 ISugarQueryable<UserAccount, UserInfo> query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID));
                 switch (type)
                 {
@@ -83,31 +85,40 @@ namespace DataInfo.Repository.Managers.Member
         }
 
         /// <summary>
-        /// 模糊查詢會員資料
+        /// 搜詢會員資料
         /// </summary>
         /// <param name="searchKey">searchKey</param>
+        /// <param name="isFuzzy">isFuzzy</param>
         /// <param name="ignoreMemberIDs">ignoreMemberIDs</param>
         /// <returns>MemberDaos</returns>
-        public async Task<IEnumerable<MemberDao>> Get(string key, IEnumerable<string> ignoreMemberIDs)
+        public async Task<IEnumerable<MemberDao>> Search(string key, bool isFuzzy, IEnumerable<string> ignoreMemberIDs)
         {
             try
             {
-                //// 目前只開放 Email 跟 Nickname 模糊查詢
-                ISugarQueryable<UserAccount, UserInfo> query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID))
-                          .Where((ua, ui) => ua.Email.Contains(key) || (!string.IsNullOrEmpty(ui.NickName) && ui.NickName.Contains(key)))
-                          .Where(ua => ignoreMemberIDs == null || !ignoreMemberIDs.Contains(ua.MemberID));
+                //// TODO 待確認是否要啟用 "是否可被搜尋" 功能
+                //// 目前只開放 Email 跟 Nickname 提供搜尋
+                ISugarQueryable<UserAccount, UserInfo> query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID));
+                if (isFuzzy)
+                {
+                    query = query.Where((ua, ui) => ua.Email.Contains(key) || (!string.IsNullOrEmpty(ui.NickName) && ui.NickName.Contains(key)));
+                }
+                else
+                {
+                    query = query.Where((ua, ui) => ua.Email.Equals(key) || (!string.IsNullOrEmpty(ui.NickName) && ui.NickName.Equals(key)));
+                }
 
+                query = query.Where(ua => ignoreMemberIDs == null || !ignoreMemberIDs.Contains(ua.MemberID));
                 return await this.TransformMemberDao(query).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("取得會員資料發生錯誤", $"Key: {key} IgnoreMemberIDs: {JsonConvert.SerializeObject(ignoreMemberIDs)}", ex);
+                this.logger.LogError("搜詢會員資料發生錯誤", $"Key: {key} IsFuzzy: {isFuzzy} IgnoreMemberIDs: {JsonConvert.SerializeObject(ignoreMemberIDs)}", ex);
                 return new List<MemberDao>();
             }
         }
 
         /// <summary>
-        /// 取得會員資料列表
+        /// 取得指定會員資料列表
         /// </summary>
         /// <param name="memberIDs">memberIDs</param>
         /// <param name="ignoreMemberIDs">ignoreMemberIDs</param>
@@ -116,6 +127,7 @@ namespace DataInfo.Repository.Managers.Member
         {
             try
             {
+                //// TODO 待確認是否要啟用 "是否可被搜尋" 功能
                 ISugarQueryable<UserAccount, UserInfo> query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID))
                            .Where(ua => memberIDs.Contains(ua.MemberID))
                            .Where(ua => ignoreMemberIDs == null || !ignoreMemberIDs.Contains(ua.MemberID));

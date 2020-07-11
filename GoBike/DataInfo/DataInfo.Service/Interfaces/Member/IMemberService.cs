@@ -51,18 +51,19 @@ namespace DataInfo.Service.Interfaces.Member
         /// <summary>
         /// 會員編輯資訊
         /// </summary>
-        /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> EditInfo(string memberID, MemberEditInfoContent content);
+        Task<ResponseResult> EditInfo(MemberEditInfoContent content, string memberID);
 
         /// <summary>
-        /// 搜尋會員(模糊比對)
+        /// 搜尋會員
         /// </summary>
-        /// <param name="content">content</param>
+        /// <param name="searchKey">searchKey</param>
+        /// <param name="searchType">searchType</param>
         /// <param name="searchMemberID">searchMemberID</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> FuzzySearch(MemberSearchContent content, string searchMemberID);
+        Task<ResponseResult> Search(string searchKey, int searchType, string searchMemberID);
 
         /// <summary>
         /// 取得會員名片資訊
@@ -82,10 +83,11 @@ namespace DataInfo.Service.Interfaces.Member
         /// <summary>
         /// 會員手機綁定
         /// </summary>
-        /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
+        /// <param name="email">email</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> MobileBind(string memberID, MemberMobileBindContent content);
+        Task<ResponseResult> MobileBind(MemberMobileBindContent content, string memberID, string email);
 
         /// <summary>
         /// 重置會員密碼
@@ -104,19 +106,18 @@ namespace DataInfo.Service.Interfaces.Member
         /// <summary>
         /// 發送會員手機綁定驗證碼
         /// </summary>
+        /// <param name="content">content</param>
         /// <param name="memberID">memberID</param>
         /// <param name="email">email</param>
-        /// <param name="content">content</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> SendMobileBindVerifierCode(string memberID, string email, MemberRequestMobileBindContent content);
+        Task<ResponseResult> SendMobileBindVerifierCode(MemberRequestMobileBindContent content, string memberID, string email);
 
         /// <summary>
-        /// 搜尋會員(嚴格比對)
+        /// 取得會員詳細資訊
         /// </summary>
-        /// <param name="content">content</param>
-        /// <param name="searchMemberID">searchMemberID</param>
+        /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> StrictSearch(MemberSearchContent content, string searchMemberID = null);
+        Task<ResponseResult> GetDetail(string memberID);
 
         /// <summary>
         /// 轉換為會員詳細資訊可視資料
@@ -135,11 +136,11 @@ namespace DataInfo.Service.Interfaces.Member
         /// <summary>
         /// 會員更新密碼
         /// </summary>
-        /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
         /// <param name="isIgnoreOldPassword">isIgnoreOldPassword</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> UpdatePassword(string memberID, MemberUpdatePasswordContent content, bool isIgnoreOldPassword);
+        Task<ResponseResult> UpdatePassword(MemberUpdatePasswordContent content, string memberID, bool isIgnoreOldPassword);
 
         #endregion 會員資料
     }

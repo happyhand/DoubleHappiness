@@ -4,7 +4,6 @@ using DataInfo.Core.Models.Dto.Member.Content;
 using DataInfo.Core.Models.Dto.Member.Request;
 using DataInfo.Core.Models.Dto.Member.View;
 using DataInfo.Core.Models.Enum;
-using Newtonsoft.Json;
 using System.Linq;
 
 namespace DataInfo.AutoMapperProfiles
@@ -22,7 +21,7 @@ namespace DataInfo.AutoMapperProfiles
             #region Content To Content
 
             CreateMap<MemberForgetPasswordContent, MemberUpdatePasswordContent>()
-             .ForMember(content => content.NewPassword, options => options.MapFrom(content => content.Password);
+             .ForMember(content => content.NewPassword, options => options.MapFrom(content => content.Password));
 
             #endregion Content To Content
 

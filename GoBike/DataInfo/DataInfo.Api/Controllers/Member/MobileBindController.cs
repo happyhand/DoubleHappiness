@@ -1,18 +1,17 @@
-﻿using DataInfo.Core.Extensions;
-using DataInfo.Service.Interfaces.Common;
-using DataInfo.Service.Interfaces.Member;
+﻿using DataInfo.Api.Filters;
+using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dto.Member.Content;
 using DataInfo.Core.Models.Dto.Response;
+using DataInfo.Core.Models.Enum;
+using DataInfo.Service.Interfaces.Common;
+using DataInfo.Service.Interfaces.Member;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Threading.Tasks;
-using DataInfo.Core.Applibs;
-using Microsoft.AspNetCore.Http;
-using DataInfo.Core.Models.Enum;
-using DataInfo.Api.Filters;
 
 namespace DataInfo.Api.Controllers.Member
 {
@@ -58,7 +57,7 @@ namespace DataInfo.Api.Controllers.Member
             try
             {
                 this.logger.LogInfo("會員請求手機綁定", $"MemberID: {memberID} Email: {email} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await this.memberService.MobileBind(memberID, content).ConfigureAwait(false);
+                ResponseResult responseResult = await this.memberService.MobileBind(content, memberID, email).ConfigureAwait(false);
                 return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
@@ -86,7 +85,7 @@ namespace DataInfo.Api.Controllers.Member
             try
             {
                 this.logger.LogInfo("會員請求發送手機綁定驗證碼", $"MemberID: {memberID} Email: {email} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await this.memberService.SendMobileBindVerifierCode(memberID, email, content).ConfigureAwait(false);
+                ResponseResult responseResult = await this.memberService.SendMobileBindVerifierCode(content, memberID, email).ConfigureAwait(false);
                 return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
