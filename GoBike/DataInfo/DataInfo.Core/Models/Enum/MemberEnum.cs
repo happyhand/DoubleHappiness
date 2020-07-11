@@ -1,5 +1,7 @@
 ﻿namespace DataInfo.Core.Models.Enum
 {
+    #region Content 相關
+
     /// <summary>
     /// 綁定手機狀態類別資料
     /// </summary>
@@ -38,38 +40,6 @@
     }
 
     /// <summary>
-    /// 圖像類別資料
-    /// </summary>
-    public enum ImageType
-    {
-        /// <summary>
-        /// 頭像
-        /// </summary>
-        Avatar = 1,
-
-        /// <summary>
-        /// 封面
-        /// </summary>
-        FrontCover = 2
-    }
-
-    /// <summary>
-    /// 會員互動類別資料
-    /// </summary>
-    public enum InteractiveType
-    {
-        /// <summary>
-        /// 黑名單
-        /// </summary>
-        Black = -1,
-
-        /// <summary>
-        /// 好友
-        /// </summary>
-        Friend = 1
-    }
-
-    /// <summary>
     /// 在線狀態類別資料
     /// </summary>
     public enum OnlineStatusType
@@ -88,6 +58,24 @@
         /// 在線
         /// </summary>
         Online = 1
+    }
+
+    #endregion Content 相關
+
+    /// <summary>
+    /// 會員互動類別資料
+    /// </summary>
+    public enum InteractiveType
+    {
+        /// <summary>
+        /// 黑名單
+        /// </summary>
+        Black = -1,
+
+        /// <summary>
+        /// 好友
+        /// </summary>
+        Friend = 1
     }
 
     /// <summary>

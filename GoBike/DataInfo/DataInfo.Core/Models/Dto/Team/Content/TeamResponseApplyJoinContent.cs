@@ -30,6 +30,9 @@ namespace DataInfo.Core.Models.Dto.Team.Content
     /// </summary>
     public class TeamResponseApplyJoinContentValidator : AbstractValidator<TeamResponseApplyJoinContent>
     {
+        /// <summary>
+        /// 建構式
+        /// </summary>
         public TeamResponseApplyJoinContentValidator()
         {
             ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;

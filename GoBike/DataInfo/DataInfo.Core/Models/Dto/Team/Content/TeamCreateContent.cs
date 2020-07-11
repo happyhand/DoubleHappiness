@@ -50,6 +50,9 @@ namespace DataInfo.Core.Models.Dto.Team.Content
     /// </summary>
     public class TeamCreateContentValidator : AbstractValidator<TeamCreateContent>
     {
+        /// <summary>
+        /// 建構式
+        /// </summary>
         public TeamCreateContentValidator()
         {
             ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;

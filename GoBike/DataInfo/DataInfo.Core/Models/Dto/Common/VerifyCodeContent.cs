@@ -1,4 +1,5 @@
 ﻿using DataInfo.Core.Applibs;
+using DataInfo.Core.Models.Enum;
 using FluentValidation;
 
 namespace DataInfo.Core.Models.Dto.Common
@@ -12,6 +13,11 @@ namespace DataInfo.Core.Models.Dto.Common
         /// Gets or sets VerifierCode
         /// </summary>
         public string VerifierCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets Email
+        /// </summary>
+        public string Email { get; set; }
     }
 
     /// <summary>
@@ -24,10 +30,34 @@ namespace DataInfo.Core.Models.Dto.Common
         /// </summary>
         public VerifyCodeContentValidator()
         {
-            ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
+            this.CascadeMode = CascadeMode.StopOnFirstFailure;
+            RuleFor(content => content.Email)
+             .NotNull().WithMessage(content =>
+             {
+                 return $"{ResponseErrorMessageType.EmailEmpty}";
+             })
+             .NotEmpty().WithMessage(content =>
+             {
+                 return $"{ResponseErrorMessageType.EmailEmpty}";
+             })
+             .EmailAddress().WithMessage(content =>
+             {
+                 return $"{ResponseErrorMessageType.EmailFormatError}|Email: {content.Email}";
+             });
+
             RuleFor(content => content.VerifierCode)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.VerifyCode.VerifyCodeEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.VerifyCode.VerifyCodeEmpty);
+             .NotNull().WithMessage(content =>
+             {
+                 return $"{ResponseErrorMessageType.VerifyCodeEmpty}";
+             })
+             .NotEmpty().WithMessage(content =>
+             {
+                 return $"{ResponseErrorMessageType.VerifyCodeEmpty}";
+             })
+             .Length(AppSettingHelper.Appsetting.VerifierCode.Length).WithMessage(content =>
+             {
+                 return $"{ResponseErrorMessageType.VerifyCodeFormatError}|{content.VerifierCode}";
+             });
         }
     }
 }

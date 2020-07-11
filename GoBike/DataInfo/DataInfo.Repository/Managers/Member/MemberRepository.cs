@@ -41,84 +41,84 @@ namespace DataInfo.Repository.Managers.Member
         }
 
         /// <summary>
-        /// 取得會員資料
+        /// 取得指定會員資料
         /// </summary>
-        /// <param name="memberID">memberID</param>
-        /// <returns>MemberDaos</returns>
-        public async Task<MemberDao> Get(string memberID)
+        /// <param name="key">key</param>
+        /// <param name="type">type</param>
+        /// <returns>MemberDao</returns>
+        public async Task<MemberDao> Get(string key, MemberSearchType type)
         {
             try
             {
-                ISugarQueryable<UserAccount, UserInfo> query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID))
-                          .Where((ua, ui) => ua.MemberID.Equals(memberID));
+                //// TODO 待確認是否要啟用 "是否可被搜尋" 功能
+                ISugarQueryable<UserAccount, UserInfo> query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID));
+                switch (type)
+                {
+                    case MemberSearchType.MemberID:
+                        query = query.Where((ua, ui) => ua.MemberID.Equals(key));
+                        break;
+
+                    case MemberSearchType.Email:
+                        query = query.Where((ua, ui) => ua.Email.Equals(key));
+                        break;
+
+                    case MemberSearchType.Nickname:
+                        query = query.Where((ua, ui) => ui.NickName.Equals(key));
+                        break;
+
+                    case MemberSearchType.Mobile:
+                        query = query.Where((ua, ui) => ui.Mobile.Equals(key));
+                        break;
+
+                    default:
+                        this.logger.LogWarn("取得會員資料失敗，未設置搜尋類型", $"Key: {key} Type: {type}", null);
+                        return null;
+                }
 
                 return (await this.TransformMemberDao(query).ConfigureAwait(false)).FirstOrDefault();
             }
             catch (Exception ex)
             {
-                this.logger.LogError("取得會員資料發生錯誤", $"MemberID: {memberID}", ex);
+                this.logger.LogError("取得會員資料發生錯誤", $"Key: {key} Type: {type}", ex);
                 return null;
             }
         }
 
         /// <summary>
-        /// 取得會員資料
+        /// 搜詢會員資料
         /// </summary>
         /// <param name="searchKey">searchKey</param>
         /// <param name="isFuzzy">isFuzzy</param>
         /// <param name="ignoreMemberIDs">ignoreMemberIDs</param>
         /// <returns>MemberDaos</returns>
-        public async Task<IEnumerable<MemberDao>> Get(string searchKey, bool isFuzzy, IEnumerable<string> ignoreMemberIDs)
+        public async Task<IEnumerable<MemberDao>> Search(string key, bool isFuzzy, IEnumerable<string> ignoreMemberIDs)
         {
             try
             {
-                ISugarQueryable<UserAccount, UserInfo> query = null;
+                //// TODO 待確認是否要啟用 "是否可被搜尋" 功能
+                //// 目前只開放 Email 跟 Nickname 提供搜尋
+                ISugarQueryable<UserAccount, UserInfo> query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID));
                 if (isFuzzy)
                 {
-                    query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID))
-                          .Where((ua, ui) => ua.Email.Contains(searchKey) || (!string.IsNullOrEmpty(ui.NickName) && ui.NickName.Contains(searchKey)) || ua.MemberID.Contains(searchKey))
-                          .Where(ua => ignoreMemberIDs == null || !ignoreMemberIDs.Contains(ua.MemberID));
+                    query = query.Where((ua, ui) => ua.Email.Contains(key) || (!string.IsNullOrEmpty(ui.NickName) && ui.NickName.Contains(key)));
                 }
                 else
                 {
-                    if (Utility.ValidateEmail(searchKey))
-                    {
-                        query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID))
-                          .Where((ua, ui) => ua.Email.Equals(searchKey))
-                          .Where(ua => ignoreMemberIDs == null || !ignoreMemberIDs.Contains(ua.MemberID));
-                    }
-                    else if (searchKey.Contains(AppSettingHelper.Appsetting.MemberIDFlag))
-                    {
-                        query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID))
-                          .Where((ua, ui) => ua.MemberID.Equals(searchKey))
-                          .Where(ua => ignoreMemberIDs == null || !ignoreMemberIDs.Contains(ua.MemberID));
-                    }
-                    else if (Utility.ValidateMobile(searchKey))
-                    {
-                        query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID))
-                          .Where((ua, ui) => !string.IsNullOrEmpty(ui.Mobile) && ui.Mobile.Equals(searchKey))
-                          .Where(ua => ignoreMemberIDs == null || !ignoreMemberIDs.Contains(ua.MemberID));
-                    }
+                    query = query.Where((ua, ui) => ua.Email.Equals(key) || (!string.IsNullOrEmpty(ui.NickName) && ui.NickName.Equals(key)));
                 }
 
-                if (query != null)
-                {
-                    return await this.TransformMemberDao(query).ConfigureAwait(false);
-                }
-                else
-                {
-                    return new List<MemberDao>();
-                }
+                query = query.Where(ua => ignoreMemberIDs == null || !ignoreMemberIDs.Contains(ua.MemberID));
+                return await this.TransformMemberDao(query).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("取得會員資料發生錯誤", $"SearchKey: {searchKey} IsFuzzy: {isFuzzy}", ex);
+                this.logger.LogError("搜詢會員資料發生錯誤", $"Key: {key} IsFuzzy: {isFuzzy} IgnoreMemberIDs: {JsonConvert.SerializeObject(ignoreMemberIDs)}", ex);
                 return new List<MemberDao>();
             }
         }
 
         /// <summary>
-        /// 取得會員資料列表
+        /// 取得指定會員資料列表
         /// </summary>
         /// <param name="memberIDs">memberIDs</param>
         /// <param name="ignoreMemberIDs">ignoreMemberIDs</param>
@@ -127,6 +127,7 @@ namespace DataInfo.Repository.Managers.Member
         {
             try
             {
+                //// TODO 待確認是否要啟用 "是否可被搜尋" 功能
                 ISugarQueryable<UserAccount, UserInfo> query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID))
                            .Where(ua => memberIDs.Contains(ua.MemberID))
                            .Where(ua => ignoreMemberIDs == null || !ignoreMemberIDs.Contains(ua.MemberID));
@@ -135,7 +136,7 @@ namespace DataInfo.Repository.Managers.Member
             }
             catch (Exception ex)
             {
-                this.logger.LogError("取得會員資料列表發生錯誤", $"MemberIDs: {JsonConvert.SerializeObject(memberIDs)}", ex);
+                this.logger.LogError("取得會員資料列表發生錯誤", $"MemberIDs: {JsonConvert.SerializeObject(memberIDs)} IgnoreMemberIDs: {JsonConvert.SerializeObject(ignoreMemberIDs)}", ex);
                 return new List<MemberDao>();
             }
         }
@@ -147,8 +148,8 @@ namespace DataInfo.Repository.Managers.Member
         /// <returns>int</returns>
         public async Task<int> GetOnlineType(string memberID)
         {
-            string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{AppSettingHelper.Appsetting.Redis.Flag.LastLogin}-{memberID}";
-            return await this.redisRepository.IsExist(cacheKey).ConfigureAwait(false) ? (int)OnlineStatusType.Online : (int)OnlineStatusType.Offline;
+            string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.LastLogin}";
+            return await this.redisRepository.IsExist(cacheKey, false).ConfigureAwait(false) ? (int)OnlineStatusType.Online : (int)OnlineStatusType.Offline;
         }
 
         /// <summary>

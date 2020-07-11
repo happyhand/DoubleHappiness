@@ -12,8 +12,8 @@ namespace DataInfo.Repository.Interfaces.Ride
         /// <summary>
         /// 取得騎乘記錄列表
         /// </summary>
-        /// <param name="memberIDs">memberIDs</param>
-        /// <returns>RideDistanceDao</returns>
+        /// <param name="memberID">memberID</param>
+        /// <returns>RideDaos</returns>
         Task<IEnumerable<RideDao>> GetRecordList(string memberID);
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace DataInfo.Repository.Interfaces.Ride
         /// 取得週里程
         /// </summary>
         /// <param name="memberIDs">memberIDs</param>
-        /// <returns>RideDistanceDao</returns>
+        /// <returns>RideDistanceDaos</returns>
         Task<IEnumerable<RideDistanceDao>> GetWeekDistance(IEnumerable<string> memberIDs);
     }
 }

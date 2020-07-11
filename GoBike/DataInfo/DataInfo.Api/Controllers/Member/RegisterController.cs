@@ -55,14 +55,12 @@ namespace DataInfo.Api.Controllers.Member
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求註冊發生錯誤", $"Content: {JsonConvert.SerializeObject(content)}", ex);
-                ResponseResult errorResponseResult = new ResponseResult()
+                return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,
                     ResultCode = StatusCodes.Status500InternalServerError,
                     ResultMessage = ResponseErrorMessageType.SystemError.ToString()
-                };
-
-                return this.ResponseHandler(errorResponseResult);
+                });
             }
         }
     }

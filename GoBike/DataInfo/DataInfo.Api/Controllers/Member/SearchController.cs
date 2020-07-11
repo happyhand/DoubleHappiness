@@ -1,16 +1,14 @@
 ﻿using DataInfo.Core.Extensions;
+using DataInfo.Core.Models.Dto.Response;
 using DataInfo.Core.Models.Enum;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Member;
-using DataInfo.Core.Models.Dto.Member.Content;
-using DataInfo.Core.Models.Dto.Response;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Threading.Tasks;
-using DataInfo.Core.Applibs;
 
 namespace DataInfo.Api.Controllers.Member
 {
@@ -52,18 +50,17 @@ namespace DataInfo.Api.Controllers.Member
             string memberID = this.GetMemberID();
             try
             {
-                MemberSearchContent content = new MemberSearchContent() { SearchKey = memberID };
-                ResponseResult responseResult = await this.memberService.StrictSearch(content).ConfigureAwait(false);
-                return Ok(responseResult);
+                ResponseResult responseResult = await this.memberService.GetDetail(memberID).ConfigureAwait(false);
+                return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求取得本身資料發生錯誤", $"MemberID: {memberID}", ex);
-                return Ok(new ResponseResult()
+                return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 });
             }
         }
@@ -80,27 +77,17 @@ namespace DataInfo.Api.Controllers.Member
             string memberID = this.GetMemberID();
             try
             {
-                ResponseResult responseResult;
-                MemberSearchContent content = new MemberSearchContent() { SearchKey = searchKey, UseFuzzySearch = useFuzzySearch };
-                if (useFuzzySearch == (int)SearchType.Fuzzy)
-                {
-                    responseResult = await this.memberService.FuzzySearch(content, memberID).ConfigureAwait(false);
-                }
-                else
-                {
-                    responseResult = await this.memberService.StrictSearch(content, memberID).ConfigureAwait(false);
-                }
-
-                return Ok(responseResult);
+                ResponseResult responseResult = await this.memberService.Search(searchKey, useFuzzySearch, memberID).ConfigureAwait(false);
+                return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求搜尋其他會員資料發生錯誤", $"MemberID: {memberID} SearchKey: {searchKey} UseFuzzySearch: {useFuzzySearch}", ex);
-                return Ok(new ResponseResult()
+                return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 });
             }
         }

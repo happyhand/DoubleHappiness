@@ -135,11 +135,17 @@ namespace DataInfo.Api
             //// 註冊 API 內容檢測
             services.AddMvc(setup =>
             {
-                setup.Filters.Add(new ContentAttribute());
+                setup.Filters.Add(typeof(ContentAttribute));
             }).AddFluentValidation();
             //// 註冊 Content Validator
             services.AddTransient<IValidator<MemberRegisterContent>, MemberRegisterContentValidator>();
             services.AddTransient<IValidator<MemberLoginContent>, MemberLoginContentValidator>();
+            services.AddTransient<IValidator<MemberCardInfoContent>, MemberCardInfoContentValidator>();
+            services.AddTransient<IValidator<MemberForgetPasswordContent>, MemberForgetPasswordContentValidator>();
+            services.AddTransient<IValidator<MemberRequestForgetPasswordContent>, MemberRequestForgetPasswordContentValidator>();
+            services.AddTransient<IValidator<MemberMobileBindContent>, MemberMobileBindContentValidator>();
+            services.AddTransient<IValidator<MemberRequestMobileBindContent>, MemberRequestMobileBindContentValidator>();
+            services.AddTransient<IValidator<MemberUpdatePasswordContent>, MemberUpdatePasswordContentValidator>();
             //// 忽略 Model Binding 驗證不過跳 400 Error 的功能，以便客製化回應訊息
             services.Configure<ApiBehaviorOptions>(options =>
             {

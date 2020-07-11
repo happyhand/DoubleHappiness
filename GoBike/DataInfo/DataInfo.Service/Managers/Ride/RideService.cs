@@ -10,6 +10,7 @@ using DataInfo.Core.Models.Dto.Ride.Response;
 using DataInfo.Core.Models.Dto.Ride.View;
 using DataInfo.Core.Models.Dto.Server;
 using DataInfo.Core.Models.Enum;
+using DataInfo.Repository.Interfaces.Common;
 using DataInfo.Repository.Interfaces.Interactive;
 using DataInfo.Repository.Interfaces.Member;
 using DataInfo.Repository.Interfaces.Ride;
@@ -17,6 +18,7 @@ using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Ride;
 using DataInfo.Service.Interfaces.Server;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using NLog;
 using System;
@@ -67,6 +69,11 @@ namespace DataInfo.Service.Managers.Ride
         private readonly IUploadService uploadService;
 
         /// <summary>
+        /// redisRepository
+        /// </summary>
+        private readonly IRedisRepository redisRepository;
+
+        /// <summary>
         /// 建構式
         /// </summary>
         /// <param name="mapper">mapper</param>
@@ -75,7 +82,8 @@ namespace DataInfo.Service.Managers.Ride
         /// <param name="memberRepository">memberRepository</param>
         /// <param name="interactiveRepository">interactiveRepository</param>
         /// <param name="rideRepository">rideRepository</param>
-        public RideService(IMapper mapper, IUploadService uploadService, IServerService serverService, IMemberRepository memberRepository, IInteractiveRepository interactiveRepository, IRideRepository rideRepository)
+        /// <param name="redisRepository">redisRepository</param>
+        public RideService(IMapper mapper, IUploadService uploadService, IServerService serverService, IMemberRepository memberRepository, IInteractiveRepository interactiveRepository, IRideRepository rideRepository, IRedisRepository redisRepository)
         {
             this.mapper = mapper;
             this.uploadService = uploadService;
@@ -83,6 +91,7 @@ namespace DataInfo.Service.Managers.Ride
             this.memberRepository = memberRepository;
             this.interactiveRepository = interactiveRepository;
             this.rideRepository = rideRepository;
+            this.redisRepository = redisRepository;
         }
 
         /// <summary>
@@ -214,33 +223,41 @@ namespace DataInfo.Service.Managers.Ride
         {
             try
             {
-                IEnumerable<string> friendIDList = await this.interactiveRepository.GetFriendList(memberID).ConfigureAwait(false);
-                Task<IEnumerable<RideDistanceDao>> rideDistanceDaosTask = this.rideRepository.GetWeekDistance(friendIDList);
-                Task<IEnumerable<MemberDao>> friendDaosTask = this.memberRepository.Get(friendIDList, null);
-
-                Dictionary<string, RideDistanceDao> rideDistanceMap = (await rideDistanceDaosTask.ConfigureAwait(false)).ToDictionary(data => data.MemberID);
-                IEnumerable<MemberDao> friendDaos = await friendDaosTask.ConfigureAwait(false);
-                IEnumerable<RideFriendWeekRankView> rideFriendWeekRankViews = friendDaos.Select(data =>
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.HomeInfo}";
+                IEnumerable<RideFriendWeekRankView> rideFriendWeekRankViews = await this.redisRepository.GetCache<IEnumerable<RideFriendWeekRankView>>(cacheKey).ConfigureAwait(false);
+                if (rideFriendWeekRankViews == null)
                 {
-                    rideDistanceMap.TryGetValue(data.MemberID, out RideDistanceDao rideDistanceDao);
-                    RideFriendWeekRankView rideFriendWeekRankView = new RideFriendWeekRankView()
-                    {
-                        Avatar = data.Avatar,
-                        Nickname = data.Nickname
-                    };
-                    if (rideDistanceDao != null)
-                    {
-                        rideFriendWeekRankView.WeekDistance = rideDistanceDao.WeekDistance;
-                    }
+                    IEnumerable<string> friendIDList = await this.interactiveRepository.GetFriendList(memberID).ConfigureAwait(false);
+                    Task<IEnumerable<RideDistanceDao>> rideDistanceDaosTask = this.rideRepository.GetWeekDistance(friendIDList);
+                    Task<IEnumerable<MemberDao>> friendDaosTask = this.memberRepository.Get(friendIDList, null);
 
-                    return rideFriendWeekRankView;
-                });
+                    Dictionary<string, RideDistanceDao> rideDistanceMap = (await rideDistanceDaosTask.ConfigureAwait(false)).ToDictionary(data => data.MemberID);
+                    IEnumerable<MemberDao> friendDaos = await friendDaosTask.ConfigureAwait(false);
+                    rideFriendWeekRankViews = friendDaos.Select(data =>
+                    {
+                        rideDistanceMap.TryGetValue(data.MemberID, out RideDistanceDao rideDistanceDao);
+                        RideFriendWeekRankView rideFriendWeekRankView = new RideFriendWeekRankView()
+                        {
+                            Avatar = data.Avatar,
+                            Nickname = data.Nickname
+                        };
+                        if (rideDistanceDao != null)
+                        {
+                            rideFriendWeekRankView.WeekDistance = rideDistanceDao.WeekDistance;
+                        }
+
+                        return rideFriendWeekRankView;
+                    });
+
+                    rideFriendWeekRankViews = rideFriendWeekRankViews.OrderByDescending(data => data.WeekDistance);
+                    this.redisRepository.SetCache(cacheKey, JsonConvert.SerializeObject(rideFriendWeekRankViews), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
+                }
 
                 return new ResponseResult()
                 {
                     Result = true,
-                    ResultCode = (int)ResponseResultType.Success,
-                    Content = rideFriendWeekRankViews.OrderByDescending(data => data.WeekDistance)
+                    ResultCode = StatusCodes.Status200OK,
+                    Content = rideFriendWeekRankViews
                 };
             }
             catch (Exception ex)
@@ -249,8 +266,8 @@ namespace DataInfo.Service.Managers.Ride
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }
@@ -264,12 +281,20 @@ namespace DataInfo.Service.Managers.Ride
         {
             try
             {
-                IEnumerable<RideDao> rideDaos = await this.rideRepository.GetRecordList(memberID).ConfigureAwait(false);
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.RideRecord}";
+                IEnumerable<RideSimpleRecordView> rideSimpleRecordViews = await this.redisRepository.GetCache<IEnumerable<RideSimpleRecordView>>(cacheKey).ConfigureAwait(false);
+                if (rideSimpleRecordViews == null)
+                {
+                    IEnumerable<RideDao> rideDaos = await this.rideRepository.GetRecordList(memberID).ConfigureAwait(false);
+                    rideSimpleRecordViews = this.mapper.Map<IEnumerable<RideSimpleRecordView>>(rideDaos);
+                    this.redisRepository.SetCache(cacheKey, JsonConvert.SerializeObject(rideSimpleRecordViews), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
+                }
+
                 return new ResponseResult()
                 {
                     Result = true,
-                    ResultCode = (int)ResponseResultType.Success,
-                    Content = this.mapper.Map<IEnumerable<RideSimpleRecordView>>(rideDaos)
+                    ResultCode = StatusCodes.Status200OK,
+                    Content = rideSimpleRecordViews
                 };
             }
             catch (Exception ex)
@@ -278,8 +303,8 @@ namespace DataInfo.Service.Managers.Ride
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }

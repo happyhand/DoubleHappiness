@@ -21,6 +21,7 @@ namespace DataInfo.Api.Controllers.Member
     /// 會員登入
     /// </summary>
     [ApiController]
+    [Route("api/Member/[controller]")]
     public class LoginController : JwtController
     {
         /// <summary>
@@ -111,7 +112,6 @@ namespace DataInfo.Api.Controllers.Member
         /// <returns>IActionResult</returns>
         [HttpGet]
         [Authorize]
-        [Route("api/Member/[controller]")]
         public async Task<IActionResult> Get()
         {
             string memberID = this.GetMemberID();
@@ -124,14 +124,12 @@ namespace DataInfo.Api.Controllers.Member
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求登入發生錯誤(重新登入)", $"MemberID: {memberID}", ex);
-                ResponseResult errorResponseResult = new ResponseResult()
+                return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,
                     ResultCode = StatusCodes.Status500InternalServerError,
                     ResultMessage = ResponseErrorMessageType.SystemError.ToString()
-                };
-
-                return this.ResponseHandler(errorResponseResult);
+                });
             }
         }
 
@@ -141,7 +139,6 @@ namespace DataInfo.Api.Controllers.Member
         /// <param name="content">content</param>
         /// <returns>IActionResult</returns>
         [HttpPost]
-        [Route("api/Member/[controller]")]
         public async Task<IActionResult> Post(MemberLoginContent content)
         {
             try
@@ -153,14 +150,12 @@ namespace DataInfo.Api.Controllers.Member
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求登入發生錯誤(一般登入)", $"Content: {JsonConvert.SerializeObject(content)}", ex);
-                ResponseResult errorResponseResult = new ResponseResult()
+                return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,
                     ResultCode = StatusCodes.Status500InternalServerError,
                     ResultMessage = ResponseErrorMessageType.SystemError.ToString()
-                };
-
-                return this.ResponseHandler(errorResponseResult);
+                });
             }
         }
     }

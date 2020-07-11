@@ -18,14 +18,12 @@ using DataInfo.Repository.Interfaces.Ride;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Member;
 using DataInfo.Service.Interfaces.Server;
-using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -107,39 +105,19 @@ namespace DataInfo.Service.Managers.Member
         #region 註冊 \ 登入 \ 登出 \ 保持在線
 
         /// <summary>
-        /// 生產 Jwt Token
-        /// </summary>
-        /// <param name="memberDao">memberDao</param>
-        /// <returns>string</returns>
-        private string GenerateJwtToken(MemberDao memberDao)
-        {
-            JwtClaims jwtClaims = new JwtClaims()
-            {
-                MemberID = memberDao.MemberID,
-                Email = memberDao.Email,
-                Nickname = memberDao.Nickname,
-                Avatar = memberDao.Avatar,
-                FrontCover = memberDao.FrontCover,
-                Mobile = memberDao.Mobile
-            };
-            return this.jwtService.GenerateToken(jwtClaims);
-        }
-
-        /// <summary>
         /// 更新會員最新登入時間
         /// </summary>
-        /// <param name="memberDao">memberDao</param>
-        private void UpdateLastLoginDate(MemberDao memberDao)
+        /// <param name="memberID">memberID</param>
+        private void UpdateLastLoginDate(string memberID)
         {
             try
             {
-                this.logger.LogInfo("更新會員最新登入時間", $"MemberID: {memberDao.MemberID}", null);
-                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{AppSettingHelper.Appsetting.Redis.Flag.LastLogin}-{memberDao.MemberID}";
-                this.redisRepository.SetCache(cacheKey, JsonConvert.SerializeObject(DateTime.UtcNow), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.KeepOnlineTime));
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.LastLogin}";
+                this.redisRepository.SetCache(cacheKey, DateTime.UtcNow.ToString(), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.KeepOnlineTime));
             }
             catch (Exception ex)
             {
-                this.logger.LogError("更新會員最新登入時間發生錯誤", $"MemberID: {memberDao.MemberID}", ex);
+                this.logger.LogError("更新會員最新登入時間發生錯誤", $"MemberID: {memberID}", ex);
             }
         }
 
@@ -152,23 +130,22 @@ namespace DataInfo.Service.Managers.Member
         {
             try
             {
-                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{AppSettingHelper.Appsetting.Redis.Flag.LastLogin}-{memberID}";
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.LastLogin}";
                 bool result = await this.redisRepository.UpdateCacheExpire(cacheKey, TimeSpan.FromMinutes(AppSettingHelper.Appsetting.KeepOnlineTime)).ConfigureAwait(false);
-                if (result)
+                if (!result)
                 {
+                    this.logger.LogWarn("會員保持在線失敗，無法更新 Redis", $"CacheKey: {cacheKey}", null);
                     return new ResponseResult()
                     {
-                        Result = true,
-                        ResultCode = (int)ResponseResultType.Success,
-                        Content = MessageHelper.Message.ResponseMessage.Update.Success
+                        Result = false,
+                        ResultCode = StatusCodes.Status500InternalServerError,
+                        ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                     };
                 }
-
                 return new ResponseResult()
                 {
-                    Result = false,
-                    ResultCode = (int)ResponseResultType.UpdateFail,
-                    Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                    Result = true,
+                    ResultCode = StatusCodes.Status200OK
                 };
             }
             catch (Exception ex)
@@ -177,14 +154,14 @@ namespace DataInfo.Service.Managers.Member
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Update.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }
 
         /// <summary>
-        /// 會員登入(一般登入)
+        /// 會員登入
         /// </summary>
         /// <param name="content">content</param>
         /// <returns>ResponseResult</returns>
@@ -194,30 +171,36 @@ namespace DataInfo.Service.Managers.Member
             {
                 #region 發送【使用者登入】指令至後端
 
-                MemberLoginRequest request = new MemberLoginRequest()
-                {
-                    Email = content.Email,
-                    Password = content.Password,
-                };
-
+                MemberLoginRequest request = this.mapper.Map<MemberLoginRequest>(content);
                 CommandData<MemberLoginResponse> response = await this.serverService.DoAction<MemberLoginResponse>((int)UserCommandIDType.UserLogin, CommandType.User, request).ConfigureAwait(false);
-                this.logger.LogInfo("會員登入結果(一般登入)", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} Email: {content.Email} Password: {content.Password}", null);
+                this.logger.LogInfo("會員登入結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)}", null);
                 switch (response.Data.Result)
                 {
                     case (int)UserLoginResultType.Success:
-                        MemberDao memberDao = (await this.memberRepository.Get(response.Data.MemberID).ConfigureAwait(false));
+                        MemberDao memberDao = await this.memberRepository.Get(response.Data.MemberID, MemberSearchType.MemberID).ConfigureAwait(false);
+                        if (memberDao == null)
+                        {
+                            this.logger.LogError("會員登入失敗，無會員資料但 Server 允許登入了", $"Content: {JsonConvert.SerializeObject(content)}", null);
+                            return new ResponseResult()
+                            {
+                                Result = false,
+                                ResultCode = StatusCodes.Status502BadGateway,
+                                ResultMessage = ResponseErrorMessageType.LoginFail.ToString()
+                            };
+                        }
 
                         #region 更新最新登入時間
 
-                        this.UpdateLastLoginDate(memberDao);
+                        this.UpdateLastLoginDate(memberDao.MemberID);
 
                         #endregion 更新最新登入時間
 
+                        JwtClaims jwtClaims = this.mapper.Map<JwtClaims>(memberDao);
                         return new ResponseResult()
                         {
                             Result = true,
                             ResultCode = StatusCodes.Status200OK,
-                            Content = new MemberLoginView() { Token = this.GenerateJwtToken(memberDao) }
+                            Content = new MemberLoginView() { Token = this.jwtService.GenerateToken(jwtClaims) }
                         };
 
                     case (int)UserLoginResultType.Fail:
@@ -241,7 +224,7 @@ namespace DataInfo.Service.Managers.Member
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = StatusCodes.Status500InternalServerError,
+                            ResultCode = StatusCodes.Status502BadGateway,
                             ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                         };
                 }
@@ -250,7 +233,7 @@ namespace DataInfo.Service.Managers.Member
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員登入發生錯誤(一般登入)", $"Email: {content.Email} Password: {content.Password}", ex);
+                this.logger.LogError("會員登入發生錯誤(一般登入)", $"Content: {JsonConvert.SerializeObject(content)}", ex);
                 return new ResponseResult()
                 {
                     Result = false,
@@ -316,7 +299,7 @@ namespace DataInfo.Service.Managers.Member
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = StatusCodes.Status500InternalServerError,
+                            ResultCode = StatusCodes.Status502BadGateway,
                             ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                         };
                 }
@@ -336,7 +319,7 @@ namespace DataInfo.Service.Managers.Member
         }
 
         /// <summary>
-        /// 會員登入(重新登入)
+        /// 會員重新登入
         /// </summary>
         /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>
@@ -346,10 +329,10 @@ namespace DataInfo.Service.Managers.Member
             {
                 #region 取得會員資料
 
-                MemberDao memberDao = (await this.memberRepository.Get(memberID, false, null).ConfigureAwait(false)).FirstOrDefault();
+                MemberDao memberDao = await this.memberRepository.Get(memberID, MemberSearchType.MemberID).ConfigureAwait(false);
                 if (memberDao == null)
                 {
-                    this.logger.LogWarn("會員登入結果(重新登入)", $"Result: 無會員資料，須查詢 DB 比對 MemberID: {memberID}", null);
+                    this.logger.LogWarn("會員重新登入失敗，無會員資料", $"MemberID: {memberID}", null);
                     return new ResponseResult()
                     {
                         Result = false,
@@ -362,26 +345,26 @@ namespace DataInfo.Service.Managers.Member
 
                 #region 更新最新登入時間
 
-                this.UpdateLastLoginDate(memberDao);
+                this.UpdateLastLoginDate(memberDao.MemberID);
 
                 #endregion 更新最新登入時間
 
-                this.logger.LogInfo("會員登入成功(重新登入)", $"MemberID: {memberID}", null);
+                JwtClaims jwtClaims = this.mapper.Map<JwtClaims>(memberDao);
                 return new ResponseResult()
                 {
                     Result = true,
                     ResultCode = StatusCodes.Status200OK,
-                    Content = new MemberLoginView() { Token = this.GenerateJwtToken(memberDao) }
+                    Content = new MemberLoginView() { Token = this.jwtService.GenerateToken(jwtClaims) }
                 };
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員登入發生錯誤(重新登入)", $"MemberID: {memberID}", ex);
+                this.logger.LogError("會員重新登入發生錯誤", $"MemberID: {memberID}", ex);
                 return new ResponseResult()
                 {
                     Result = false,
                     ResultCode = StatusCodes.Status500InternalServerError,
-                    Content = ResponseErrorMessageType.SystemError.ToString()
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }
@@ -393,10 +376,10 @@ namespace DataInfo.Service.Managers.Member
         /// <summary>
         /// 會員資料更新處理
         /// </summary>
-        /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
         /// <returns>Tuple(string, MemberEditInfoRequest)</returns>
-        private async Task<Tuple<string, MemberEditInfoRequest>> UpdateInfoHandler(string memberID, MemberEditInfoContent content)
+        private async Task<Tuple<string, MemberEditInfoRequest>> UpdateInfoHandler(MemberEditInfoContent content, string memberID)
         {
             MemberUpdateInfoData memberUpdateInfoData = new MemberUpdateInfoData();
             if (!string.IsNullOrEmpty(content.Avatar) || !string.IsNullOrEmpty(content.FrontCover) || !string.IsNullOrEmpty(content.Photo))
@@ -405,7 +388,7 @@ namespace DataInfo.Service.Managers.Member
                 IEnumerable<string> imgUris = await this.uploadService.UploadMemberImages(imgBase64s, true).ConfigureAwait(false);
                 if (imgUris == null || !imgUris.Any())
                 {
-                    return Tuple.Create<string, MemberEditInfoRequest>(MessageHelper.Message.ResponseMessage.Upload.PhotoFail, null);
+                    return Tuple.Create<string, MemberEditInfoRequest>(ResponseErrorMessageType.UploadPhotoFail.ToString(), null);
                 }
 
                 if (!string.IsNullOrEmpty(content.Avatar))
@@ -413,7 +396,7 @@ namespace DataInfo.Service.Managers.Member
                     string avatar = imgUris.ElementAt(0);
                     if (string.IsNullOrEmpty(avatar))
                     {
-                        return Tuple.Create<string, MemberEditInfoRequest>(MessageHelper.Message.ResponseMessage.Upload.AvatarFail, null);
+                        return Tuple.Create<string, MemberEditInfoRequest>(ResponseErrorMessageType.UploadAvatarFail.ToString(), null);
                     }
 
                     memberUpdateInfoData.Avatar = avatar;
@@ -424,7 +407,7 @@ namespace DataInfo.Service.Managers.Member
                     string frontCover = imgUris.ElementAt(1);
                     if (string.IsNullOrEmpty(frontCover))
                     {
-                        return Tuple.Create<string, MemberEditInfoRequest>(MessageHelper.Message.ResponseMessage.Upload.FrontCoverFail, null);
+                        return Tuple.Create<string, MemberEditInfoRequest>(ResponseErrorMessageType.UploadFrontCoverFail.ToString(), null);
                     }
 
                     memberUpdateInfoData.FrontCover = frontCover;
@@ -435,7 +418,7 @@ namespace DataInfo.Service.Managers.Member
                     string photo = imgUris.ElementAt(2);
                     if (string.IsNullOrEmpty(photo))
                     {
-                        return Tuple.Create<string, MemberEditInfoRequest>(MessageHelper.Message.ResponseMessage.Upload.HomePhotoFail, null);
+                        return Tuple.Create<string, MemberEditInfoRequest>(ResponseErrorMessageType.UploadHomePhotoFail.ToString(), null);
                     }
 
                     memberUpdateInfoData.Photo = photo;
@@ -446,7 +429,7 @@ namespace DataInfo.Service.Managers.Member
             {
                 if (!DateTime.TryParse(content.Birthday, out DateTime birthday))
                 {
-                    return Tuple.Create<string, MemberEditInfoRequest>(MessageHelper.Message.ResponseMessage.Member.BirthdayError, null);
+                    return Tuple.Create<string, MemberEditInfoRequest>(ResponseErrorMessageType.BirthdayFormatError.ToString(), null);
                 }
 
                 memberUpdateInfoData.Birthday = birthday.ToString("yyyy-MM-dd");
@@ -467,8 +450,13 @@ namespace DataInfo.Service.Managers.Member
                 memberUpdateInfoData.Gender = content.Gender;
             }
 
-            if (!string.IsNullOrEmpty(content.Nickname))
+            if (!string.IsNullOrEmpty(content.Nickname.Trim()))
             {
+                if (content.Nickname.Length > AppSettingHelper.Appsetting.Rule.NicknameLength)
+                {
+                    return Tuple.Create<string, MemberEditInfoRequest>(ResponseErrorMessageType.NicknameFormatError.ToString(), null);
+                }
+
                 memberUpdateInfoData.NickName = content.Nickname;
             }
 
@@ -479,24 +467,24 @@ namespace DataInfo.Service.Managers.Member
         /// <summary>
         /// 會員編輯資訊
         /// </summary>
-        /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> EditInfo(string memberID, MemberEditInfoContent content)
+        public async Task<ResponseResult> EditInfo(MemberEditInfoContent content, string memberID)
         {
             try
             {
                 #region 處理更新資料
 
-                Tuple<string, MemberEditInfoRequest> updateInfoHandlerResult = await this.UpdateInfoHandler(memberID, content).ConfigureAwait(false);
+                Tuple<string, MemberEditInfoRequest> updateInfoHandlerResult = await this.UpdateInfoHandler(content, memberID).ConfigureAwait(false);
                 if (!string.IsNullOrEmpty(updateInfoHandlerResult.Item1))
                 {
-                    this.logger.LogWarn("會員編輯資訊結果", $"Result: 更新失敗({updateInfoHandlerResult.Item1}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    this.logger.LogWarn("會員編輯資訊更新失敗，資料驗證錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.UpdateFail,
-                        Content = updateInfoHandlerResult.Item1
+                        ResultCode = StatusCodes.Status400BadRequest,
+                        ResultMessage = updateInfoHandlerResult.Item1
                     };
                 }
 
@@ -511,28 +499,30 @@ namespace DataInfo.Service.Managers.Member
                 switch (response.Data.Result)
                 {
                     case (int)UpdateUserInfoResultType.Success:
-                        MemberDao memberDao = (await this.memberRepository.Get(memberID, false, null).ConfigureAwait(false)).FirstOrDefault();
+                        MemberDao memberDao = await this.memberRepository.Get(memberID, MemberSearchType.MemberID).ConfigureAwait(false);
+                        //// TODO 刪除 Member 的 Redis
+                        JwtClaims jwtClaims = this.mapper.Map<JwtClaims>(memberDao);
                         return new ResponseResult()
                         {
                             Result = true,
-                            ResultCode = (int)ResponseResultType.Success,
-                            Content = this.GenerateJwtToken(memberDao)
+                            ResultCode = StatusCodes.Status200OK,
+                            Content = this.jwtService.GenerateToken(jwtClaims)
                         };
 
                     case (int)UpdateUserInfoResultType.Fail:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.UpdateFail,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
                         };
 
                     default:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.UnknownError,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            ResultCode = StatusCodes.Status502BadGateway,
+                            ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                         };
                 }
 
@@ -544,59 +534,65 @@ namespace DataInfo.Service.Managers.Member
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Update.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }
 
         /// <summary>
-        /// 搜尋會員(模糊比對)
+        /// 搜尋會員
         /// </summary>
-        /// <param name="content">content</param>
+        /// <param name="searchKey">searchKey</param>
+        /// <param name="searchType">searchType</param>
         /// <param name="searchMemberID">searchMemberID</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> FuzzySearch(MemberSearchContent content, string searchMemberID)
+        public async Task<ResponseResult> Search(string searchKey, int searchType, string searchMemberID)
         {
             try
             {
                 #region 驗證資料
 
-                MemberSearchContentValidator memberSearchContentValidator = new MemberSearchContentValidator();
-                ValidationResult validationResult = memberSearchContentValidator.Validate(content);
-                if (!validationResult.IsValid)
+                if (string.IsNullOrEmpty(searchKey))
                 {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("搜尋會員結果(模糊比對)", $"Result: 驗證失敗({errorMessgae}) Content: {JsonConvert.SerializeObject(content)} SearchMemberID: {searchMemberID}", null);
+                    //// 沒有搜尋關鍵字，直接回傳空資料
+                    this.logger.LogWarn("搜尋會員失敗，無搜尋關鍵字", $"SearchKey: {searchKey} SearchType: {searchType} SearchMemberID: {searchMemberID}", null);
                     return new ResponseResult()
                     {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = errorMessgae
+                        Result = true,
+                        ResultCode = StatusCodes.Status400BadRequest,
+                        ResultMessage = ResponseErrorMessageType.SearchKeyEmpty.ToString()
                     };
                 }
 
                 #endregion 驗證資料
 
-                string[] ignoreMemberIds = new string[] { searchMemberID };
-                IEnumerable<MemberDao> memberDaos = await this.memberRepository.Get(content.SearchKey, true, ignoreMemberIds).ConfigureAwait(false);
-                IEnumerable<MemberSimpleInfoView> memberSimpleInfoViews = await this.TransformMemberSimpleInfoView(memberDaos).ConfigureAwait(false);
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{searchMemberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.Search}-{searchKey}-{searchType}";
+                IEnumerable<MemberSimpleInfoView> memberSimpleInfoViews = await this.redisRepository.GetCache<IEnumerable<MemberSimpleInfoView>>(cacheKey).ConfigureAwait(false);
+                if (memberSimpleInfoViews == null)
+                {
+                    bool isFuzzy = searchType.Equals((int)SearchType.Fuzzy);
+                    string[] ignoreMemberIds = new string[] { searchMemberID };
+                    IEnumerable<MemberDao> memberDaos = await this.memberRepository.Search(searchKey, isFuzzy, ignoreMemberIds).ConfigureAwait(false);
+                    memberSimpleInfoViews = await this.TransformMemberSimpleInfoView(memberDaos).ConfigureAwait(false);
+                    this.redisRepository.SetCache(cacheKey, JsonConvert.SerializeObject(memberSimpleInfoViews), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
+                }
 
                 return new ResponseResult()
                 {
                     Result = true,
-                    ResultCode = (int)ResponseResultType.Success,
+                    ResultCode = StatusCodes.Status200OK,
                     Content = memberSimpleInfoViews
                 };
             }
             catch (Exception ex)
             {
-                this.logger.LogError("搜尋會員發生錯誤(模糊比對)", $"Content: {JsonConvert.SerializeObject(content)} SearchMemberID: {searchMemberID}", ex);
+                this.logger.LogError("搜尋會員失敗發生錯誤", $"SearchKey: {searchKey} SearchType: {searchType} SearchMemberID: {searchMemberID}", ex);
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }
@@ -611,41 +607,33 @@ namespace DataInfo.Service.Managers.Member
         {
             try
             {
-                #region 驗證資料
+                //// TODO 待確認有沒有要限制其他會員可不可以搜尋到資料
 
-                MemberCardInfoContentValidator memberCardInfoContentValidator = new MemberCardInfoContentValidator();
-                ValidationResult validationResult = memberCardInfoContentValidator.Validate(content);
-                if (!validationResult.IsValid)
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{content.MemberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.CardInfo}";
+                MemberCardInfoView memberCardInfoView = await this.redisRepository.GetCache<MemberCardInfoView>(cacheKey).ConfigureAwait(false);
+                if (memberCardInfoView == null)
                 {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("取得會員名片資訊結果", $"Result: 驗證失敗({errorMessgae}) Content: {JsonConvert.SerializeObject(content)} SearchMemberID: {searchMemberID}", null);
-                    return new ResponseResult()
+                    MemberDao memberDao = await this.memberRepository.Get(content.MemberID, MemberSearchType.MemberID).ConfigureAwait(false);
+                    if (memberDao == null)
                     {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = errorMessgae
-                    };
-                }
+                        this.logger.LogWarn("取得會員名片資訊失敗，無會員資料", $"Content: {JsonConvert.SerializeObject(content)} SearchMemberID: {searchMemberID}", null);
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.GetFail.ToString()
+                        };
+                    }
 
-                #endregion 驗證資料
-
-                MemberDao memberDao = await this.memberRepository.Get(content.MemberID).ConfigureAwait(false);
-                if (memberDao == null)
-                {
-                    this.logger.LogWarn("取得會員名片資訊結果", $"Result: 無會員資料 Content: {JsonConvert.SerializeObject(content)} SearchMemberID: {searchMemberID}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.Missed,
-                        Content = MessageHelper.Message.ResponseMessage.Member.MemberNotExist
-                    };
+                    memberCardInfoView = this.mapper.Map<MemberCardInfoView>(memberDao);
+                    this.redisRepository.SetCache(cacheKey, JsonConvert.SerializeObject(memberCardInfoView), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
                 }
 
                 return new ResponseResult()
                 {
                     Result = true,
-                    ResultCode = (int)ResponseResultType.Success,
-                    Content = this.mapper.Map<MemberCardInfoView>(memberDao)
+                    ResultCode = StatusCodes.Status200OK,
+                    Content = memberCardInfoView
                 };
             }
             catch (Exception ex)
@@ -654,8 +642,8 @@ namespace DataInfo.Service.Managers.Member
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }
@@ -669,18 +657,25 @@ namespace DataInfo.Service.Managers.Member
         {
             try
             {
-                MemberDao memberDao = (await this.memberRepository.Get(memberID, false, null).ConfigureAwait(false)).FirstOrDefault();
-                RideDistanceDao rideDistanceDao = await this.rideRepository.GetTotalDistance(memberID).ConfigureAwait(false);
-                MemberHomeInfoView memberHomeInfoView = this.mapper.Map<MemberHomeInfoView>(memberDao);
-                if (rideDistanceDao != null)
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.HomeInfo}";
+                MemberHomeInfoView memberHomeInfoView = await this.redisRepository.GetCache<MemberHomeInfoView>(cacheKey).ConfigureAwait(false);
+                if (memberHomeInfoView == null)
                 {
-                    memberHomeInfoView.TotalDistance = rideDistanceDao.TotalDistance;
+                    MemberDao memberDao = await this.memberRepository.Get(memberID, MemberSearchType.MemberID).ConfigureAwait(false);
+                    RideDistanceDao rideDistanceDao = await this.rideRepository.GetTotalDistance(memberID).ConfigureAwait(false);
+                    memberHomeInfoView = this.mapper.Map<MemberHomeInfoView>(memberDao);
+                    if (rideDistanceDao != null)
+                    {
+                        memberHomeInfoView.TotalDistance = rideDistanceDao.TotalDistance;
+                    }
+
+                    this.redisRepository.SetCache(cacheKey, JsonConvert.SerializeObject(memberHomeInfoView), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
                 }
 
                 return new ResponseResult()
                 {
                     Result = true,
-                    ResultCode = (int)ResponseResultType.Success,
+                    ResultCode = StatusCodes.Status200OK,
                     Content = memberHomeInfoView
                 };
             }
@@ -690,8 +685,8 @@ namespace DataInfo.Service.Managers.Member
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }
@@ -699,65 +694,59 @@ namespace DataInfo.Service.Managers.Member
         /// <summary>
         /// 會員手機綁定
         /// </summary>
-        /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
+        /// <param name="email">email</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> MobileBind(string memberID, MemberMobileBindContent content)
+        public async Task<ResponseResult> MobileBind(MemberMobileBindContent content, string memberID, string email)
         {
             try
             {
                 #region 驗證資料
 
-                MemberMobileBindContentValidator memberMobileBindContentValidator = new MemberMobileBindContentValidator();
-                ValidationResult validationResult = memberMobileBindContentValidator.Validate(content);
-                if (!validationResult.IsValid)
+                ResponseResult validateVerifyCodeResult = await this.verifyCodeService.Validate(email, content.VerifierCode, false).ConfigureAwait(false);
+                if (!validateVerifyCodeResult.Result)
                 {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("會員手機綁定結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = errorMessgae
-                    };
+                    this.logger.LogWarn("會員手機綁定失敗，驗證碼錯誤", $"ResultCode: {validateVerifyCodeResult.ResultCode} ResultMessage: {validateVerifyCodeResult.ResultMessage} MemberID: {memberID} Email: {email} Content: {JsonConvert.SerializeObject(content)}", null);
+                    return validateVerifyCodeResult;
                 }
 
                 #endregion 驗證資料
 
-                #region 比對驗證碼
-
-                ResponseResult validateVerifyCodeResult = await this.verifyCodeService.Validate(content.VerifierCode, false).ConfigureAwait(false);
-                if (!validateVerifyCodeResult.Result)
-                {
-                    this.logger.LogWarn("會員手機綁定結果", $"Result: 驗證碼錯誤, MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                    return validateVerifyCodeResult;
-                }
-
-                #endregion 比對驗證碼
-
                 #region 檢查手機是否已被綁定
 
-                MemberDao memberDao = (await this.memberRepository.Get(content.Mobile, false, null).ConfigureAwait(false)).FirstOrDefault();
+                MemberDao memberDao = await this.memberRepository.Get(content.Mobile, MemberSearchType.Mobile).ConfigureAwait(false);
                 if (memberDao != null)
                 {
-                    this.logger.LogWarn("會員手機綁定結果", $"Result: 該手機已被綁定 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} BindMemberID:{memberDao.MemberID}", null);
+                    this.logger.LogWarn("會員手機綁定失敗，該手機已被綁定", $"MemberID: {memberID} Email: {email} Content: {JsonConvert.SerializeObject(content)} BindMemberID:{memberDao.MemberID}", null);
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = MessageHelper.Message.ResponseMessage.Member.MobileBind
+                        ResultCode = StatusCodes.Status409Conflict,
+                        ResultMessage = ResponseErrorMessageType.MobileRepeat.ToString()
                     };
                 }
 
-                memberDao = (await this.memberRepository.Get(memberID, false, null).ConfigureAwait(false)).FirstOrDefault();
-                if (!string.IsNullOrEmpty(memberDao.Mobile))
+                memberDao = await this.memberRepository.Get(memberID, MemberSearchType.MemberID).ConfigureAwait(false);
+                if (memberDao == null)
                 {
-                    this.logger.LogWarn("發送會員手機綁定驗證碼結果", $"Result: 會員已綁定手機 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} BindMobile:{memberDao.Mobile}", null);
+                    this.logger.LogWarn("會員手機綁定失敗，無會員資料", $"MemberID: {memberID} Email: {email} Content: {JsonConvert.SerializeObject(content)}", null);
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = MessageHelper.Message.ResponseMessage.Member.MemberHasBindMobile
+                        ResultCode = StatusCodes.Status409Conflict,
+                        ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
+                    };
+                }
+
+                if (!string.IsNullOrEmpty(memberDao.Mobile))
+                {
+                    this.logger.LogWarn("會員手機綁定失敗，會員已綁定手機", $"MemberID: {memberID} Email: {email} Content: {JsonConvert.SerializeObject(content)} BindMobile:{memberDao.Mobile}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = StatusCodes.Status409Conflict,
+                        ResultMessage = ResponseErrorMessageType.MobileRepeat.ToString()
                     };
                 }
 
@@ -783,30 +772,32 @@ namespace DataInfo.Service.Managers.Member
                         #region 刪除 Redis 驗證碼
 
                         this.verifyCodeService.Delete(content.VerifierCode);
+                        //// TODO 刪除 Member 的 Redis
 
                         #endregion 刪除 Redis 驗證碼
 
+                        JwtClaims jwtClaims = this.mapper.Map<JwtClaims>(memberDao);
                         return new ResponseResult()
                         {
                             Result = true,
-                            ResultCode = (int)ResponseResultType.Success,
-                            Content = this.GenerateJwtToken(memberDao)
+                            ResultCode = StatusCodes.Status200OK,
+                            Content = this.jwtService.GenerateToken(jwtClaims)
                         };
 
                     case (int)UpdateUserInfoResultType.Fail:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.UpdateFail,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
                         };
 
                     default:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.UnknownError,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            ResultCode = StatusCodes.Status502BadGateway,
+                            ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                         };
                 }
 
@@ -814,12 +805,12 @@ namespace DataInfo.Service.Managers.Member
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員手機綁定發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                this.logger.LogError("會員手機綁定發生錯誤", $"MemberID: {memberID} Email: {email} Content: {JsonConvert.SerializeObject(content)}", ex);
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Update.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }
@@ -835,44 +826,26 @@ namespace DataInfo.Service.Managers.Member
             {
                 #region 驗證資料
 
-                MemberForgetPasswordContentValidator memberForgetPasswordContentValidator = new MemberForgetPasswordContentValidator();
-                ValidationResult validationResult = memberForgetPasswordContentValidator.Validate(content);
-                if (!validationResult.IsValid)
+                ResponseResult validateVerifyCodeResult = await this.verifyCodeService.Validate(content.Email, content.VerifierCode, false).ConfigureAwait(false);
+                if (!validateVerifyCodeResult.Result)
                 {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("重置會員密碼結果", $"Result: 驗證失敗({errorMessgae}) Content: {JsonConvert.SerializeObject(content)}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = errorMessgae
-                    };
+                    this.logger.LogWarn("重置會員密碼失敗，驗證碼錯誤", $"ResultCode: {validateVerifyCodeResult.ResultCode} ResultMessage: {validateVerifyCodeResult.ResultMessage} Content: {JsonConvert.SerializeObject(content)}", null);
+                    return validateVerifyCodeResult;
                 }
 
                 #endregion 驗證資料
 
-                #region 比對驗證碼
-
-                ResponseResult validateVerifyCodeResult = await this.verifyCodeService.Validate(content.VerifierCode, false).ConfigureAwait(false);
-                if (!validateVerifyCodeResult.Result)
-                {
-                    this.logger.LogWarn("重置會員密碼結果", $"Result: 驗證碼驗證失敗, ResultCode: {validateVerifyCodeResult.ResultCode} Content: {JsonConvert.SerializeObject(content)}", null);
-                    return validateVerifyCodeResult;
-                }
-
-                #endregion 比對驗證碼
-
                 #region 取得會員資料
 
-                MemberDao memberDao = (await this.memberRepository.Get(content.Email, false, null).ConfigureAwait(false)).FirstOrDefault();
+                MemberDao memberDao = await this.memberRepository.Get(content.Email, MemberSearchType.Email).ConfigureAwait(false);
                 if (memberDao == null)
                 {
-                    this.logger.LogWarn("重置會員密碼結果", $"Result: 查無以此信箱註冊的會員 Content: {JsonConvert.SerializeObject(content)}", null);
+                    this.logger.LogWarn("重置會員密碼失敗，無會員資料", $"Content: {JsonConvert.SerializeObject(content)}", null);
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = MessageHelper.Message.ResponseMessage.Member.EmailNotExist
+                        ResultCode = StatusCodes.Status409Conflict,
+                        ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
                     };
                 }
 
@@ -880,11 +853,8 @@ namespace DataInfo.Service.Managers.Member
 
                 #region 更新密碼
 
-                ResponseResult responseResult = await this.UpdatePassword(memberDao.MemberID, new MemberUpdatePasswordContent()
-                {
-                    NewPassword = content.Password,
-                    ConfirmPassword = content.ConfirmPassword
-                }, true).ConfigureAwait(false);
+                MemberUpdatePasswordContent memberUpdatePasswordContent = this.mapper.Map<MemberUpdatePasswordContent>(content);
+                ResponseResult responseResult = await this.UpdatePassword(memberUpdatePasswordContent, memberDao.MemberID, true).ConfigureAwait(false);
 
                 #endregion 更新密碼
 
@@ -905,8 +875,8 @@ namespace DataInfo.Service.Managers.Member
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Update.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }
@@ -922,61 +892,53 @@ namespace DataInfo.Service.Managers.Member
             {
                 #region 驗證資料
 
-                MemberRequestForgetPasswordContentValidator memberRequestForgetPasswordContentValidator = new MemberRequestForgetPasswordContentValidator();
-                ValidationResult validationResult = memberRequestForgetPasswordContentValidator.Validate(content);
-                if (!validationResult.IsValid)
-                {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("發送會員忘記密碼驗證碼結果", $"Result: 驗證失敗({errorMessgae}) Content: {JsonConvert.SerializeObject(content)}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = errorMessgae
-                    };
-                }
-
-                MemberDao memberDao = (await this.memberRepository.Get(content.Email, false, null).ConfigureAwait(false)).FirstOrDefault();
+                MemberDao memberDao = await this.memberRepository.Get(content.Email, MemberSearchType.Email).ConfigureAwait(false);
                 if (memberDao == null)
                 {
-                    this.logger.LogWarn("發送會員忘記密碼驗證碼結果", $"Result: 查無以此信箱註冊的會員 Content: {JsonConvert.SerializeObject(content)}", null);
+                    this.logger.LogWarn("發送會員忘記密碼驗證碼失敗，無會員資料", $"Content: {JsonConvert.SerializeObject(content)}", null);
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = MessageHelper.Message.ResponseMessage.Member.EmailNotExist
+                        ResultCode = StatusCodes.Status409Conflict,
+                        ResultMessage = ResponseErrorMessageType.EmailNotExist.ToString()
                     };
                 }
 
                 #endregion 驗證資料
 
-                #region 產生驗證碼
-
-                string verifierCode = await this.verifyCodeService.Generate().ConfigureAwait(false);
-
-                #endregion 產生驗證碼
-
                 #region 發送驗證碼
 
+                bool isGenerate = await this.verifyCodeService.IsGenerate(content.Email).ConfigureAwait(false);
+                if (isGenerate)
+                {
+                    return new ResponseResult()
+                    {
+                        Result = true,
+                        ResultCode = StatusCodes.Status200OK,
+                        ResultMessage = ResponseSuccessMessageType.SendVerifierCode.ToString()
+                    };
+                }
+
+                string verifierCode = this.verifyCodeService.Generate(content.Email);
                 EmailContext emailContext = EmailContext.GetVerifierCodetEmailContextForForgetPassword(content.Email, verifierCode);
                 string postData = JsonConvert.SerializeObject(emailContext);
                 HttpResponseMessage httpResponseMessage = await Utility.ApiPost(AppSettingHelper.Appsetting.SmtpServer.Domain, AppSettingHelper.Appsetting.SmtpServer.Api, postData).ConfigureAwait(false);
                 if (!httpResponseMessage.IsSuccessStatusCode)
                 {
-                    this.logger.LogWarn("發送會員忘記密碼驗證碼結果", $"Result: 發送郵件失敗({httpResponseMessage.Content}) EmailContext: {JsonConvert.SerializeObject(emailContext)}", null);
+                    this.logger.LogWarn("發送會員忘記密碼驗證碼失敗，無法發送郵件", $"Address: {emailContext.Address} Subject: {emailContext.Subject} Body: {emailContext.Body}", null);
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = MessageHelper.Message.ResponseMessage.Smtp.SendEmailFail
+                        ResultCode = StatusCodes.Status502BadGateway,
+                        ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                     };
                 }
 
                 return new ResponseResult()
                 {
                     Result = true,
-                    ResultCode = (int)ResponseResultType.Success,
-                    Content = MessageHelper.Message.ResponseMessage.VerifyCode.SendVerifyCodeSuccess
+                    ResultCode = StatusCodes.Status200OK,
+                    ResultMessage = ResponseSuccessMessageType.SendVerifierCode.ToString()
                 };
 
                 #endregion 發送驗證碼
@@ -987,8 +949,8 @@ namespace DataInfo.Service.Managers.Member
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.VerifyCode.SendVerifyCodeError
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }
@@ -996,167 +958,140 @@ namespace DataInfo.Service.Managers.Member
         /// <summary>
         /// 發送會員手機綁定驗證碼
         /// </summary>
-        /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
+        /// <param name="email">email</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> SendMobileBindVerifierCode(string memberID, MemberRequestMobileBindContent content)
+        public async Task<ResponseResult> SendMobileBindVerifierCode(MemberRequestMobileBindContent content, string memberID, string email)
         {
             try
             {
-                #region 驗證資料
-
-                MemberRequestMobileBindContentValidator memberRequestMobileBindContentValidator = new MemberRequestMobileBindContentValidator();
-                ValidationResult validationResult = memberRequestMobileBindContentValidator.Validate(content);
-                if (!validationResult.IsValid)
-                {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("發送會員手機綁定驗證碼結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = errorMessgae
-                    };
-                }
-
-                #endregion 驗證資料
-
                 #region 檢查手機是否已被綁定
 
-                MemberDao memberDao = (await this.memberRepository.Get(content.Mobile, false, null).ConfigureAwait(false)).FirstOrDefault();
+                MemberDao memberDao = await this.memberRepository.Get(content.Mobile, MemberSearchType.Mobile).ConfigureAwait(false);
                 if (memberDao != null)
                 {
-                    this.logger.LogWarn("發送會員手機綁定驗證碼結果", $"Result: 該手機已被綁定 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} BindMemberID:{memberDao.MemberID}", null);
+                    this.logger.LogWarn("發送會員手機綁定驗證碼失敗，該手機已被綁定", $"MemberID: {memberID} Email: {email} Content: {JsonConvert.SerializeObject(content)} BindMemberID:{memberDao.MemberID}", null);
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = MessageHelper.Message.ResponseMessage.Member.MobileBind
+                        ResultCode = StatusCodes.Status409Conflict,
+                        ResultMessage = ResponseErrorMessageType.MobileRepeat.ToString()
                     };
                 }
 
-                memberDao = (await this.memberRepository.Get(memberID, false, null).ConfigureAwait(false)).FirstOrDefault();
-                if (!string.IsNullOrEmpty(memberDao.Mobile))
+                memberDao = await this.memberRepository.Get(memberID, MemberSearchType.MemberID).ConfigureAwait(false);
+                if (memberDao == null)
                 {
-                    this.logger.LogWarn("發送會員手機綁定驗證碼結果", $"Result: 會員已綁定手機 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} BindMobile:{memberDao.Mobile}", null);
+                    this.logger.LogWarn("發送會員手機綁定驗證碼失敗，無會員資料", $"MemberID: {memberID} Email: {email} Content: {JsonConvert.SerializeObject(content)}", null);
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = MessageHelper.Message.ResponseMessage.Member.MemberHasBindMobile
+                        ResultCode = StatusCodes.Status409Conflict,
+                        ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
+                    };
+                }
+
+                if (!string.IsNullOrEmpty(memberDao.Mobile))
+                {
+                    this.logger.LogWarn("發送會員手機綁定驗證碼失敗，會員已綁定手機", $"MemberID: {memberID} Email: {email} Content: {JsonConvert.SerializeObject(content)} BindMobile:{memberDao.Mobile}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = StatusCodes.Status409Conflict,
+                        ResultMessage = ResponseErrorMessageType.MobileRepeat.ToString()
                     };
                 }
 
                 #endregion 檢查手機是否已被綁定
 
-                #region 產生驗證碼
-
-                string verifierCode = await this.verifyCodeService.Generate().ConfigureAwait(false);
-
-                #endregion 產生驗證碼
-
                 #region 發送驗證碼
 
+                bool isGenerate = await this.verifyCodeService.IsGenerate(email).ConfigureAwait(false);
+                if (isGenerate)
+                {
+                    return new ResponseResult()
+                    {
+                        Result = true,
+                        ResultCode = StatusCodes.Status200OK,
+                        ResultMessage = ResponseSuccessMessageType.SendVerifierCode.ToString()
+                    };
+                }
+
+                string verifierCode = this.verifyCodeService.Generate(email);
                 EmailContext emailContext = EmailContext.GetVerifierCodetEmailContextForMobileBind(memberDao.Email, verifierCode);
                 string postData = JsonConvert.SerializeObject(emailContext);
                 HttpResponseMessage httpResponseMessage = await Utility.ApiPost(AppSettingHelper.Appsetting.SmtpServer.Domain, AppSettingHelper.Appsetting.SmtpServer.Api, postData).ConfigureAwait(false);
                 if (!httpResponseMessage.IsSuccessStatusCode)
                 {
-                    this.logger.LogWarn("發送會員手機綁定驗證碼結果", $"Result: 發送郵件失敗({httpResponseMessage.Content}) EmailContext: {JsonConvert.SerializeObject(emailContext)}  MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    this.logger.LogWarn("發送會員手機綁定驗證碼失敗，無法發送郵件", $"Address: {emailContext.Address} Subject: {emailContext.Subject} Body: {emailContext.Body}", null);
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = MessageHelper.Message.ResponseMessage.VerifyCode.SendVerifyCodeFail
+                        ResultCode = StatusCodes.Status502BadGateway,
+                        ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                     };
                 }
 
                 return new ResponseResult()
                 {
                     Result = true,
-                    ResultCode = (int)ResponseResultType.Success,
-                    Content = MessageHelper.Message.ResponseMessage.VerifyCode.SendVerifyCodeSuccess
+                    ResultCode = StatusCodes.Status200OK,
+                    ResultMessage = ResponseSuccessMessageType.SendVerifierCode.ToString()
                 };
 
                 #endregion 發送驗證碼
             }
             catch (Exception ex)
             {
-                this.logger.LogError("發送會員手機綁定驗證碼發生錯誤", $" MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                this.logger.LogError("發送會員手機綁定驗證碼發生錯誤", $"MemberID: {memberID} Email: {email} Content: {JsonConvert.SerializeObject(content)}", ex);
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.VerifyCode.SendVerifyCodeError
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }
 
         /// <summary>
-        /// 搜尋會員(嚴格比對)
+        /// 取得會員詳細資訊
         /// </summary>
-        /// <param name="content">content</param>
-        /// <param name="searchMemberID">searchMemberID</param>
+        /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> StrictSearch(MemberSearchContent content, string searchMemberID = null)
+        public async Task<ResponseResult> GetDetail(string memberID)
         {
             try
             {
-                #region 驗證資料
-
-                MemberSearchContentValidator memberSearchContentValidator = new MemberSearchContentValidator();
-                ValidationResult validationResult = memberSearchContentValidator.Validate(content);
-                if (!validationResult.IsValid)
+                MemberDao memberDao = await this.memberRepository.Get(memberID, MemberSearchType.MemberID).ConfigureAwait(false);
+                if (memberDao == null)
                 {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("搜尋會員結果(嚴格比對)", $"Result: 驗證失敗({errorMessgae}) Content: {JsonConvert.SerializeObject(content)} SearchMemberID: {searchMemberID}", null);
+                    this.logger.LogWarn("取得會員明細資訊失敗，無會員資料", $"MemberID: {memberID}", null);
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = errorMessgae
+                        ResultCode = StatusCodes.Status409Conflict,
+                        ResultMessage = ResponseErrorMessageType.GetFail.ToString()
                     };
                 }
 
-                #endregion 驗證資料
-
-                #region 取得指定會員資料
-
-                string[] ignoreMemberIDs = string.IsNullOrEmpty(searchMemberID) ? null : new string[] { searchMemberID };
-                IEnumerable<MemberDao> memberDaos = await this.memberRepository.Get(content.SearchKey, false, ignoreMemberIDs).ConfigureAwait(false);
-                if (string.IsNullOrEmpty(searchMemberID))
+                MemberDao[] memberDaos = new MemberDao[] { memberDao };
+                IEnumerable<MemberDetailInfoView> memberDetailInfoViews = await this.TransformMemberDetailInfoView(memberDaos).ConfigureAwait(false);
+                return new ResponseResult()
                 {
-                    //// 會員本身資料
-                    IEnumerable<MemberDetailInfoView> memberDetailInfoViews = await this.TransformMemberDetailInfoView(memberDaos).ConfigureAwait(false);
-                    return new ResponseResult()
-                    {
-                        Result = true,
-                        ResultCode = (int)ResponseResultType.Success,
-                        Content = memberDetailInfoViews.FirstOrDefault() //// 會員本身資料以詳細顯示
-                    };
-                }
-                else
-                {
-                    //// 其他會員資料
-                    IEnumerable<MemberSimpleInfoView> memberSimpleInfoViews = await this.TransformMemberSimpleInfoView(memberDaos).ConfigureAwait(false);
-                    return new ResponseResult()
-                    {
-                        Result = true,
-                        ResultCode = (int)ResponseResultType.Success,
-                        Content = memberSimpleInfoViews.FirstOrDefault() //// 其他會員資料以簡易顯示
-                    };
-                }
-
-                #endregion 取得指定會員資料
+                    Result = true,
+                    ResultCode = StatusCodes.Status200OK,
+                    Content = memberDetailInfoViews.FirstOrDefault()
+                };
             }
             catch (Exception ex)
             {
-                this.logger.LogError("搜尋會員發生錯誤(嚴格比對)", $"Content: {JsonConvert.SerializeObject(content)} SearchMemberID: {searchMemberID}", ex);
+                this.logger.LogError("取得會員明細資訊發生錯誤", $"MemberID: {memberID}", ex);
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }
@@ -1175,9 +1110,9 @@ namespace DataInfo.Service.Managers.Member
                 {
                     //// TODO 待檢驗會員是否同意被檢閱資料
 
-                    string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{AppSettingHelper.Appsetting.Redis.Flag.LastLogin}-{memberDao.MemberID}";
+                    string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberDao.MemberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.LastLogin}";
                     MemberDetailInfoView memberDetailInfoView = this.mapper.Map<MemberDetailInfoView>(memberDao);
-                    memberDetailInfoView.OnlineType = await this.redisRepository.IsExist(cacheKey).ConfigureAwait(false) ? (int)OnlineStatusType.Online : (int)OnlineStatusType.Offline;
+                    memberDetailInfoView.OnlineType = await this.redisRepository.IsExist(cacheKey, false).ConfigureAwait(false) ? (int)OnlineStatusType.Online : (int)OnlineStatusType.Offline;
                     memberDetailInfoViews.Add(memberDetailInfoView);
                 }
             }
@@ -1199,9 +1134,9 @@ namespace DataInfo.Service.Managers.Member
                 {
                     //// TODO 待檢驗會員是否同意被檢閱資料
 
-                    string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{AppSettingHelper.Appsetting.Redis.Flag.LastLogin}-{memberDao.MemberID}";
+                    string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberDao.MemberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.LastLogin}";
                     MemberSimpleInfoView memberSimpleInfoView = this.mapper.Map<MemberSimpleInfoView>(memberDao);
-                    memberSimpleInfoView.OnlineType = await this.redisRepository.IsExist(cacheKey).ConfigureAwait(false) ? (int)OnlineStatusType.Online : (int)OnlineStatusType.Offline;
+                    memberSimpleInfoView.OnlineType = await this.redisRepository.IsExist(cacheKey, false).ConfigureAwait(false) ? (int)OnlineStatusType.Online : (int)OnlineStatusType.Offline;
                     memberSimpleInfoViews.Add(memberSimpleInfoView);
                 }
             }
@@ -1212,32 +1147,14 @@ namespace DataInfo.Service.Managers.Member
         /// <summary>
         /// 會員更新密碼
         /// </summary>
-        /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
         /// <param name="isIgnoreOldPassword">isIgnoreOldPassword</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> UpdatePassword(string memberID, MemberUpdatePasswordContent content, bool isIgnoreOldPassword)
+        public async Task<ResponseResult> UpdatePassword(MemberUpdatePasswordContent content, string memberID, bool isIgnoreOldPassword)
         {
             try
             {
-                #region 驗證資料
-
-                MemberUpdatePasswordContentValidator memberEditPasswordContentValidator = new MemberUpdatePasswordContentValidator(isIgnoreOldPassword);
-                ValidationResult validationResult = memberEditPasswordContentValidator.Validate(content);
-                if (!validationResult.IsValid)
-                {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("會員更新密碼結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} isIgnoreOldPassword: {isIgnoreOldPassword}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = errorMessgae
-                    };
-                }
-
-                #endregion 驗證資料
-
                 #region 發送【更新密碼】指令至後端
 
                 MemberUpdatePasswordRequest request = new MemberUpdatePasswordRequest()
@@ -1248,39 +1165,39 @@ namespace DataInfo.Service.Managers.Member
                     Action = isIgnoreOldPassword ? (int)UpdatePasswordActionType.Forget : (int)UpdatePasswordActionType.Update
                 };
                 CommandData<MemberEditInfoResponse> response = await this.serverService.DoAction<MemberEditInfoResponse>((int)UserCommandIDType.UpdatePassword, CommandType.User, request).ConfigureAwait(false);
-                this.logger.LogInfo("會員更新密碼結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} Content: {JsonConvert.SerializeObject(content)}", null);
+                this.logger.LogInfo("會員更新密碼結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)}", null);
                 switch (response.Data.Result)
                 {
                     case (int)UpdatePasswordResultType.Success:
                         return new ResponseResult()
                         {
                             Result = true,
-                            ResultCode = (int)ResponseResultType.Success,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Success
+                            ResultCode = StatusCodes.Status200OK,
+                            ResultMessage = ResponseSuccessMessageType.UpdatePassword.ToString()
                         };
 
                     case (int)UpdatePasswordResultType.Fail:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.UpdateFail,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
                         };
 
                     case (int)UpdatePasswordResultType.OldPasswordError:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.InputError,
-                            Content = MessageHelper.Message.ResponseMessage.Member.PasswordFail
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.OldPasswordError.ToString()
                         };
 
                     default:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.UnknownError,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            ResultCode = StatusCodes.Status502BadGateway,
+                            ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                         };
                 }
 
@@ -1288,12 +1205,12 @@ namespace DataInfo.Service.Managers.Member
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員更新密碼發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                this.logger.LogError("會員更新密碼發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} IsIgnoreOldPassword: {isIgnoreOldPassword}", ex);
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Update.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }
