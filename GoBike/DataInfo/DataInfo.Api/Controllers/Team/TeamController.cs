@@ -74,7 +74,7 @@ namespace DataInfo.Api.Controllers.Team
         /// <param name="teamID">teamID</param>
         /// <param name="infoType">infoType</param>
         /// <returns>IActionResult</returns>
-        [HttpGet("{teamID}")]
+        [HttpGet("{teamID}/{infoType}")]
         public async Task<IActionResult> Get(string teamID, int infoType)
         {
             string memberID = this.GetMemberID();

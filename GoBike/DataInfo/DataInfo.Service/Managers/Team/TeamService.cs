@@ -911,6 +911,17 @@ namespace DataInfo.Service.Managers.Team
 
                 #endregion 取得車隊資料
 
+                if (!teamDao.Leader.Equals(memberID) && !teamDao.TeamViceLeaderIDs.Contains(memberID))
+                {
+                    this.logger.LogWarn("取得車隊設定資訊失敗，無車隊權限", $"MemberID: {memberID} TeamID: {teamID}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = StatusCodes.Status409Conflict,
+                        ResultMessage = ResponseErrorMessageType.TeamAuthorityNotEnough.ToString()
+                    };
+                }
+
                 return new ResponseResult()
                 {
                     Result = true,

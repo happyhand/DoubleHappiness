@@ -1,27 +1,6 @@
 ﻿namespace DataInfo.Core.Models.Enum
 {
     /// <summary>
-    /// 回覆成功訊息類別資料
-    /// </summary>
-    public enum ResponseSuccessMessageType
-    {
-        /// <summary>
-        /// 已發送驗證碼至您的信箱，請於 5 分鐘內檢視並輸入驗證碼
-        /// </summary>
-        SendVerifierCode,
-
-        /// <summary>
-        /// 資料更新成功
-        /// </summary>
-        Update,
-
-        /// <summary>
-        /// 密碼更新成功，請重新登入
-        /// </summary>
-        UpdatePassword,
-    }
-
-    /// <summary>
     /// 回覆錯誤訊息類別資料
     /// </summary>
     public enum ResponseErrorMessageType
@@ -180,5 +159,31 @@
         /// 請輸入搜尋關鍵字
         /// </summary>
         SearchKeyEmpty,
+
+        /// <summary>
+        /// 車隊權限不足
+        /// </summary>
+        TeamAuthorityNotEnough,
+    }
+
+    /// <summary>
+    /// 回覆成功訊息類別資料
+    /// </summary>
+    public enum ResponseSuccessMessageType
+    {
+        /// <summary>
+        /// 已發送驗證碼至您的信箱，請於 5 分鐘內檢視並輸入驗證碼
+        /// </summary>
+        SendVerifierCode,
+
+        /// <summary>
+        /// 資料更新成功
+        /// </summary>
+        Update,
+
+        /// <summary>
+        /// 密碼更新成功，請重新登入
+        /// </summary>
+        UpdatePassword,
     }
 }
