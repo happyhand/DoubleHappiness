@@ -156,7 +156,7 @@ namespace DataInfo.Service.Managers.Team
             if (!string.IsNullOrEmpty(content.Avatar) || !string.IsNullOrEmpty(content.FrontCover))
             {
                 List<string> imgBase64s = new List<string>() { content.Avatar, content.FrontCover };
-                IEnumerable<string> imgUris = await this.uploadService.UploadMemberImages(imgBase64s, true).ConfigureAwait(false);
+                IEnumerable<string> imgUris = await this.uploadService.UploadTeamImages(imgBase64s, true).ConfigureAwait(false);
                 if (imgUris == null || !imgUris.Any())
                 {
                     return Tuple.Create<string, TeamEditRequest>(MessageHelper.Message.ResponseMessage.Upload.PhotoFail, null);
@@ -937,6 +937,77 @@ namespace DataInfo.Service.Managers.Team
                     Result = false,
                     ResultCode = StatusCodes.Status500InternalServerError,
                     ResultMessage = MessageHelper.Message.ResponseMessage.Get.Error
+                };
+            }
+        }
+
+        /// <summary>
+        /// 離開車隊
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="teamID">teamID</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> Leave(string memberID, string teamID)
+        {
+            try
+            {
+                #region 驗證資料
+
+                if (string.IsNullOrEmpty(teamID))
+                {
+                    this.logger.LogWarn("離開車隊失敗，無車隊 ID", $"MemberID: {memberID} TeamID: {teamID}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = StatusCodes.Status400BadRequest,
+                        ResultMessage = ResponseErrorMessageType.TeamIDEmpty.ToString()
+                    };
+                }
+
+                #endregion 驗證資料
+
+                #region 發送【加入或離開車隊】指令至後端
+
+                TeamJoinOrLeaveRequest teamJoinOrLeaveRequest = new TeamJoinOrLeaveRequest() { MemberID = memberID, TeamID = teamID, Action = (int)ActionType.Delete };
+                CommandData<TeamJoinOrLeaveResponse> teamJoinOrLeaveResponse = await this.serverService.DoAction<TeamJoinOrLeaveResponse>((int)TeamCommandIDType.JoinOrLeaveTeam, CommandType.Team, teamJoinOrLeaveRequest).ConfigureAwait(false);
+                this.logger.LogInfo("離開車隊結果", $"Response: {JsonConvert.SerializeObject(teamJoinOrLeaveResponse)} Request: {JsonConvert.SerializeObject(teamJoinOrLeaveRequest)}", null);
+                switch (teamJoinOrLeaveResponse.Data.Result)
+                {
+                    case (int)JoinOrLeaveTeamResultType.Success:
+                        return new ResponseResult()
+                        {
+                            Result = true,
+                            ResultCode = StatusCodes.Status200OK,
+                            ResultMessage = ResponseSuccessMessageType.Update.ToString()
+                        };
+
+                    case (int)JoinOrLeaveTeamResultType.Fail:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
+                        };
+
+                    default:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = StatusCodes.Status502BadGateway,
+                            ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                        };
+                }
+
+                #endregion 發送【加入或離開車隊】指令至後端
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("離開車隊發生錯誤", $"MemberID: {memberID} TeamID: {teamID}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }

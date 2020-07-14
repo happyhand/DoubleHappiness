@@ -11,9 +11,9 @@
         SystemError,
 
         /// <summary>
-        /// 會員 ID 不正確
+        /// 無會員資料，請重新操作
         /// </summary>
-        MemberIDError,
+        MemberIDEmpty,
 
         /// <summary>
         /// 請輸入電子郵件
@@ -164,6 +164,16 @@
         /// 車隊權限不足
         /// </summary>
         TeamAuthorityNotEnough,
+
+        /// <summary>
+        /// 無法對會員本身操作，請稍後再試
+        /// </summary>
+        TargetSelfError,
+
+        /// <summary>
+        /// 無車隊資料，請重新操作
+        /// </summary>
+        TeamIDEmpty,
     }
 
     /// <summary>
@@ -174,16 +184,16 @@
         /// <summary>
         /// 已發送驗證碼至您的信箱，請於 5 分鐘內檢視並輸入驗證碼
         /// </summary>
-        SendVerifierCode,
+        SendVerifierCodeSuccess,
 
         /// <summary>
         /// 資料更新成功
         /// </summary>
-        Update,
+        UpdateSuccess,
 
         /// <summary>
         /// 密碼更新成功，請重新登入
         /// </summary>
-        UpdatePassword,
+        UpdatePasswordSuccess,
     }
 }

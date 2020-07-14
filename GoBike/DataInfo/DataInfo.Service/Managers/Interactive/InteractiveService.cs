@@ -9,12 +9,14 @@ using DataInfo.Core.Models.Dto.Member.View;
 using DataInfo.Core.Models.Dto.Response;
 using DataInfo.Core.Models.Dto.Server;
 using DataInfo.Core.Models.Enum;
+using DataInfo.Repository.Interfaces.Common;
 using DataInfo.Repository.Interfaces.Interactive;
 using DataInfo.Repository.Interfaces.Member;
 using DataInfo.Service.Interfaces.Interactive;
 using DataInfo.Service.Interfaces.Member;
 using DataInfo.Service.Interfaces.Server;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using NLog;
 using System;
@@ -55,6 +57,11 @@ namespace DataInfo.Service.Managers.Interactive
         private readonly IMemberService memberService;
 
         /// <summary>
+        /// redisRepository
+        /// </summary>
+        private readonly IRedisRepository redisRepository;
+
+        /// <summary>
         /// serverService
         /// </summary>
         private readonly IServerService serverService;
@@ -67,13 +74,15 @@ namespace DataInfo.Service.Managers.Interactive
         /// <param name="serverService">serverService</param>
         /// <param name="memberRepository">memberRepository</param>
         /// <param name="interactiveRepository">interactiveRepository</param>
-        public InteractiveService(IMapper mapper, IMemberService memberService, IServerService serverService, IMemberRepository memberRepository, IInteractiveRepository interactiveRepository)
+        /// <param name="redisRepository">redisRepository</param>
+        public InteractiveService(IMapper mapper, IMemberService memberService, IServerService serverService, IMemberRepository memberRepository, IInteractiveRepository interactiveRepository, IRedisRepository redisRepository)
         {
             this.mapper = mapper;
             this.memberService = memberService;
             this.serverService = serverService;
             this.memberRepository = memberRepository;
             this.interactiveRepository = interactiveRepository;
+            this.redisRepository = redisRepository;
         }
 
         /// <summary>
@@ -85,13 +94,20 @@ namespace DataInfo.Service.Managers.Interactive
         {
             try
             {
-                IEnumerable<string> blackIDList = await this.interactiveRepository.GetBlackList(memberID).ConfigureAwait(false);
-                IEnumerable<MemberDao> blackDaoList = await memberRepository.Get(blackIDList, null).ConfigureAwait(false);
-                IEnumerable<MemberSimpleInfoView> memberSimpleInfoViews = await this.memberService.TransformMemberSimpleInfoView(blackDaoList).ConfigureAwait(false);
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Interactive}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.b}";
+                IEnumerable<MemberSimpleInfoView> memberSimpleInfoViews = await this.redisRepository.GetCache<IEnumerable<MemberSimpleInfoView>>(cacheKey).ConfigureAwait(false);
+                if (memberSimpleInfoViews == null)
+                {
+                    IEnumerable<string> blackIDList = await this.interactiveRepository.GetBlackList(memberID).ConfigureAwait(false);
+                    IEnumerable<MemberDao> blackDaoList = await memberRepository.Get(blackIDList, null).ConfigureAwait(false);
+                    memberSimpleInfoViews = await this.memberService.TransformMemberSimpleInfoView(blackDaoList).ConfigureAwait(false);
+                    this.redisRepository.SetCache(cacheKey, JsonConvert.SerializeObject(memberSimpleInfoViews), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
+                }
+
                 return new ResponseResult()
                 {
                     Result = true,
-                    ResultCode = (int)ResponseResultType.Success,
+                    ResultCode = StatusCodes.Status200OK,
                     Content = memberSimpleInfoViews
                 };
             }
@@ -101,8 +117,8 @@ namespace DataInfo.Service.Managers.Interactive
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }
@@ -116,28 +132,35 @@ namespace DataInfo.Service.Managers.Interactive
         {
             try
             {
-                Task<IEnumerable<string>> friendIDListTask = this.interactiveRepository.GetFriendList(memberID);
-                Task<IEnumerable<string>> beFriendIDListTask = this.interactiveRepository.GetBeFriendList(memberID);
-
-                IEnumerable<string> friendIDList = await friendIDListTask.ConfigureAwait(false);
-                IEnumerable<string> beFriendIDList = await beFriendIDListTask.ConfigureAwait(false);
-                beFriendIDList = beFriendIDList.Where(id => !friendIDList.Contains(id));
-
-                Task<IEnumerable<MemberDao>> friendDaoListTask = this.memberRepository.Get(friendIDList, null);
-                Task<IEnumerable<MemberDao>> beFriendDaoListTask = this.memberRepository.Get(beFriendIDList, null);
-
-                IEnumerable<MemberDao> friendDaoList = await friendDaoListTask.ConfigureAwait(false);
-                IEnumerable<MemberDao> beFriendDaoList = await beFriendDaoListTask.ConfigureAwait(false);
-
-                List<IEnumerable<MemberSimpleInfoView>> memberSimpleInfoViews = new List<IEnumerable<MemberSimpleInfoView>>
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Interactive}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.Friend}";
+                List<IEnumerable<MemberSimpleInfoView>> memberSimpleInfoViews = await this.redisRepository.GetCache<List<IEnumerable<MemberSimpleInfoView>>>(cacheKey).ConfigureAwait(false);
+                if (memberSimpleInfoViews == null)
                 {
-                    await this.memberService.TransformMemberSimpleInfoView(friendDaoList).ConfigureAwait(false),
-                    await this.memberService.TransformMemberSimpleInfoView(beFriendDaoList).ConfigureAwait(false),
-                };
+                    Task<IEnumerable<string>> friendIDListTask = this.interactiveRepository.GetFriendList(memberID);
+                    Task<IEnumerable<string>> beFriendIDListTask = this.interactiveRepository.GetBeFriendList(memberID);
+
+                    IEnumerable<string> friendIDList = await friendIDListTask.ConfigureAwait(false);
+                    IEnumerable<string> beFriendIDList = await beFriendIDListTask.ConfigureAwait(false);
+                    beFriendIDList = beFriendIDList.Where(id => !friendIDList.Contains(id));
+
+                    Task<IEnumerable<MemberDao>> friendDaoListTask = this.memberRepository.Get(friendIDList, null);
+                    Task<IEnumerable<MemberDao>> beFriendDaoListTask = this.memberRepository.Get(beFriendIDList, null);
+
+                    IEnumerable<MemberDao> friendDaoList = await friendDaoListTask.ConfigureAwait(false);
+                    IEnumerable<MemberDao> beFriendDaoList = await beFriendDaoListTask.ConfigureAwait(false);
+
+                    memberSimpleInfoViews = new List<IEnumerable<MemberSimpleInfoView>>
+                    {
+                        await this.memberService.TransformMemberSimpleInfoView(friendDaoList).ConfigureAwait(false),
+                        await this.memberService.TransformMemberSimpleInfoView(beFriendDaoList).ConfigureAwait(false),
+                    };
+                    this.redisRepository.SetCache(cacheKey, JsonConvert.SerializeObject(memberSimpleInfoViews), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
+                }
+
                 return new ResponseResult()
                 {
                     Result = true,
-                    ResultCode = (int)ResponseResultType.Success,
+                    ResultCode = StatusCodes.Status200OK,
                     Content = memberSimpleInfoViews
                 };
             }
@@ -147,8 +170,8 @@ namespace DataInfo.Service.Managers.Interactive
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }
@@ -167,17 +190,14 @@ namespace DataInfo.Service.Managers.Interactive
             {
                 #region 驗證資料
 
-                InteractiveContentValidator interactiveContentValidator = new InteractiveContentValidator(memberID);
-                ValidationResult validationResult = interactiveContentValidator.Validate(content);
-                if (!validationResult.IsValid)
+                if (content.MemberID.Equals(memberID))
                 {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("更新互動資料結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} Status: {status} Action: {action}", null);
+                    this.logger.LogWarn("更新互動資料失敗，互動對象無法為會員本身", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} Status: {status} Action: {action}", null);
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = errorMessgae
+                        ResultCode = StatusCodes.Status400BadRequest,
+                        ResultMessage = ResponseErrorMessageType.TargetSelfError.ToString()
                     };
                 }
 
@@ -207,12 +227,12 @@ namespace DataInfo.Service.Managers.Interactive
                         break;
 
                     default:
-                        this.logger.LogWarn("更新互動資料結果", $"Result: 會員互動類別設定錯誤 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} Status: {status} Action: {action}", null);
+                        this.logger.LogWarn("更新互動資料失敗，會員互動類別設定錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} Status: {status} Action: {action}", null);
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.DenyAccess,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
                         };
                 }
 
@@ -221,27 +241,36 @@ namespace DataInfo.Service.Managers.Interactive
                 switch (response.Data.Result)
                 {
                     case (int)UpdateInteractiveResultType.Success:
+
+                        #region 刪除 Interactive 的 Redis
+
+                        string subFlag = status.Equals(InteractiveType.Friend) ? AppSettingHelper.Appsetting.Redis.SubFlag.Friend : AppSettingHelper.Appsetting.Redis.SubFlag.Black;
+                        string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Interactive}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.subFlag}";
+                        this.redisRepository.DeleteCache(cacheKey);
+
+                        #endregion 刪除 Interactive 的 Redis
+
                         return new ResponseResult()
                         {
                             Result = true,
-                            ResultCode = (int)ResponseResultType.Success,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Success
+                            ResultCode = StatusCodes.Status200OK,
+                            ResultMessage = ResponseSuccessMessageType.UpdateSuccess.ToString()
                         };
 
                     case (int)UpdateInteractiveResultType.Fail:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.UpdateFail,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
                         };
 
                     default:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.UnknownError,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            ResultCode = StatusCodes.Status502BadGateway,
+                            ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                         };
                 }
 
@@ -253,8 +282,8 @@ namespace DataInfo.Service.Managers.Interactive
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Update.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }

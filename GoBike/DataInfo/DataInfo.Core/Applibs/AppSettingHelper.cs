@@ -283,6 +283,11 @@ namespace DataInfo.Core.Applibs
         public class RedisFlag
         {
             /// <summary>
+            /// Gets or sets Interactive
+            /// </summary>
+            public string Interactive { get; set; }
+
+            /// <summary>
             /// Gets or sets Member
             /// </summary>
             public string Member { get; set; }
@@ -291,37 +296,6 @@ namespace DataInfo.Core.Applibs
             /// Gets or sets VerifierCode
             /// </summary>
             public string VerifierCode { get; set; }
-        }
-
-        /// <summary>
-        /// RedisSubFlag
-        /// </summary>
-        public class RedisSubFlag
-        {
-            /// <summary>
-            /// Gets or sets LastLogin
-            /// </summary>
-            public string LastLogin { get; set; }
-
-            /// <summary>
-            /// Gets or sets HomeInfo
-            /// </summary>
-            public string HomeInfo { get; set; }
-
-            /// <summary>
-            /// Gets or sets CardInfo
-            /// </summary>
-            public string CardInfo { get; set; }
-
-            /// <summary>
-            /// Gets or sets Search
-            /// </summary>
-            public string Search { get; set; }
-
-            /// <summary>
-            /// Gets or sets RideRecord
-            /// </summary>
-            public string RideRecord { get; set; }
         }
 
         /// <summary>
@@ -353,6 +327,47 @@ namespace DataInfo.Core.Applibs
             /// Gets or sets SubFlag
             /// </summary>
             public RedisSubFlag SubFlag { get; set; }
+        }
+
+        /// <summary>
+        /// RedisSubFlag
+        /// </summary>
+        public class RedisSubFlag
+        {
+            /// <summary>
+            /// Gets or sets Black
+            /// </summary>
+            public string Black { get; set; }
+
+            /// <summary>
+            /// Gets or sets CardInfo
+            /// </summary>
+            public string CardInfo { get; set; }
+
+            /// <summary>
+            /// Gets or sets Friend
+            /// </summary>
+            public string Friend { get; set; }
+
+            /// <summary>
+            /// Gets or sets HomeInfo
+            /// </summary>
+            public string HomeInfo { get; set; }
+
+            /// <summary>
+            /// Gets or sets LastLogin
+            /// </summary>
+            public string LastLogin { get; set; }
+
+            /// <summary>
+            /// Gets or sets RideRecord
+            /// </summary>
+            public string RideRecord { get; set; }
+
+            /// <summary>
+            /// Gets or sets Search
+            /// </summary>
+            public string Search { get; set; }
         }
 
         #endregion Redis 設定資料
@@ -458,14 +473,14 @@ namespace DataInfo.Core.Applibs
         public class RuleSetting
         {
             /// <summary>
-            /// Gets or sets NicknameLength
-            /// </summary>
-            public int NicknameLength { get; set; }
-
-            /// <summary>
             /// Gets or sets DaysOfNewCreation
             /// </summary>
             public int DaysOfNewCreation { get; set; }
+
+            /// <summary>
+            /// Gets or sets NicknameLength
+            /// </summary>
+            public int NicknameLength { get; set; }
 
             /// <summary>
             /// Gets or sets TakeBrowseCount

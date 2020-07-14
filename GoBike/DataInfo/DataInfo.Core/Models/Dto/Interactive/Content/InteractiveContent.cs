@@ -1,4 +1,5 @@
 ﻿using DataInfo.Core.Applibs;
+using DataInfo.Core.Models.Enum;
 using FluentValidation;
 
 namespace DataInfo.Core.Models.Dto.Interactive.Content
@@ -22,14 +23,18 @@ namespace DataInfo.Core.Models.Dto.Interactive.Content
         /// <summary>
         /// 建構式
         /// </summary>
-        /// <param name="memberID">memberID</param>
-        public InteractiveContentValidator(string memberID)
+        public InteractiveContentValidator()
         {
-            ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
+            this.CascadeMode = CascadeMode.StopOnFirstFailure;
             RuleFor(content => content.MemberID)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Member.MemberIDEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Member.MemberIDEmpty)
-            .NotEqual(memberID).WithMessage(MessageHelper.Message.ResponseMessage.Interactive.TargetError);
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.MemberIDEmpty}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.MemberIDEmpty}";
+              });
         }
     }
 }

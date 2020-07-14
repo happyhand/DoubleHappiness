@@ -6,6 +6,7 @@ using DataInfo.Core.Models.Enum;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Interactive;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using NLog;
@@ -55,16 +56,16 @@ namespace DataInfo.Api.Controllers.Interactive
             {
                 this.logger.LogInfo("會員請求移除好友", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                 ResponseResult responseResult = await this.InteractiveService.UpdateInteractive(memberID, content, InteractiveType.Friend, ActionType.Delete).ConfigureAwait(false);
-                return Ok(responseResult);
+                return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求移除好友發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
-                return Ok(new ResponseResult()
+                return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Update.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 });
             }
         }
@@ -79,17 +80,18 @@ namespace DataInfo.Api.Controllers.Interactive
             string memberID = this.GetMemberID();
             try
             {
+                this.logger.LogInfo("會員請求取得好友列表", $"MemberID: {memberID}", null);
                 ResponseResult responseResult = await this.InteractiveService.GetFriendList(memberID).ConfigureAwait(false);
-                return Ok(responseResult);
+                return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求取得好友列表發生錯誤", $"MemberID: {memberID}", ex);
-                return Ok(new ResponseResult()
+                return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 });
             }
         }
@@ -107,16 +109,16 @@ namespace DataInfo.Api.Controllers.Interactive
             {
                 this.logger.LogInfo("會員請求新增好友", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                 ResponseResult responseResult = await this.InteractiveService.UpdateInteractive(memberID, content, InteractiveType.Friend, ActionType.Add).ConfigureAwait(false);
-                return Ok(responseResult);
+                return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求新增好友發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
-                return Ok(new ResponseResult()
+                return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Update.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 });
             }
         }

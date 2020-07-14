@@ -1,6 +1,7 @@
 using AutoMapper;
 using DataInfo.Api.Filters;
 using DataInfo.Core.Applibs;
+using DataInfo.Core.Models.Dto.Interactive.Content;
 using DataInfo.Core.Models.Dto.Member.Content;
 using DataInfo.Repository.Interfaces.Common;
 using DataInfo.Repository.Interfaces.Interactive;
@@ -146,6 +147,9 @@ namespace DataInfo.Api
             services.AddTransient<IValidator<MemberMobileBindContent>, MemberMobileBindContentValidator>();
             services.AddTransient<IValidator<MemberRequestMobileBindContent>, MemberRequestMobileBindContentValidator>();
             services.AddTransient<IValidator<MemberUpdatePasswordContent>, MemberUpdatePasswordContentValidator>();
+
+            services.AddTransient<IValidator<InteractiveContent>, InteractiveContentValidator>();
+
             //// 忽略 Model Binding 驗證不過跳 400 Error 的功能，以便客製化回應訊息
             services.Configure<ApiBehaviorOptions>(options =>
             {

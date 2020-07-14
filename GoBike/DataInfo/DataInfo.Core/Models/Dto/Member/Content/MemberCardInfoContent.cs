@@ -29,11 +29,11 @@ namespace DataInfo.Core.Models.Dto.Member.Content
             RuleFor(content => content.MemberID)
               .NotNull().WithMessage(content =>
               {
-                  return $"{ResponseErrorMessageType.MemberIDError}";
+                  return $"{ResponseErrorMessageType.MemberIDEmpty}";
               })
               .NotEmpty().WithMessage(content =>
               {
-                  return $"{ResponseErrorMessageType.MemberIDError}";
+                  return $"{ResponseErrorMessageType.MemberIDEmpty}";
               });
         }
     }

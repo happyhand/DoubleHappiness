@@ -82,6 +82,14 @@ namespace DataInfo.Service.Interfaces.Team
         Task<ResponseResult> GetTeamSetting(string memberID, string teamID);
 
         /// <summary>
+        /// 離開車隊
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="teamID">teamID</param>
+        /// <returns>ResponseResult</returns>
+        Task<ResponseResult> Leave(string memberID, string teamID);
+
+        /// <summary>
         /// 搜尋車隊
         /// </summary>
         /// <param name="memberID">memberID</param>
