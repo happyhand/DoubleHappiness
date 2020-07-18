@@ -94,7 +94,7 @@ namespace DataInfo.Service.Managers.Interactive
         {
             try
             {
-                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Interactive}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.b}";
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Interactive}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.Black}";
                 IEnumerable<MemberSimpleInfoView> memberSimpleInfoViews = await this.redisRepository.GetCache<IEnumerable<MemberSimpleInfoView>>(cacheKey).ConfigureAwait(false);
                 if (memberSimpleInfoViews == null)
                 {
@@ -245,7 +245,7 @@ namespace DataInfo.Service.Managers.Interactive
                         #region 刪除 Interactive 的 Redis
 
                         string subFlag = status.Equals(InteractiveType.Friend) ? AppSettingHelper.Appsetting.Redis.SubFlag.Friend : AppSettingHelper.Appsetting.Redis.SubFlag.Black;
-                        string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Interactive}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.subFlag}";
+                        string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Interactive}-{memberID}-{subFlag}";
                         this.redisRepository.DeleteCache(cacheKey);
 
                         #endregion 刪除 Interactive 的 Redis

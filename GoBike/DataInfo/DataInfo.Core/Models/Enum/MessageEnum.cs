@@ -171,6 +171,41 @@
         TargetSelfError,
 
         /// <summary>
+        /// 未輸入騎乘時間，請重新輸入
+        /// </summary>
+        RideTimeEmpty,
+
+        /// <summary>
+        /// 未輸入騎乘距離，請重新輸入
+        /// </summary>
+        RideDistanceEmpty,
+
+        /// <summary>
+        /// 未輸入海拔高度，請重新輸入
+        /// </summary>
+        RideAltitudeEmpty,
+
+        /// <summary>
+        /// 未輸入騎乘市區，請重新輸入
+        /// </summary>
+        RideCountyEmpty,
+
+        /// <summary>
+        /// 未輸入騎乘等級，請重新輸入
+        /// </summary>
+        RideLevelEmpty,
+
+        /// <summary>
+        /// 未輸入騎乘路徑資料，請重新輸入
+        /// </summary>
+        RideRouteEmpty,
+
+        /// <summary>
+        /// 未設定騎乘封面，請重新上傳
+        /// </summary>
+        RidePhotoEmpty,
+
+        /// <summary>
         /// 無車隊資料，請重新操作
         /// </summary>
         TeamIDEmpty,

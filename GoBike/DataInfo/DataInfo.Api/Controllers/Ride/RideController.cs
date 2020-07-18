@@ -1,5 +1,4 @@
-﻿using DataInfo.Core.Applibs;
-using DataInfo.Core.Extensions;
+﻿using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dto.Response;
 using DataInfo.Core.Models.Dto.Ride.Content;
 using DataInfo.Core.Models.Enum;
@@ -48,7 +47,6 @@ namespace DataInfo.Api.Controllers.Ride
         /// </summary>
         /// <param name="memberID">memberID</param>
         /// <returns>IActionResult</returns>
-        [HttpGet("{memberID}")]
         private async Task<IActionResult> GetData(string memberID)
         {
             try
@@ -104,16 +102,16 @@ namespace DataInfo.Api.Controllers.Ride
             {
                 this.logger.LogInfo("會員請求新增騎乘資料", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                 ResponseResult responseResult = await rideService.AddRideData(memberID, content).ConfigureAwait(false);
-                return Ok(responseResult);
+                return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求新增騎乘資料發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
-                return Ok(new ResponseResult()
+                return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Add.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 });
             }
         }

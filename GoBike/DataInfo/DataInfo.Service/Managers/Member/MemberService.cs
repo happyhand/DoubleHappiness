@@ -450,9 +450,9 @@ namespace DataInfo.Service.Managers.Member
                 memberUpdateInfoData.Gender = content.Gender;
             }
 
-            if (!string.IsNullOrEmpty(content.Nickname.Trim()))
+            if (!string.IsNullOrEmpty(content.Nickname))
             {
-                if (content.Nickname.Length > AppSettingHelper.Appsetting.Rule.NicknameLength)
+                if (!Utility.ValidateNickname(content.Nickname, AppSettingHelper.Appsetting.Rule.NicknameLength))
                 {
                     return Tuple.Create<string, MemberEditInfoRequest>(ResponseErrorMessageType.NicknameFormatError.ToString(), null);
                 }
@@ -500,7 +500,13 @@ namespace DataInfo.Service.Managers.Member
                 {
                     case (int)UpdateUserInfoResultType.Success:
                         MemberDao memberDao = await this.memberRepository.Get(memberID, MemberSearchType.MemberID).ConfigureAwait(false);
-                        //// TODO 刪除 Member 的 Redis
+
+                        #region 刪除會員快取資訊
+
+                        this.DeleteMemberInfoCache(memberID);
+
+                        #endregion 刪除會員快取資訊
+
                         JwtClaims jwtClaims = this.mapper.Map<JwtClaims>(memberDao);
                         return new ResponseResult()
                         {
@@ -772,7 +778,6 @@ namespace DataInfo.Service.Managers.Member
                         #region 刪除 Redis 驗證碼
 
                         this.verifyCodeService.Delete(content.VerifierCode);
-                        //// TODO 刪除 Member 的 Redis
 
                         #endregion 刪除 Redis 驗證碼
 
@@ -915,7 +920,7 @@ namespace DataInfo.Service.Managers.Member
                     {
                         Result = true,
                         ResultCode = StatusCodes.Status200OK,
-                        ResultMessage = ResponseSuccessMessageType.SendVerifierCode.ToString()
+                        ResultMessage = ResponseSuccessMessageType.SendVerifierCodeSuccess.ToString()
                     };
                 }
 
@@ -938,7 +943,7 @@ namespace DataInfo.Service.Managers.Member
                 {
                     Result = true,
                     ResultCode = StatusCodes.Status200OK,
-                    ResultMessage = ResponseSuccessMessageType.SendVerifierCode.ToString()
+                    ResultMessage = ResponseSuccessMessageType.SendVerifierCodeSuccess.ToString()
                 };
 
                 #endregion 發送驗證碼
@@ -1014,7 +1019,7 @@ namespace DataInfo.Service.Managers.Member
                     {
                         Result = true,
                         ResultCode = StatusCodes.Status200OK,
-                        ResultMessage = ResponseSuccessMessageType.SendVerifierCode.ToString()
+                        ResultMessage = ResponseSuccessMessageType.SendVerifierCodeSuccess.ToString()
                     };
                 }
 
@@ -1037,7 +1042,7 @@ namespace DataInfo.Service.Managers.Member
                 {
                     Result = true,
                     ResultCode = StatusCodes.Status200OK,
-                    ResultMessage = ResponseSuccessMessageType.SendVerifierCode.ToString()
+                    ResultMessage = ResponseSuccessMessageType.SendVerifierCodeSuccess.ToString()
                 };
 
                 #endregion 發送驗證碼
@@ -1173,7 +1178,7 @@ namespace DataInfo.Service.Managers.Member
                         {
                             Result = true,
                             ResultCode = StatusCodes.Status200OK,
-                            ResultMessage = ResponseSuccessMessageType.UpdatePassword.ToString()
+                            ResultMessage = ResponseSuccessMessageType.UpdatePasswordSuccess.ToString()
                         };
 
                     case (int)UpdatePasswordResultType.Fail:
@@ -1212,6 +1217,26 @@ namespace DataInfo.Service.Managers.Member
                     ResultCode = StatusCodes.Status500InternalServerError,
                     ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
+            }
+        }
+
+        /// <summary>
+        /// 刪除會員快取資訊
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        private void DeleteMemberInfoCache(string memberID)
+        {
+            try
+            {
+                this.logger.LogInfo("刪除會員快取資訊", $"MemberID: {memberID}", null);
+                string cardInfoCacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.CardInfo}";
+                string homeInfoCacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.HomeInfo}";
+                this.redisRepository.DeleteCache(cardInfoCacheKey);
+                this.redisRepository.DeleteCache(homeInfoCacheKey);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("刪除會員快取資訊發生錯誤", $"MemberID: {memberID}", ex);
             }
         }
 

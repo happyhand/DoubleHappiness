@@ -71,50 +71,95 @@ namespace DataInfo.Core.Models.Dto.Ride.Content
         /// </summary>
         public AddRideDataContentValidator()
         {
-            ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
+            this.CascadeMode = CascadeMode.StopOnFirstFailure;
             RuleFor(content => content.Time)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Ride.TimeEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Ride.TimeEmpty)
-            .Must(time =>
-            {
-                return long.TryParse(time, out long value) && value > 0;
-            }).WithMessage(MessageHelper.Message.ResponseMessage.Ride.TimeEmpty);
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.RideTimeEmpty}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.RideTimeEmpty}";
+              })
+              .Must(time =>
+              {
+                  return long.TryParse(time, out long value) && value > 0;
+              }).WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.RideTimeEmpty}|Time: {content.Time}";
+              });
 
             RuleFor(content => content.Distance)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Ride.DistanceEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Ride.DistanceEmpty)
-            .Must(distance =>
-            {
-                return decimal.TryParse(distance, out decimal value) && value > 0;
-            }).WithMessage(MessageHelper.Message.ResponseMessage.Ride.DistanceEmpty);
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.RideDistanceEmpty}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.RideDistanceEmpty}";
+              })
+              .Must(distance =>
+              {
+                  return decimal.TryParse(distance, out decimal value) && value > 0;
+              }).WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.RideDistanceEmpty}|Distance: {content.Distance}";
+              });
 
             RuleFor(content => content.Altitude)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Ride.AltitudeEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Ride.AltitudeEmpty)
-            .Must(altitude =>
-            {
-                return decimal.TryParse(altitude, out decimal value) && value > 0;
-            }).WithMessage(MessageHelper.Message.ResponseMessage.Ride.AltitudeEmpty);
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.RideAltitudeEmpty}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.RideAltitudeEmpty}";
+              })
+              .Must(altitude =>
+              {
+                  return decimal.TryParse(altitude, out decimal value) && value > 0;
+              }).WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.RideAltitudeEmpty}|Altitude: {content.Altitude}";
+              });
 
             RuleFor(content => content.County)
-            .Must(County =>
-            {
-                return County != (int)CountyType.None;
-            }).WithMessage(MessageHelper.Message.ResponseMessage.Ride.CountyEmpty);
+              .Must(County =>
+              {
+                  return County != (int)CountyType.None;
+              }).WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.RideCountyEmpty}|County: {content.County}";
+              });
 
             RuleFor(content => content.Level)
-            .Must(level =>
-            {
-                return level != (int)RideLevelType.None;
-            }).WithMessage(MessageHelper.Message.ResponseMessage.Ride.LevelEmpty);
+              .Must(level =>
+              {
+                  return level != (int)RideLevelType.None;
+              }).WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.RideLevelEmpty}|Level: {content.Level}";
+              });
 
             RuleFor(content => content.Route)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Ride.RouteEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Ride.RouteEmpty);
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.RideRouteEmpty}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.RideRouteEmpty}";
+              });
 
             RuleFor(content => content.Photo)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Ride.PhotoEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Ride.PhotoEmpty);
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.RidePhotoEmpty}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.RidePhotoEmpty}";
+              });
         }
     }
 }

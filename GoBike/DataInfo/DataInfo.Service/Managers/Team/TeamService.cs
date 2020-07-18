@@ -978,7 +978,7 @@ namespace DataInfo.Service.Managers.Team
                         {
                             Result = true,
                             ResultCode = StatusCodes.Status200OK,
-                            ResultMessage = ResponseSuccessMessageType.Update.ToString()
+                            ResultMessage = ResponseSuccessMessageType.UpdateSuccess.ToString()
                         };
 
                     case (int)JoinOrLeaveTeamResultType.Fail:

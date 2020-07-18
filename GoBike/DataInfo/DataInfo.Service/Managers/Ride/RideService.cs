@@ -104,21 +104,7 @@ namespace DataInfo.Service.Managers.Ride
         {
             try
             {
-                #region 驗證騎乘資料
-
-                AddRideDataContentValidator contentValidator = new AddRideDataContentValidator();
-                ValidationResult validationResult = contentValidator.Validate(content);
-                if (!validationResult.IsValid)
-                {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("新增騎乘資料結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = errorMessgae
-                    };
-                }
+                #region 檢視騎乘資料
 
                 if (content.ShareContent == null)
                 {
@@ -130,7 +116,7 @@ namespace DataInfo.Service.Managers.Ride
                     content.Title = $"{DateTime.UtcNow:yyyy/MM/dd}";
                 }
 
-                #endregion 驗證騎乘資料
+                #endregion 檢視騎乘資料
 
                 #region 上傳圖片
 
@@ -139,12 +125,12 @@ namespace DataInfo.Service.Managers.Ride
                 IEnumerable<string> imgUris = await this.uploadService.UploadRideImages(imgBase64s, true).ConfigureAwait(false);
                 if (imgUris == null || !imgUris.Any())
                 {
-                    this.logger.LogWarn("新增騎乘資料結果", $"Result: 上傳圖片失敗 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    this.logger.LogWarn("新增騎乘資料失敗，上傳圖片失敗", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = MessageHelper.Message.ResponseMessage.Upload.PhotoFail
+                        ResultCode = StatusCodes.Status502BadGateway,
+                        ResultMessage = ResponseErrorMessageType.UploadPhotoFail.ToString()
                     };
                 }
 
@@ -153,7 +139,7 @@ namespace DataInfo.Service.Managers.Ride
                     string imgUrl = imgUris.ElementAt(index);
                     if (string.IsNullOrEmpty(imgUrl))
                     {
-                        this.logger.LogWarn("新增騎乘資料結果", $"Result: 騎乘分享內容圖片轉換失敗 MemberID: {memberID} Data: {JsonConvert.SerializeObject(data)}", null);
+                        this.logger.LogWarn("新增騎乘資料失敗，騎乘分享內容圖片轉換失敗", $"MemberID: {memberID} Data: {JsonConvert.SerializeObject(data)}", null);
                     }
 
                     return new List<string>()
@@ -176,27 +162,29 @@ namespace DataInfo.Service.Managers.Ride
                 switch (response.Data.Result)
                 {
                     case (int)CreateRideRecordResultType.Success:
+                        string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.RideRecord}";
+                        this.redisRepository.DeleteCache(cacheKey);
                         return new ResponseResult()
                         {
                             Result = true,
-                            ResultCode = (int)ResponseResultType.Success,
-                            Content = MessageHelper.Message.ResponseMessage.Add.Success
+                            ResultCode = StatusCodes.Status200OK,
+                            ResultMessage = ResponseSuccessMessageType.UpdateSuccess.ToString()
                         };
 
                     case (int)CreateRideRecordResultType.Fail:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.CreateFail,
-                            Content = MessageHelper.Message.ResponseMessage.Add.Fail
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
                         };
 
                     default:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.UnknownError,
-                            Content = MessageHelper.Message.ResponseMessage.Add.Fail
+                            ResultCode = StatusCodes.Status502BadGateway,
+                            ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                         };
                 }
 
@@ -208,8 +196,8 @@ namespace DataInfo.Service.Managers.Ride
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Add.Fail
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }
