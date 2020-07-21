@@ -209,6 +209,16 @@
         /// 無車隊資料，請重新操作
         /// </summary>
         TeamIDEmpty,
+
+        /// <summary>
+        /// 未輸入所在地，請重新輸入
+        /// </summary>
+        CountyEmpty,
+
+        /// <summary>
+        /// 回覆失敗，請重新操作
+        /// </summary>
+        ReplyFail,
     }
 
     /// <summary>
@@ -230,5 +240,10 @@
         /// 密碼更新成功，請重新登入
         /// </summary>
         UpdatePasswordSuccess,
+
+        /// <summary>
+        /// 回覆成功
+        /// </summary>
+        ReplySuccess,
     }
 }

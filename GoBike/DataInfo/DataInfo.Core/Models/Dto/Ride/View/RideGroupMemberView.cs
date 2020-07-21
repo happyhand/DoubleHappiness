@@ -1,14 +1,26 @@
-﻿namespace DataInfo.Core.Models.Dto.Ride.View
+﻿using System;
+
+namespace DataInfo.Core.Models.Dto.Ride.View
 {
     /// <summary>
-    /// 好友週里程排名可視資料
+    /// 組隊騎乘會員可視資料
     /// </summary>
-    public class RideFriendWeekRankView
+    public class RideGroupMemberView
     {
         /// <summary>
         /// Gets or sets 頭像路徑
         /// </summary>
         public string Avatar { get; set; }
+
+        /// <summary>
+        /// Gets or sets 座標-X
+        /// </summary>
+        public string CoordinateX { get; set; }
+
+        /// <summary>
+        /// Gets or sets 座標-Y
+        /// </summary>
+        public string CoordinateY { get; set; }
 
         /// <summary>
         /// Gets or sets MemberID
@@ -19,10 +31,5 @@
         /// Gets or sets 暱稱
         /// </summary>
         public string Nickname { get; set; }
-
-        /// <summary>
-        /// Gets or sets 週里程
-        /// </summary>
-        public float WeekDistance { get; set; }
     }
 }

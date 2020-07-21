@@ -4,6 +4,7 @@ using DataInfo.Core.Applibs;
 using DataInfo.Core.Models.Dto.Interactive.Content;
 using DataInfo.Core.Models.Dto.Member.Content;
 using DataInfo.Core.Models.Dto.Ride.Content;
+using DataInfo.Core.Models.Dto.Team.Content;
 using DataInfo.Repository.Interfaces.Common;
 using DataInfo.Repository.Interfaces.Interactive;
 using DataInfo.Repository.Interfaces.Member;
@@ -152,6 +153,9 @@ namespace DataInfo.Api
             services.AddTransient<IValidator<InteractiveContent>, InteractiveContentValidator>();
 
             services.AddTransient<IValidator<AddRideDataContent>, AddRideDataContentValidator>();
+            services.AddTransient<IValidator<ReplyRideGroupContent>, ReplyRideGroupContentValidator>();
+
+            services.AddTransient<IValidator<TeamBrowseContent>, TeamBrowseContentValidator>();
 
             //// 忽略 Model Binding 驗證不過跳 400 Error 的功能，以便客製化回應訊息
             services.Configure<ApiBehaviorOptions>(options =>

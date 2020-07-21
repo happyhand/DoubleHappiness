@@ -17,7 +17,6 @@ using DataInfo.Repository.Interfaces.Ride;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Ride;
 using DataInfo.Service.Interfaces.Server;
-using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using NLog;
@@ -54,6 +53,11 @@ namespace DataInfo.Service.Managers.Ride
         private readonly IMemberRepository memberRepository;
 
         /// <summary>
+        /// redisRepository
+        /// </summary>
+        private readonly IRedisRepository redisRepository;
+
+        /// <summary>
         /// rideRepository
         /// </summary>
         private readonly IRideRepository rideRepository;
@@ -67,11 +71,6 @@ namespace DataInfo.Service.Managers.Ride
         /// uploadService
         /// </summary>
         private readonly IUploadService uploadService;
-
-        /// <summary>
-        /// redisRepository
-        /// </summary>
-        private readonly IRedisRepository redisRepository;
 
         /// <summary>
         /// 建構式
@@ -95,12 +94,38 @@ namespace DataInfo.Service.Managers.Ride
         }
 
         /// <summary>
+        /// 轉換為組隊騎乘會員可視資料
+        /// </summary>
+        /// <param name="memberDao">memberDao</param>
+        /// <param name="rideGroupMemberDaoMap">rideGroupMemberDaoMap</param>
+        /// <returns>RideGroupMemberView</returns>
+        private RideGroupMemberView TransformRideGroupMemberView(MemberDao memberDao, Dictionary<string, RideGroupMemberDao> rideGroupMemberDaoMap)
+        {
+            string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.GroupMember}_{memberDao.MemberID}";
+            if (memberDao == null || rideGroupMemberDaoMap == null || !rideGroupMemberDaoMap.TryGetValue(cacheKey, out RideGroupMemberDao rideGroupMemberDao))
+            {
+                return null;
+            }
+
+            RideGroupMemberView view = new RideGroupMemberView()
+            {
+                Avatar = memberDao.Avatar,
+                MemberID = memberDao.MemberID,
+                Nickname = memberDao.Nickname,
+                CoordinateX = rideGroupMemberDao.CoordinateX,
+                CoordinateY = rideGroupMemberDao.CoordinateY
+            };
+
+            return view;
+        }
+
+        /// <summary>
         /// 新增騎乘資料
         /// </summary>
-        /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> AddRideData(string memberID, AddRideDataContent content)
+        public async Task<ResponseResult> AddRideData(AddRideDataContent content, string memberID)
         {
             try
             {
@@ -227,7 +252,8 @@ namespace DataInfo.Service.Managers.Ride
                         RideFriendWeekRankView rideFriendWeekRankView = new RideFriendWeekRankView()
                         {
                             Avatar = data.Avatar,
-                            Nickname = data.Nickname
+                            Nickname = data.Nickname,
+                            MemberID = data.MemberID
                         };
                         if (rideDistanceDao != null)
                         {
@@ -251,6 +277,51 @@ namespace DataInfo.Service.Managers.Ride
             catch (Exception ex)
             {
                 this.logger.LogError("取得好友週里程排名發生錯誤", $"MemberID: {memberID}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                };
+            }
+        }
+
+        /// <summary>
+        /// 取得組隊隊員列表
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> GetRideGroupMemberList(string memberID)
+        {
+            try
+            {
+                List<RideGroupMemberView> rideGroupMemberViews = new List<RideGroupMemberView>();
+                int redisDB = AppSettingHelper.Appsetting.Redis.ServerDB;
+                string groupMemberCacheKey = AppSettingHelper.Appsetting.Redis.Flag.GroupMember;
+                string cacheKey = $"{groupMemberCacheKey}_{memberID}";
+                RideGroupMemberDao rideGroupMemberDao = await this.redisRepository.GetCache<RideGroupMemberDao>(cacheKey, redisDB).ConfigureAwait(false);
+                if (rideGroupMemberDao != null)
+                {
+                    RideGroupDao rideGroupDao = await this.redisRepository.GetCache<RideGroupDao>(rideGroupMemberDao.RideGroupKey, redisDB).ConfigureAwait(false);
+                    if (rideGroupDao != null)
+                    {
+                        IEnumerable<MemberDao> memberDaos = await this.memberRepository.Get(rideGroupDao.MemberList, new string[] { memberID }).ConfigureAwait(false);
+                        Dictionary<string, RideGroupMemberDao> rideGroupMemberDaoMap = await this.redisRepository.GetCache<RideGroupMemberDao>(rideGroupDao.MemberList.Select(id => $"{groupMemberCacheKey}_{id}"), redisDB).ConfigureAwait(false);
+                        this.logger.LogInfo("【取得組隊隊員列表】", $"rideGroupMemberDaoMap:{JsonConvert.SerializeObject(rideGroupMemberDaoMap)}", null);
+                        rideGroupMemberViews = memberDaos.Select(memberDao => this.TransformRideGroupMemberView(memberDao, rideGroupMemberDaoMap)).Where(view => view != null).ToList();
+                    }
+                }
+
+                return new ResponseResult()
+                {
+                    Result = true,
+                    ResultCode = StatusCodes.Status200OK,
+                    Content = rideGroupMemberViews
+                };
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得組隊隊員列表發生錯誤", $"MemberID: {memberID}", ex);
                 return new ResponseResult()
                 {
                     Result = false,
@@ -288,6 +359,138 @@ namespace DataInfo.Service.Managers.Ride
             catch (Exception ex)
             {
                 this.logger.LogError("取得騎乘記錄發生錯誤", $"MemberID: {memberID}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                };
+            }
+        }
+
+        /// <summary>
+        /// 回覆組隊騎乘
+        /// </summary>
+        /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> ReplyRideGroup(ReplyRideGroupContent content, string memberID)
+        {
+            try
+            {
+                #region 發送【回覆組隊騎乘】指令至後端
+
+                ReplyRideGroupRequest request = new ReplyRideGroupRequest()
+                {
+                    MemberID = memberID,
+                    Action = (int)content.Reply,
+                };
+                CommandData<ReplyRideGroupResponse> response = await this.serverService.DoAction<ReplyRideGroupResponse>((int)RideCommandIDType.ReplyRideGroup, CommandType.Ride, request).ConfigureAwait(false);
+                this.logger.LogInfo("回覆組隊騎乘結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)}", null);
+
+                switch (response.Data.Result)
+                {
+                    case (int)ReplyRideGroupResultType.Success:
+                        return new ResponseResult()
+                        {
+                            Result = true,
+                            ResultCode = StatusCodes.Status200OK,
+                            ResultMessage = ResponseSuccessMessageType.ReplySuccess.ToString()
+                        };
+
+                    case (int)ReplyRideGroupResultType.Fail:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.ReplyFail.ToString()
+                        };
+
+                    default:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = StatusCodes.Status502BadGateway,
+                            ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                        };
+                }
+
+                #endregion 發送【回覆組隊騎乘】指令至後端
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("回覆組隊騎乘發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                };
+            }
+        }
+
+        /// <summary>
+        /// 更新組隊騎乘
+        /// </summary>
+        /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
+        /// <param name="action">action</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> UpdateRideGroup(UpdateRideGroupContent content, string memberID, ActionType action)
+        {
+            try
+            {
+                #region 發送【更新組隊騎乘】指令至後端
+
+                UpdateRideGroupRequest request = new UpdateRideGroupRequest()
+                {
+                    MemberID = memberID,
+                    Action = (int)action,
+                    InviteList = JsonConvert.SerializeObject(content.MemberIDs)
+                };
+                CommandData<UpdateRideGroupResponse> response = await this.serverService.DoAction<UpdateRideGroupResponse>((int)RideCommandIDType.UpdateRideGroup, CommandType.Ride, request).ConfigureAwait(false);
+                this.logger.LogInfo("更新組隊騎乘結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)}", null);
+
+                switch (response.Data.Result)
+                {
+                    case (int)UpdateRideGroupResultType.Success:
+                        return new ResponseResult()
+                        {
+                            Result = true,
+                            ResultCode = StatusCodes.Status200OK,
+                            ResultMessage = ResponseSuccessMessageType.UpdateSuccess.ToString()
+                        };
+
+                    case (int)UpdateRideGroupResultType.Fail:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
+                        };
+
+                    case (int)UpdateRideGroupResultType.Repeat:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
+                        };
+
+                    default:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = StatusCodes.Status502BadGateway,
+                            ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                        };
+                }
+
+                #endregion 發送【更新組隊騎乘】指令至後端
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("更新組隊騎乘發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
                 return new ResponseResult()
                 {
                     Result = false,

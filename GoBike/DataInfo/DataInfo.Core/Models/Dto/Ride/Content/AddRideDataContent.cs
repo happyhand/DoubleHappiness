@@ -1,7 +1,9 @@
 ﻿using DataInfo.Core.Applibs;
 using DataInfo.Core.Models.Enum;
 using FluentValidation;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DataInfo.Core.Models.Dto.Ride.Content
 {
@@ -124,9 +126,10 @@ namespace DataInfo.Core.Models.Dto.Ride.Content
               });
 
             RuleFor(content => content.County)
-              .Must(County =>
+              .Must(county =>
               {
-                  return County != (int)CountyType.None;
+                  Dictionary<string, string> countyMap = AppSettingHelper.Appsetting.CountyMap;
+                  return county >= Convert.ToInt32(countyMap.Keys.FirstOrDefault()) && county <= Convert.ToInt32(countyMap.Keys.LastOrDefault());
               }).WithMessage(content =>
               {
                   return $"{ResponseErrorMessageType.RideCountyEmpty}|County: {content.County}";
@@ -135,7 +138,7 @@ namespace DataInfo.Core.Models.Dto.Ride.Content
             RuleFor(content => content.Level)
               .Must(level =>
               {
-                  return level != (int)RideLevelType.None;
+                  return level >= (int)RideLevelType.Easy && level <= (int)RideLevelType.Hard;
               }).WithMessage(content =>
               {
                   return $"{ResponseErrorMessageType.RideLevelEmpty}|Level: {content.Level}";

@@ -148,15 +148,19 @@ namespace DataInfo.Repository.Managers.Team
         /// <summary>
         /// 取得附近車隊資料列表
         /// </summary>
+        /// <param name="memberID">memberID</param>
         /// <param name="county">county</param>
         /// <returns>TeamDaos</returns>
-        public async Task<IEnumerable<TeamDao>> GetNearbyTeam(int county)
+        public async Task<IEnumerable<TeamDao>> GetNearbyTeam(string memberID, int county)
         {
             try
             {
                 int takeBrowseCount = AppSettingHelper.Appsetting.Rule.TakeBrowseCount;
                 IEnumerable<TeamData> teamDatas = await this.Db.Queryable<TeamData>()
                                               .Where(data => data.County.Equals(county))
+                                              .Where(data => !data.Leader.Equals(memberID))
+                                              .Where(data => !data.TeamViceLeaderIDs.Contains(memberID))
+                                              .Where(data => !data.TeamMemberIDs.Contains(memberID))
                                               .Take(takeBrowseCount)
                                               .ToListAsync().ConfigureAwait(false);
 
@@ -172,8 +176,9 @@ namespace DataInfo.Repository.Managers.Team
         /// <summary>
         /// 取得新創車隊資料列表
         /// </summary>
+        /// <param name="memberID">memberID</param>
         /// <returns>TeamDaos</returns>
-        public async Task<IEnumerable<TeamDao>> GetNewCreationTeam()
+        public async Task<IEnumerable<TeamDao>> GetNewCreationTeam(string memberID)
         {
             int daysOfNewCreation = AppSettingHelper.Appsetting.Rule.DaysOfNewCreation;
             int takeBrowseCount = AppSettingHelper.Appsetting.Rule.TakeBrowseCount;
@@ -182,6 +187,9 @@ namespace DataInfo.Repository.Managers.Team
             {
                 IEnumerable<TeamData> teamDatas = await this.Db.Queryable<TeamData>()
                                               .Where(data => Convert.ToDateTime(data).Ticks - expiredDate.Ticks > 0)
+                                              .Where(data => !data.Leader.Equals(memberID))
+                                              .Where(data => !data.TeamViceLeaderIDs.Contains(memberID))
+                                              .Where(data => !data.TeamMemberIDs.Contains(memberID))
                                               .Take(takeBrowseCount)
                                               .ToListAsync().ConfigureAwait(false);
 
@@ -197,15 +205,19 @@ namespace DataInfo.Repository.Managers.Team
         /// <summary>
         /// 取得推薦車隊資料列表
         /// </summary>
+        /// <param name="memberID">memberID</param>
         /// <returns>TeamDaos</returns>
-        public async Task<IEnumerable<TeamDao>> GetRecommendTeam()
+        public async Task<IEnumerable<TeamDao>> GetRecommendTeam(string memberID)
         {
             try
             {
                 int takeBrowseCount = AppSettingHelper.Appsetting.Rule.TakeBrowseCount;
                 //// TODO 待確認推薦標準
                 IEnumerable<TeamData> teamDatas = await this.Db.Queryable<TeamData>()
-                                              .Where(data => data.TeamViceLeaderIDs.Length + data.TeamMemberIDs.Length >= 50)
+                                              .Where(data => (data.TeamViceLeaderIDs.Count() + data.TeamMemberIDs.Count()) >= 50)
+                                              .Where(data => !data.Leader.Equals(memberID))
+                                              .Where(data => !data.TeamViceLeaderIDs.Contains(memberID))
+                                              .Where(data => !data.TeamMemberIDs.Contains(memberID))
                                               .Take(takeBrowseCount)
                                               .ToListAsync().ConfigureAwait(false);
 
@@ -214,6 +226,28 @@ namespace DataInfo.Repository.Managers.Team
             catch (Exception ex)
             {
                 this.logger.LogError("取得推薦車隊資料列表發生錯誤", string.Empty, ex);
+                return new List<TeamDao>();
+            }
+        }
+
+        /// <summary>
+        /// 取得會員的車隊資料列表
+        /// </summary>
+        /// <param name="key">key</param>
+        /// <returns>TeamDaos</returns>
+        public async Task<IEnumerable<TeamDao>> GetTeamListOfMember(string memberID)
+        {
+            try
+            {
+                IEnumerable<TeamData> teamDatas = await this.Db.Queryable<UserInfo, TeamData>((ui, td) => ui.TeamList.Contains(td.TeamID))
+                                                               .Where(ui => ui.MemberID.Equals(memberID))
+                                                               .Select((ui, td) => td)
+                                                               .ToListAsync().ConfigureAwait(false);
+                return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得會員的車隊資料列表發生錯誤", $"MemberID: {memberID}", ex);
                 return new List<TeamDao>();
             }
         }

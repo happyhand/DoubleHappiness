@@ -15,17 +15,17 @@ using System.Threading.Tasks;
 namespace DataInfo.Api.Controllers.Ride
 {
     /// <summary>
-    /// 騎乘功能
+    /// 組隊功能
     /// </summary>
     [ApiController]
     [Authorize]
-    [Route("api/Ride")]
-    public class RideController : JwtController
+    [Route("api/Ride/[controller]")]
+    public class GroupController : JwtController
     {
         /// <summary>
         /// logger
         /// </summary>
-        private readonly ILogger logger = LogManager.GetLogger("RideController");
+        private readonly ILogger logger = LogManager.GetLogger("RideGroupController");
 
         /// <summary>
         /// rideService
@@ -37,27 +37,28 @@ namespace DataInfo.Api.Controllers.Ride
         /// </summary>
         /// <param name="jwtService">jwtService</param>
         /// <param name="rideService">rideService</param>
-        public RideController(IJwtService jwtService, IRideService rideService) : base(jwtService)
+        public GroupController(IJwtService jwtService, IRideService rideService) : base(jwtService)
         {
             this.rideService = rideService;
         }
 
         /// <summary>
-        /// 騎乘功能 - 取得騎乘記錄
+        /// 組隊功能 - 取得組隊隊員列表
         /// </summary>
-        /// <param name="memberID">memberID</param>
         /// <returns>IActionResult</returns>
-        private async Task<IActionResult> GetData(string memberID)
+        [HttpGet]
+        public async Task<IActionResult> Get()
         {
+            string memberID = this.GetMemberID();
             try
             {
-                this.logger.LogInfo("會員請求取得騎乘記錄", $"MemberID: {memberID}", null);
-                ResponseResult responseResult = await this.rideService.GetRideRecord(memberID).ConfigureAwait(false);
+                this.logger.LogInfo("會員請求取得組隊隊員列表", $"MemberID: {memberID}", null);
+                ResponseResult responseResult = await rideService.GetRideGroupMemberList(memberID).ConfigureAwait(false);
                 return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員請求取得騎乘記錄發生錯誤", $"MemberID: {memberID}", ex);
+                this.logger.LogError("會員請求取得組隊隊員列表發生錯誤", $"MemberID: {memberID}", ex);
                 return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,
@@ -68,45 +69,23 @@ namespace DataInfo.Api.Controllers.Ride
         }
 
         /// <summary>
-        /// 騎乘功能 - 取得騎乘記錄
-        /// </summary>
-        /// <returns>IActionResult</returns>
-        [HttpGet]
-        public Task<IActionResult> Get()
-        {
-            string memberID = this.GetMemberID();
-            return this.GetData(memberID);
-        }
-
-        /// <summary>
-        /// 騎乘功能 - 取得騎乘記錄
-        /// </summary>
-        /// <param name="memberID">memberID</param>
-        /// <returns>IActionResult</returns>
-        [HttpGet("{memberID}")]
-        public Task<IActionResult> Get(string memberID)
-        {
-            return this.GetData(memberID);
-        }
-
-        /// <summary>
-        /// 騎乘功能 - 新增騎乘資料
+        /// 組隊功能 - 組隊騎乘
         /// </summary>
         /// <param name="content">content</param>
         /// <returns>IActionResult</returns>
         [HttpPost]
-        public async Task<IActionResult> Post(AddRideDataContent content)
+        public async Task<IActionResult> Post(UpdateRideGroupContent content)
         {
             string memberID = this.GetMemberID();
             try
             {
-                this.logger.LogInfo("會員請求新增騎乘資料", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await rideService.AddRideData(content, memberID).ConfigureAwait(false);
+                this.logger.LogInfo("會員請求組隊騎乘", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                ResponseResult responseResult = await rideService.UpdateRideGroup(content, memberID, ActionType.Add).ConfigureAwait(false);
                 return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員請求新增騎乘資料發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                this.logger.LogError("會員請求組隊騎乘發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
                 return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,

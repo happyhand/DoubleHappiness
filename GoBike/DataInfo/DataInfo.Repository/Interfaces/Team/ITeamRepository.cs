@@ -43,21 +43,24 @@ namespace DataInfo.Repository.Interfaces.Team
         /// <summary>
         /// 取得附近車隊資料列表
         /// </summary>
+        /// <param name="memberID">memberID</param>
         /// <param name="county">county</param>
         /// <returns>TeamDaos</returns>
-        Task<IEnumerable<TeamDao>> GetNearbyTeam(int county);
+        Task<IEnumerable<TeamDao>> GetNearbyTeam(string memberID, int county);
 
         /// <summary>
         /// 取得新創車隊資料列表
         /// </summary>
+        /// <param name="memberID">memberID</param>
         /// <returns>TeamDaos</returns>
-        Task<IEnumerable<TeamDao>> GetNewCreationTeam();
+        Task<IEnumerable<TeamDao>> GetNewCreationTeam(string memberID);
 
         /// <summary>
         /// 取得推薦車隊資料列表
         /// </summary>
+        /// <param name="memberID">memberID</param>
         /// <returns>TeamDaos</returns>
-        Task<IEnumerable<TeamDao>> GetRecommendTeam();
+        Task<IEnumerable<TeamDao>> GetRecommendTeam(string memberID);
 
         /// <summary>
         /// 取得申請車隊列表

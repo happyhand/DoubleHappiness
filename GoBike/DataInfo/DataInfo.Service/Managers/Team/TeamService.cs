@@ -607,27 +607,9 @@ namespace DataInfo.Service.Managers.Team
         {
             try
             {
-                #region 驗證資料
-
-                TeamBrowseContentValidator teamRecommendContentValidator = new TeamBrowseContentValidator();
-                ValidationResult validationResult = teamRecommendContentValidator.Validate(content);
-                if (!validationResult.IsValid)
-                {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("取得瀏覽車隊結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = errorMessgae
-                    };
-                }
-
-                #endregion 驗證資料
-
-                Task<IEnumerable<TeamDao>> nearbyTeamListTask = this.teamRepository.GetNearbyTeam(content.County);
-                Task<IEnumerable<TeamDao>> newCreationTeamListTask = this.teamRepository.GetNewCreationTeam();
-                Task<IEnumerable<TeamDao>> recommendTeamListTask = this.teamRepository.GetRecommendTeam();
+                Task<IEnumerable<TeamDao>> nearbyTeamListTask = this.teamRepository.GetNearbyTeam(memberID, content.County);
+                Task<IEnumerable<TeamDao>> newCreationTeamListTask = this.teamRepository.GetNewCreationTeam(memberID);
+                Task<IEnumerable<TeamDao>> recommendTeamListTask = this.teamRepository.GetRecommendTeam(memberID);
                 IEnumerable<TeamDao>[] teamDaos = new IEnumerable<TeamDao>[]
                 {
                     await nearbyTeamListTask.ConfigureAwait(false),
@@ -638,7 +620,7 @@ namespace DataInfo.Service.Managers.Team
                 return new ResponseResult()
                 {
                     Result = true,
-                    ResultCode = (int)ResponseResultType.Success,
+                    ResultCode = StatusCodes.Status200OK,
                     Content = this.mapper.Map<IEnumerable<IEnumerable<TeamSearchView>>>(teamDaos)
                 };
             }
@@ -648,8 +630,8 @@ namespace DataInfo.Service.Managers.Team
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }

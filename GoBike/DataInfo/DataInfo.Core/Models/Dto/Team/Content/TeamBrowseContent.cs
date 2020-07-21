@@ -1,6 +1,9 @@
 ﻿using DataInfo.Core.Applibs;
 using DataInfo.Core.Models.Enum;
 using FluentValidation;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace DataInfo.Core.Models.Dto.Team.Content
 {
@@ -25,12 +28,16 @@ namespace DataInfo.Core.Models.Dto.Team.Content
         /// </summary>
         public TeamBrowseContentValidator()
         {
-            ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
+            this.CascadeMode = CascadeMode.StopOnFirstFailure;
             RuleFor(content => content.County)
-             .Must(County =>
-             {
-                 return County != (int)CountyType.None;
-             }).WithMessage(MessageHelper.Message.ResponseMessage.Member.CountyEmpty);
+              .Must(county =>
+              {
+                  Dictionary<string, string> countyMap = AppSettingHelper.Appsetting.CountyMap;
+                  return county >= Convert.ToInt32(countyMap.Keys.FirstOrDefault()) && county <= Convert.ToInt32(countyMap.Keys.LastOrDefault());
+              }).WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.CountyEmpty}|County: {content.County}";
+              });
         }
     }
 }

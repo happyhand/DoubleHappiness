@@ -27,11 +27,11 @@ namespace DataInfo.Service.Interfaces.Interactive
         /// <summary>
         /// 更新互動資料
         /// </summary>
-        /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
         /// <param name="status">status</param>
         /// <param name="action">action</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> UpdateInteractive(string memberID, InteractiveContent content, InteractiveType status, ActionType action);
+        Task<ResponseResult> UpdateInteractive(InteractiveContent content, string memberID, InteractiveType status, ActionType action);
     }
 }

@@ -57,21 +57,19 @@ namespace DataInfo.Service.Interfaces.Member
         Task<ResponseResult> EditInfo(MemberEditInfoContent content, string memberID);
 
         /// <summary>
-        /// 搜尋會員
-        /// </summary>
-        /// <param name="searchKey">searchKey</param>
-        /// <param name="searchType">searchType</param>
-        /// <param name="searchMemberID">searchMemberID</param>
-        /// <returns>ResponseResult</returns>
-        Task<ResponseResult> Search(string searchKey, int searchType, string searchMemberID);
-
-        /// <summary>
         /// 取得會員名片資訊
         /// </summary>
         /// <param name="content">content</param>
         /// <param name="searchMemberID">searchMemberID</param>
         /// <returns>ResponseResult</returns>
         Task<ResponseResult> GetCardInfo(MemberCardInfoContent content, string searchMemberID = null);
+
+        /// <summary>
+        /// 取得會員詳細資訊
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>ResponseResult</returns>
+        Task<ResponseResult> GetDetail(string memberID);
 
         /// <summary>
         /// 取得首頁資訊
@@ -97,6 +95,15 @@ namespace DataInfo.Service.Interfaces.Member
         Task<ResponseResult> ResetPassword(MemberForgetPasswordContent content);
 
         /// <summary>
+        /// 搜尋會員
+        /// </summary>
+        /// <param name="searchKey">searchKey</param>
+        /// <param name="searchType">searchType</param>
+        /// <param name="searchMemberID">searchMemberID</param>
+        /// <returns>ResponseResult</returns>
+        Task<ResponseResult> Search(string searchKey, int searchType, string searchMemberID);
+
+        /// <summary>
         /// 發送會員忘記密碼驗證碼
         /// </summary>
         /// <param name="content">content</param>
@@ -113,13 +120,6 @@ namespace DataInfo.Service.Interfaces.Member
         Task<ResponseResult> SendMobileBindVerifierCode(MemberRequestMobileBindContent content, string memberID, string email);
 
         /// <summary>
-        /// 取得會員詳細資訊
-        /// </summary>
-        /// <param name="memberID">memberID</param>
-        /// <returns>ResponseResult</returns>
-        Task<ResponseResult> GetDetail(string memberID);
-
-        /// <summary>
         /// 轉換為會員詳細資訊可視資料
         /// </summary>
         /// <param name="memberDaos">memberDaos</param>
@@ -132,6 +132,14 @@ namespace DataInfo.Service.Interfaces.Member
         /// <param name="memberDaos">memberDaos</param>
         /// <returns>MemberSimpleInfoViews</returns>
         Task<IEnumerable<MemberSimpleInfoView>> TransformMemberSimpleInfoView(IEnumerable<MemberDao> memberDaos);
+
+        /// <summary>
+        /// 會員更新推播 Token
+        /// </summary>
+        /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
+        /// <returns>ResponseResult</returns>
+        Task<ResponseResult> UpdateNotifyToken(MemberUpdateNotifyTokenContent content, string memberID);
 
         /// <summary>
         /// 會員更新密碼

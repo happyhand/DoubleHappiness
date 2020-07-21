@@ -47,7 +47,7 @@ namespace DataInfo.Core.Models.Dto.Team.Content
             RuleFor(content => content.ResponseType)
             .Must(ApplyType =>
             {
-                return ApplyType != (int)TeamResponseType.None;
+                return ApplyType == (int)TeamResponseType.Reject || ApplyType == (int)TeamResponseType.Allow;
             }).WithMessage(MessageHelper.Message.ResponseMessage.Team.ResponseStatusEmpty);
         }
     }

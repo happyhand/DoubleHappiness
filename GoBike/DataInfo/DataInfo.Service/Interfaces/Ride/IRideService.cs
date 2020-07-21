@@ -1,5 +1,6 @@
 ﻿using DataInfo.Core.Models.Dto.Response;
 using DataInfo.Core.Models.Dto.Ride.Content;
+using DataInfo.Core.Models.Enum;
 using System.Threading.Tasks;
 
 namespace DataInfo.Service.Interfaces.Ride
@@ -12,10 +13,10 @@ namespace DataInfo.Service.Interfaces.Ride
         /// <summary>
         /// 會員新增騎乘資料
         /// </summary>
-        /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> AddRideData(string memberID, AddRideDataContent content);
+        Task<ResponseResult> AddRideData(AddRideDataContent content, string memberID);
 
         /// <summary>
         /// 取得好友週里程排名
@@ -25,10 +26,34 @@ namespace DataInfo.Service.Interfaces.Ride
         Task<ResponseResult> GetFriendWeekRank(string memberID);
 
         /// <summary>
+        /// 取得組隊隊員列表
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>ResponseResult</returns>
+        Task<ResponseResult> GetRideGroupMemberList(string memberID);
+
+        /// <summary>
         /// 取得騎乘記錄
         /// </summary>
         /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>
         Task<ResponseResult> GetRideRecord(string memberID);
+
+        /// <summary>
+        /// 回覆組隊騎乘
+        /// </summary>
+        /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
+        /// <returns>ResponseResult</returns>
+        Task<ResponseResult> ReplyRideGroup(ReplyRideGroupContent content, string memberID);
+
+        /// <summary>
+        /// 更新組隊騎乘
+        /// </summary>
+        /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
+        /// <param name="action">action</param>
+        /// <returns>ResponseResult</returns>
+        Task<ResponseResult> UpdateRideGroup(UpdateRideGroupContent content, string memberID, ActionType action);
     }
 }

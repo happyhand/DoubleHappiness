@@ -283,6 +283,11 @@ namespace DataInfo.Core.Applibs
         public class RedisFlag
         {
             /// <summary>
+            /// Gets or sets GroupMember
+            /// </summary>
+            public string GroupMember { get; set; }
+
+            /// <summary>
             /// Gets or sets Interactive
             /// </summary>
             public string Interactive { get; set; }
@@ -291,6 +296,11 @@ namespace DataInfo.Core.Applibs
             /// Gets or sets Member
             /// </summary>
             public string Member { get; set; }
+
+            /// <summary>
+            /// Gets or sets RideGroup
+            /// </summary>
+            public string RideGroup { get; set; }
 
             /// <summary>
             /// Gets or sets VerifierCode
@@ -322,6 +332,11 @@ namespace DataInfo.Core.Applibs
             /// Gets or sets Flag
             /// </summary>
             public RedisFlag Flag { get; set; }
+
+            /// <summary>
+            /// Gets or sets ServerDB
+            /// </summary>
+            public int ServerDB { get; set; }
 
             /// <summary>
             /// Gets or sets SubFlag

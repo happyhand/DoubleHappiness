@@ -20,7 +20,7 @@ namespace DataInfo.Repository.Managers.Common
         /// <summary>
         /// connectionMultiplexer
         /// </summary>
-        private readonly IDatabase database;
+        private readonly ConnectionMultiplexer connectionMultiplexer;
 
         /// <summary>
         /// logger
@@ -28,7 +28,7 @@ namespace DataInfo.Repository.Managers.Common
         private readonly ILogger logger = LogManager.GetLogger("RedisRepository");
 
         /// <summary>
-        /// connectionMultiplexer
+        /// redisServer
         /// </summary>
         private readonly IServer redisServer;
 
@@ -42,25 +42,36 @@ namespace DataInfo.Repository.Managers.Common
                 return ConnectionMultiplexer.Connect(AppSettingHelper.Appsetting.Redis.ConnectionStrings);
             });
 
-            ConnectionMultiplexer connectionMultiplexer = lazyConnection.Value;
-            this.database = connectionMultiplexer.GetDatabase(AppSettingHelper.Appsetting.Redis.DB);
+            this.connectionMultiplexer = lazyConnection.Value;
             this.redisServer = connectionMultiplexer.GetServer(connectionMultiplexer.GetEndPoints().First());
+        }
+
+        /// <summary>
+        /// 取得 database
+        /// </summary>
+        /// <param name="db">db</param>
+        /// <returns>IDatabase</returns>
+        private IDatabase GetDatabase(int db)
+        {
+            return this.connectionMultiplexer.GetDatabase(db);
         }
 
         /// <summary>
         /// 刪除快取資料
         /// </summary>
         /// <param name="cacheKey">cacheKey</param>
+        /// <param name="db">db</param>
         /// <returns>bool</returns>
-        public async Task<bool> DeleteCache(string cacheKey)
+        public async Task<bool> DeleteCache(string cacheKey, int? db = null)
         {
             try
             {
-                return await this.database.KeyDeleteAsync(cacheKey).ConfigureAwait(false);
+                IDatabase database = db.HasValue ? this.GetDatabase(db.Value) : this.GetDatabase(AppSettingHelper.Appsetting.Redis.DB);
+                return await database.KeyDeleteAsync(cacheKey).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("刪除快取資料發生錯誤", $"CacheKey: {cacheKey}", ex);
+                this.logger.LogError("刪除快取資料發生錯誤", $"CacheKey: {cacheKey} DB: {db}", ex);
                 return false;
             }
         }
@@ -70,16 +81,17 @@ namespace DataInfo.Repository.Managers.Common
         /// </summary>
         /// <param name="cacheKey">cacheKey</param>
         /// <returns>T</returns>
-        public async Task<T> GetCache<T>(string cacheKey)
+        public async Task<T> GetCache<T>(string cacheKey, int? db = null)
         {
             try
             {
-                string dataJson = await this.database.StringGetAsync(cacheKey).ConfigureAwait(false);
+                IDatabase database = db.HasValue ? this.GetDatabase(db.Value) : this.GetDatabase(AppSettingHelper.Appsetting.Redis.DB);
+                string dataJson = await database.StringGetAsync(cacheKey).ConfigureAwait(false);
                 return string.IsNullOrEmpty(dataJson) ? default : JsonConvert.DeserializeObject<T>(dataJson);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("讀取快取資料發生錯誤", $"CacheKey: {cacheKey}", ex);
+                this.logger.LogError("讀取快取資料發生錯誤", $"CacheKey: {cacheKey} DB: {db}", ex);
                 return default;
             }
         }
@@ -89,18 +101,19 @@ namespace DataInfo.Repository.Managers.Common
         /// </summary>
         /// <param name="cacheKeys">cacheKeys</param>
         /// <returns>T Map</returns>
-        public async Task<Dictionary<string, T>> GetCache<T>(IEnumerable<string> cacheKeys)
+        public async Task<Dictionary<string, T>> GetCache<T>(IEnumerable<string> cacheKeys, int? db = null)
         {
             try
             {
                 RedisKey[] redisKeys = cacheKeys.Select(key => (RedisKey)key).ToArray();
-                RedisValue[] redisValues = await this.database.StringGetAsync(redisKeys).ConfigureAwait(false);
+                IDatabase database = db.HasValue ? this.GetDatabase(db.Value) : this.GetDatabase(AppSettingHelper.Appsetting.Redis.DB);
+                RedisValue[] redisValues = await database.StringGetAsync(redisKeys).ConfigureAwait(false);
                 IEnumerable<T> datas = redisValues.Select(redisValue => string.IsNullOrEmpty(redisValue) ? default : JsonConvert.DeserializeObject<T>(redisValue));
                 return cacheKeys.Select((key, index) => new { key, index }).ToDictionary(data => data.key, data => datas.ElementAtOrDefault(data.index));
             }
             catch (Exception ex)
             {
-                this.logger.LogError("讀取多筆快取資料發生錯誤", $"CacheKeys: {JsonConvert.SerializeObject(cacheKeys)}", ex);
+                this.logger.LogError("讀取多筆快取資料發生錯誤", $"CacheKeys: {JsonConvert.SerializeObject(cacheKeys)} DB: {db}", ex);
                 return new Dictionary<string, T>();
             }
         }
@@ -111,16 +124,17 @@ namespace DataInfo.Repository.Managers.Common
         /// <param name="cacheKey">cacheKey</param>
         /// <param name="hashKey">hashKey</param>
         /// <returns>T</returns>
-        public async Task<T> GetCache<T>(string cacheKey, string hashKey)
+        public async Task<T> GetCache<T>(string cacheKey, string hashKey, int? db = null)
         {
             try
             {
-                string dataJson = await this.database.HashGetAsync(cacheKey, hashKey).ConfigureAwait(false);
+                IDatabase database = db.HasValue ? this.GetDatabase(db.Value) : this.GetDatabase(AppSettingHelper.Appsetting.Redis.DB);
+                string dataJson = await database.HashGetAsync(cacheKey, hashKey).ConfigureAwait(false);
                 return JsonConvert.DeserializeObject<T>(dataJson);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("讀取快取資料發生錯誤", $"CacheKey: {cacheKey} HashKey: {hashKey}", ex);
+                this.logger.LogError("讀取快取資料發生錯誤", $"CacheKey: {cacheKey} HashKey: {hashKey} DB: {db}", ex);
                 return default;
             }
         }
@@ -130,9 +144,9 @@ namespace DataInfo.Repository.Managers.Common
         /// </summary>
         /// <param name="cacheKey">cacheKey</param>
         /// <returns>RedisKeys</returns>
-        public IEnumerable<string> GetRedisKeys(string cacheKey)
+        public IEnumerable<string> GetRedisKeys(string cacheKey, int? db = null)
         {
-            return this.redisServer.Keys(AppSettingHelper.Appsetting.Redis.DB, pattern: cacheKey)
+            return this.redisServer.Keys(db.HasValue ? db.Value : AppSettingHelper.Appsetting.Redis.DB, pattern: cacheKey)
                                    .Select(key => key.ToString());
         }
 
@@ -142,7 +156,7 @@ namespace DataInfo.Repository.Managers.Common
         /// <param name="cacheKey">cacheKey</param>
         /// <param name="isFuzzy">isFuzzy</param>
         /// <returns>bool</returns>
-        public async Task<bool> IsExist(string cacheKey, bool isFuzzy)
+        public async Task<bool> IsExist(string cacheKey, bool isFuzzy, int? db = null)
         {
             try
             {
@@ -152,12 +166,13 @@ namespace DataInfo.Repository.Managers.Common
                 }
                 else
                 {
-                    return await this.database.KeyExistsAsync(cacheKey).ConfigureAwait(false);
+                    IDatabase database = db.HasValue ? this.GetDatabase(db.Value) : this.GetDatabase(AppSettingHelper.Appsetting.Redis.DB);
+                    return await database.KeyExistsAsync(cacheKey).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
             {
-                this.logger.LogError("檢查資料是否存在發生錯誤", $"CacheKey: {cacheKey} IsFuzzy: {isFuzzy}", ex);
+                this.logger.LogError("檢查資料是否存在發生錯誤", $"CacheKey: {cacheKey} IsFuzzy: {isFuzzy} DB: {db}", ex);
                 return false;
             }
         }
@@ -168,16 +183,17 @@ namespace DataInfo.Repository.Managers.Common
         /// <param name="cacheKey">cacheKey</param>
         /// <param name="dataJSON">dataJSON</param>
         /// <param name="cacheTimes">cacheTimes</param>
-        public async Task SetCache(string cacheKey, string dataJSON, TimeSpan? cacheTimes)
+        public async Task SetCache(string cacheKey, string dataJSON, TimeSpan? cacheTimes, int? db = null)
         {
             try
             {
-                bool isSuccess = await this.database.StringSetAsync(cacheKey, dataJSON, cacheTimes).ConfigureAwait(false);
-                this.logger.LogInfo("寫入快取資料結果", $"Result: {isSuccess} CacheKey: {cacheKey} DataJSON: {dataJSON} CacheTimes: {JsonConvert.SerializeObject(cacheTimes)}", null);
+                IDatabase database = db.HasValue ? this.GetDatabase(db.Value) : this.GetDatabase(AppSettingHelper.Appsetting.Redis.DB);
+                bool isSuccess = await database.StringSetAsync(cacheKey, dataJSON, cacheTimes).ConfigureAwait(false);
+                this.logger.LogInfo("寫入快取資料結果", $"Result: {isSuccess} CacheKey: {cacheKey} DataJSON: {dataJSON} CacheTimes: {JsonConvert.SerializeObject(cacheTimes)} DB: {db}", null);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("寫入快取資料發生錯誤", $"CacheKey: {cacheKey} DataJSON: {dataJSON} CacheTimes: {JsonConvert.SerializeObject(cacheTimes)}", ex);
+                this.logger.LogError("寫入快取資料發生錯誤", $"CacheKey: {cacheKey} DataJSON: {dataJSON} CacheTimes: {JsonConvert.SerializeObject(cacheTimes)} DB: {db}", ex);
             }
         }
 
@@ -188,17 +204,18 @@ namespace DataInfo.Repository.Managers.Common
         /// <param name="hashKey">hashKey</param>
         /// <param name="dataJSON">dataJSON</param>
         /// <param name="cacheTimes">cacheTimes</param>
-        public async Task SetCache(string cacheKey, string hashKey, string dataJSON, TimeSpan? cacheTimes)
+        public async Task SetCache(string cacheKey, string hashKey, string dataJSON, TimeSpan? cacheTimes, int? db = null)
         {
             try
             {
-                bool isSuccess = await this.database.HashSetAsync(cacheKey, hashKey, dataJSON).ConfigureAwait(false);
+                IDatabase database = db.HasValue ? this.GetDatabase(db.Value) : this.GetDatabase(AppSettingHelper.Appsetting.Redis.DB);
+                bool isSuccess = await database.HashSetAsync(cacheKey, hashKey, dataJSON).ConfigureAwait(false);
                 this.UpdateCacheExpire(cacheKey, cacheTimes);
-                this.logger.LogInfo("寫入快取資料結果", $"Result: {isSuccess} CacheKey: {cacheKey} HashKey: {hashKey} DataJSON: {dataJSON} CacheTimes: {JsonConvert.SerializeObject(cacheTimes)}", null);
+                this.logger.LogInfo("寫入快取資料結果", $"Result: {isSuccess} CacheKey: {cacheKey} HashKey: {hashKey} DataJSON: {dataJSON} CacheTimes: {JsonConvert.SerializeObject(cacheTimes)} DB: {db}", null);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("寫入快取資料發生錯誤", $"CacheKey: {cacheKey} HashKey: {hashKey} DataJSON: {dataJSON} CacheTimes: {JsonConvert.SerializeObject(cacheTimes)}", ex);
+                this.logger.LogError("寫入快取資料發生錯誤", $"CacheKey: {cacheKey} HashKey: {hashKey} DataJSON: {dataJSON} CacheTimes: {JsonConvert.SerializeObject(cacheTimes)} DB: {db}", ex);
             }
         }
 
@@ -208,15 +225,16 @@ namespace DataInfo.Repository.Managers.Common
         /// <param name="cacheKey">cacheKey</param>
         /// <param name="cacheTimes">cacheTimes</param>
         /// <returns>bool</returns>
-        public async Task<bool> UpdateCacheExpire(string cacheKey, TimeSpan? cacheTimes)
+        public async Task<bool> UpdateCacheExpire(string cacheKey, TimeSpan? cacheTimes, int? db = null)
         {
             try
             {
-                return await this.database.KeyExpireAsync(cacheKey, cacheTimes).ConfigureAwait(false);
+                IDatabase database = db.HasValue ? this.GetDatabase(db.Value) : this.GetDatabase(AppSettingHelper.Appsetting.Redis.DB);
+                return await database.KeyExpireAsync(cacheKey, cacheTimes).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("更新快取資料到期時間發生錯誤", $"CacheKey: {cacheKey} CacheTimes: {JsonConvert.SerializeObject(cacheTimes)}", ex);
+                this.logger.LogError("更新快取資料到期時間發生錯誤", $"CacheKey: {cacheKey} CacheTimes: {JsonConvert.SerializeObject(cacheTimes)} DB: {db}", ex);
                 return false;
             }
         }

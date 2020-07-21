@@ -45,6 +45,22 @@
     }
 
     /// <summary>
+    /// 更新推播 Token 結果類別資料
+    /// </summary>
+    public enum UpdateNotifyTokenResultType
+    {
+        /// <summary>
+        /// 更新失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 更新成功
+        /// </summary>
+        Success = 1
+    }
+
+    /// <summary>
     /// 更新使用者資訊密碼結果類別資料
     /// </summary>
     public enum UpdatePasswordResultType
@@ -114,7 +130,12 @@
         /// <summary>
         /// 更新黑名單列表
         /// </summary>
-        UpdateBlackList = 1006
+        UpdateBlackList = 1006,
+
+        /// <summary>
+        /// 更新推播 Token
+        /// </summary>
+        UpdateNotifyToken = 1007
     }
 
     /// <summary>
@@ -195,6 +216,22 @@
     }
 
     /// <summary>
+    /// 回覆組隊騎乘結果類別資料
+    /// </summary>
+    public enum ReplyRideGroupResultType
+    {
+        /// <summary>
+        /// 回覆失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 回覆成功
+        /// </summary>
+        Success = 1
+    }
+
+    /// <summary>
     /// 騎乘後端封包編號類別資料
     /// </summary>
     public enum RideCommandIDType
@@ -203,6 +240,37 @@
         /// 建立騎乘紀錄
         /// </summary>
         CreateRideRecord = 1001,
+
+        /// <summary>
+        /// 更新組隊騎乘
+        /// </summary>
+        UpdateRideGroup = 1002,
+
+        /// <summary>
+        /// 回覆組隊騎乘
+        /// </summary>
+        ReplyRideGroup = 1003,
+    }
+
+    /// <summary>
+    /// 更新組隊騎乘結果類別資料
+    /// </summary>
+    public enum UpdateRideGroupResultType
+    {
+        /// <summary>
+        /// 更新失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 更新成功
+        /// </summary>
+        Success = 1,
+
+        /// <summary>
+        /// 組隊已存在
+        /// </summary>
+        Repeat = 2
     }
 
     #endregion 騎乘

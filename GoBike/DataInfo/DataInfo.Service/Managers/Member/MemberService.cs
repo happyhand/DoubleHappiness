@@ -374,6 +374,26 @@ namespace DataInfo.Service.Managers.Member
         #region 會員資料
 
         /// <summary>
+        /// 刪除會員快取資訊
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        private void DeleteMemberInfoCache(string memberID)
+        {
+            try
+            {
+                this.logger.LogInfo("刪除會員快取資訊", $"MemberID: {memberID}", null);
+                string cardInfoCacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.CardInfo}";
+                string homeInfoCacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.HomeInfo}";
+                this.redisRepository.DeleteCache(cardInfoCacheKey);
+                this.redisRepository.DeleteCache(homeInfoCacheKey);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("刪除會員快取資訊發生錯誤", $"MemberID: {memberID}", ex);
+            }
+        }
+
+        /// <summary>
         /// 會員資料更新處理
         /// </summary>
         /// <param name="content">content</param>
@@ -547,63 +567,6 @@ namespace DataInfo.Service.Managers.Member
         }
 
         /// <summary>
-        /// 搜尋會員
-        /// </summary>
-        /// <param name="searchKey">searchKey</param>
-        /// <param name="searchType">searchType</param>
-        /// <param name="searchMemberID">searchMemberID</param>
-        /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> Search(string searchKey, int searchType, string searchMemberID)
-        {
-            try
-            {
-                #region 驗證資料
-
-                if (string.IsNullOrEmpty(searchKey))
-                {
-                    //// 沒有搜尋關鍵字，直接回傳空資料
-                    this.logger.LogWarn("搜尋會員失敗，無搜尋關鍵字", $"SearchKey: {searchKey} SearchType: {searchType} SearchMemberID: {searchMemberID}", null);
-                    return new ResponseResult()
-                    {
-                        Result = true,
-                        ResultCode = StatusCodes.Status400BadRequest,
-                        ResultMessage = ResponseErrorMessageType.SearchKeyEmpty.ToString()
-                    };
-                }
-
-                #endregion 驗證資料
-
-                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{searchMemberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.Search}-{searchKey}-{searchType}";
-                IEnumerable<MemberSimpleInfoView> memberSimpleInfoViews = await this.redisRepository.GetCache<IEnumerable<MemberSimpleInfoView>>(cacheKey).ConfigureAwait(false);
-                if (memberSimpleInfoViews == null)
-                {
-                    bool isFuzzy = searchType.Equals((int)SearchType.Fuzzy);
-                    string[] ignoreMemberIds = new string[] { searchMemberID };
-                    IEnumerable<MemberDao> memberDaos = await this.memberRepository.Search(searchKey, isFuzzy, ignoreMemberIds).ConfigureAwait(false);
-                    memberSimpleInfoViews = await this.TransformMemberSimpleInfoView(memberDaos).ConfigureAwait(false);
-                    this.redisRepository.SetCache(cacheKey, JsonConvert.SerializeObject(memberSimpleInfoViews), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
-                }
-
-                return new ResponseResult()
-                {
-                    Result = true,
-                    ResultCode = StatusCodes.Status200OK,
-                    Content = memberSimpleInfoViews
-                };
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("搜尋會員失敗發生錯誤", $"SearchKey: {searchKey} SearchType: {searchType} SearchMemberID: {searchMemberID}", ex);
-                return new ResponseResult()
-                {
-                    Result = false,
-                    ResultCode = StatusCodes.Status500InternalServerError,
-                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
-                };
-            }
-        }
-
-        /// <summary>
         /// 取得會員名片資訊
         /// </summary>
         /// <param name="content">content</param>
@@ -645,6 +608,48 @@ namespace DataInfo.Service.Managers.Member
             catch (Exception ex)
             {
                 this.logger.LogError("取得會員名片資訊發生錯誤", $"Content: {JsonConvert.SerializeObject(content)} SearchMemberID: {searchMemberID}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                };
+            }
+        }
+
+        /// <summary>
+        /// 取得會員詳細資訊
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> GetDetail(string memberID)
+        {
+            try
+            {
+                MemberDao memberDao = await this.memberRepository.Get(memberID, MemberSearchType.MemberID).ConfigureAwait(false);
+                if (memberDao == null)
+                {
+                    this.logger.LogWarn("取得會員明細資訊失敗，無會員資料", $"MemberID: {memberID}", null);
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = StatusCodes.Status409Conflict,
+                        ResultMessage = ResponseErrorMessageType.GetFail.ToString()
+                    };
+                }
+
+                MemberDao[] memberDaos = new MemberDao[] { memberDao };
+                IEnumerable<MemberDetailInfoView> memberDetailInfoViews = await this.TransformMemberDetailInfoView(memberDaos).ConfigureAwait(false);
+                return new ResponseResult()
+                {
+                    Result = true,
+                    ResultCode = StatusCodes.Status200OK,
+                    Content = memberDetailInfoViews.FirstOrDefault()
+                };
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得會員明細資訊發生錯誤", $"MemberID: {memberID}", ex);
                 return new ResponseResult()
                 {
                     Result = false,
@@ -887,6 +892,63 @@ namespace DataInfo.Service.Managers.Member
         }
 
         /// <summary>
+        /// 搜尋會員
+        /// </summary>
+        /// <param name="searchKey">searchKey</param>
+        /// <param name="searchType">searchType</param>
+        /// <param name="searchMemberID">searchMemberID</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> Search(string searchKey, int searchType, string searchMemberID)
+        {
+            try
+            {
+                #region 驗證資料
+
+                if (string.IsNullOrEmpty(searchKey))
+                {
+                    //// 沒有搜尋關鍵字，直接回傳空資料
+                    this.logger.LogWarn("搜尋會員失敗，無搜尋關鍵字", $"SearchKey: {searchKey} SearchType: {searchType} SearchMemberID: {searchMemberID}", null);
+                    return new ResponseResult()
+                    {
+                        Result = true,
+                        ResultCode = StatusCodes.Status400BadRequest,
+                        ResultMessage = ResponseErrorMessageType.SearchKeyEmpty.ToString()
+                    };
+                }
+
+                #endregion 驗證資料
+
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{searchMemberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.Search}-{searchKey}-{searchType}";
+                IEnumerable<MemberSimpleInfoView> memberSimpleInfoViews = await this.redisRepository.GetCache<IEnumerable<MemberSimpleInfoView>>(cacheKey).ConfigureAwait(false);
+                if (memberSimpleInfoViews == null)
+                {
+                    bool isFuzzy = searchType.Equals((int)SearchType.Fuzzy);
+                    string[] ignoreMemberIds = new string[] { searchMemberID };
+                    IEnumerable<MemberDao> memberDaos = await this.memberRepository.Search(searchKey, isFuzzy, ignoreMemberIds).ConfigureAwait(false);
+                    memberSimpleInfoViews = await this.TransformMemberSimpleInfoView(memberDaos).ConfigureAwait(false);
+                    this.redisRepository.SetCache(cacheKey, JsonConvert.SerializeObject(memberSimpleInfoViews), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
+                }
+
+                return new ResponseResult()
+                {
+                    Result = true,
+                    ResultCode = StatusCodes.Status200OK,
+                    Content = memberSimpleInfoViews
+                };
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("搜尋會員失敗發生錯誤", $"SearchKey: {searchKey} SearchType: {searchType} SearchMemberID: {searchMemberID}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                };
+            }
+        }
+
+        /// <summary>
         /// 發送會員忘記密碼驗證碼
         /// </summary>
         /// <param name="content">content</param>
@@ -1060,48 +1122,6 @@ namespace DataInfo.Service.Managers.Member
         }
 
         /// <summary>
-        /// 取得會員詳細資訊
-        /// </summary>
-        /// <param name="memberID">memberID</param>
-        /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> GetDetail(string memberID)
-        {
-            try
-            {
-                MemberDao memberDao = await this.memberRepository.Get(memberID, MemberSearchType.MemberID).ConfigureAwait(false);
-                if (memberDao == null)
-                {
-                    this.logger.LogWarn("取得會員明細資訊失敗，無會員資料", $"MemberID: {memberID}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = StatusCodes.Status409Conflict,
-                        ResultMessage = ResponseErrorMessageType.GetFail.ToString()
-                    };
-                }
-
-                MemberDao[] memberDaos = new MemberDao[] { memberDao };
-                IEnumerable<MemberDetailInfoView> memberDetailInfoViews = await this.TransformMemberDetailInfoView(memberDaos).ConfigureAwait(false);
-                return new ResponseResult()
-                {
-                    Result = true,
-                    ResultCode = StatusCodes.Status200OK,
-                    Content = memberDetailInfoViews.FirstOrDefault()
-                };
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("取得會員明細資訊發生錯誤", $"MemberID: {memberID}", ex);
-                return new ResponseResult()
-                {
-                    Result = false,
-                    ResultCode = StatusCodes.Status500InternalServerError,
-                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
-                };
-            }
-        }
-
-        /// <summary>
         /// 轉換為會員詳細資訊可視資料
         /// </summary>
         /// <param name="memberDaos">memberDaos</param>
@@ -1147,6 +1167,66 @@ namespace DataInfo.Service.Managers.Member
             }
 
             return memberSimpleInfoViews;
+        }
+
+        /// <summary>
+        /// 會員更新推播 Token
+        /// </summary>
+        /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> UpdateNotifyToken(MemberUpdateNotifyTokenContent content, string memberID)
+        {
+            try
+            {
+                #region 發送【會員更新推播 Token】指令至後端
+
+                MemberUpdateNotifyTokenRequest request = new MemberUpdateNotifyTokenRequest()
+                {
+                    MemberID = memberID,
+                    NotifyToken = content.NotifyToken
+                };
+                CommandData<MemberUpdateNotifyTokenResponse> response = await this.serverService.DoAction<MemberUpdateNotifyTokenResponse>((int)UserCommandIDType.UpdateNotifyToken, CommandType.User, request).ConfigureAwait(false);
+                this.logger.LogInfo("會員更新推播 Token 結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)}", null);
+                switch (response.Data.Result)
+                {
+                    case (int)UpdateNotifyTokenResultType.Success:
+                        return new ResponseResult()
+                        {
+                            Result = true,
+                            ResultCode = StatusCodes.Status200OK,
+                            ResultMessage = ResponseSuccessMessageType.UpdateSuccess.ToString()
+                        };
+
+                    case (int)UpdateNotifyTokenResultType.Fail:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
+                        };
+
+                    default:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = StatusCodes.Status502BadGateway,
+                            ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                        };
+                }
+
+                #endregion 發送【會員更新推播 Token】指令至後端
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("會員更新推播 Token 發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                };
+            }
         }
 
         /// <summary>
@@ -1217,26 +1297,6 @@ namespace DataInfo.Service.Managers.Member
                     ResultCode = StatusCodes.Status500InternalServerError,
                     ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
-            }
-        }
-
-        /// <summary>
-        /// 刪除會員快取資訊
-        /// </summary>
-        /// <param name="memberID">memberID</param>
-        private void DeleteMemberInfoCache(string memberID)
-        {
-            try
-            {
-                this.logger.LogInfo("刪除會員快取資訊", $"MemberID: {memberID}", null);
-                string cardInfoCacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.CardInfo}";
-                string homeInfoCacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.HomeInfo}";
-                this.redisRepository.DeleteCache(cardInfoCacheKey);
-                this.redisRepository.DeleteCache(homeInfoCacheKey);
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("刪除會員快取資訊發生錯誤", $"MemberID: {memberID}", ex);
             }
         }
 

@@ -1,6 +1,9 @@
 ﻿using DataInfo.Core.Applibs;
 using DataInfo.Core.Models.Enum;
 using FluentValidation;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace DataInfo.Core.Models.Dto.Team.Content
 {
@@ -65,21 +68,22 @@ namespace DataInfo.Core.Models.Dto.Team.Content
             //.NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Team.FrontCoverEmpty);
 
             RuleFor(content => content.County)
-            .Must(County =>
+            .Must(county =>
             {
-                return County != (int)CountyType.None;
+                Dictionary<string, string> countyMap = AppSettingHelper.Appsetting.CountyMap;
+                return county >= Convert.ToInt32(countyMap.Keys.FirstOrDefault()) && county <= Convert.ToInt32(countyMap.Keys.LastOrDefault());
             }).WithMessage(MessageHelper.Message.ResponseMessage.Team.CountyEmpty);
 
             RuleFor(content => content.ExamineStatus)
            .Must(examineStatus =>
            {
-               return examineStatus != (int)TeamExamineStatusType.None;
+               return examineStatus == (int)TeamExamineStatusType.Close || examineStatus == (int)TeamExamineStatusType.Open;
            }).WithMessage(MessageHelper.Message.ResponseMessage.Team.ExamineStatusEmpty);
 
             RuleFor(content => content.SearchStatus)
            .Must(searchStatus =>
            {
-               return searchStatus != (int)TeamSearchStatusType.None;
+               return searchStatus == (int)TeamSearchStatusType.Close || searchStatus == (int)TeamSearchStatusType.Open;
            }).WithMessage(MessageHelper.Message.ResponseMessage.Team.SearchStatusEmpty);
 
             //RuleFor(content => content.TeamInfo)
