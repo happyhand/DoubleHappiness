@@ -141,19 +141,22 @@ namespace DataInfo.Api
                 setup.Filters.Add(typeof(ContentAttribute));
             }).AddFluentValidation();
             //// µù¥U Content Validator
-            services.AddTransient<IValidator<MemberRegisterContent>, MemberRegisterContentValidator>();
-            services.AddTransient<IValidator<MemberLoginContent>, MemberLoginContentValidator>();
             services.AddTransient<IValidator<MemberCardInfoContent>, MemberCardInfoContentValidator>();
             services.AddTransient<IValidator<MemberForgetPasswordContent>, MemberForgetPasswordContentValidator>();
-            services.AddTransient<IValidator<MemberRequestForgetPasswordContent>, MemberRequestForgetPasswordContentValidator>();
+            services.AddTransient<IValidator<MemberLoginContent>, MemberLoginContentValidator>();
             services.AddTransient<IValidator<MemberMobileBindContent>, MemberMobileBindContentValidator>();
+            services.AddTransient<IValidator<MemberRegisterContent>, MemberRegisterContentValidator>();
+            services.AddTransient<IValidator<MemberRequestForgetPasswordContent>, MemberRequestForgetPasswordContentValidator>();
             services.AddTransient<IValidator<MemberRequestMobileBindContent>, MemberRequestMobileBindContentValidator>();
+            services.AddTransient<IValidator<MemberUpdateNotifyTokenContent>, MemberUpdateNotifyTokenContentValidator>();
             services.AddTransient<IValidator<MemberUpdatePasswordContent>, MemberUpdatePasswordContentValidator>();
 
             services.AddTransient<IValidator<InteractiveContent>, InteractiveContentValidator>();
 
             services.AddTransient<IValidator<AddRideDataContent>, AddRideDataContentValidator>();
             services.AddTransient<IValidator<ReplyRideGroupContent>, ReplyRideGroupContentValidator>();
+            services.AddTransient<IValidator<UpdateRideGroupContent>, UpdateRideGroupContentValidator>();
+            services.AddTransient<IValidator<UpdateRideGroupCoordinateContent>, UpdateRideGroupCoordinateContentValidator>();
 
             services.AddTransient<IValidator<TeamBrowseContent>, TeamBrowseContentValidator>();
 

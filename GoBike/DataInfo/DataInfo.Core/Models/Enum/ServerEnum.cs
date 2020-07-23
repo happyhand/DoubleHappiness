@@ -232,6 +232,38 @@
     }
 
     /// <summary>
+    /// 更新座標結果類別資料
+    /// </summary>
+    public enum UpdateCoordinateResultType
+    {
+        /// <summary>
+        /// 更新失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 更新成功
+        /// </summary>
+        Success = 1
+    }
+
+    /// <summary>
+    /// 通知隊友結果類別資料
+    /// </summary>
+    public enum NotifyRideGroupMemberResultType
+    {
+        /// <summary>
+        /// 通知失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 通知成功
+        /// </summary>
+        Success = 1
+    }
+
+    /// <summary>
     /// 騎乘後端封包編號類別資料
     /// </summary>
     public enum RideCommandIDType
@@ -250,6 +282,16 @@
         /// 回覆組隊騎乘
         /// </summary>
         ReplyRideGroup = 1003,
+
+        /// <summary>
+        /// 更新座標
+        /// </summary>
+        UpdateCoordinate = 1004,
+
+        /// <summary>
+        /// 通知隊友
+        /// </summary>
+        NotifyRideGroupMember = 1005
     }
 
     /// <summary>

@@ -219,6 +219,21 @@
         /// 回覆失敗，請重新操作
         /// </summary>
         ReplyFail,
+
+        /// <summary>
+        /// 通知失敗，請重新操作
+        /// </summary>
+        NotifyFail,
+
+        /// <summary>
+        /// 無座標資料，請重新操作
+        /// </summary>
+        CoordinateEmpty,
+
+        /// <summary>
+        /// 超出最大人數，請重新操作
+        /// </summary>
+        ExceedMaxPeople,
     }
 
     /// <summary>
@@ -245,5 +260,10 @@
         /// 回覆成功
         /// </summary>
         ReplySuccess,
+
+        /// <summary>
+        /// 通知成功
+        /// </summary>
+        NotifySuccess,
     }
 }

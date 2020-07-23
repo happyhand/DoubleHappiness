@@ -307,7 +307,6 @@ namespace DataInfo.Service.Managers.Ride
                     {
                         IEnumerable<MemberDao> memberDaos = await this.memberRepository.Get(rideGroupDao.MemberList, new string[] { memberID }).ConfigureAwait(false);
                         Dictionary<string, RideGroupMemberDao> rideGroupMemberDaoMap = await this.redisRepository.GetCache<RideGroupMemberDao>(rideGroupDao.MemberList.Select(id => $"{groupMemberCacheKey}_{id}"), redisDB).ConfigureAwait(false);
-                        this.logger.LogInfo("【取得組隊隊員列表】", $"rideGroupMemberDaoMap:{JsonConvert.SerializeObject(rideGroupMemberDaoMap)}", null);
                         rideGroupMemberViews = memberDaos.Select(memberDao => this.TransformRideGroupMemberView(memberDao, rideGroupMemberDaoMap)).Where(view => view != null).ToList();
                     }
                 }
@@ -491,6 +490,127 @@ namespace DataInfo.Service.Managers.Ride
             catch (Exception ex)
             {
                 this.logger.LogError("更新組隊騎乘發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                };
+            }
+        }
+
+        /// <summary>
+        /// 更新組隊騎乘座標
+        /// </summary>
+        /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> UpdateRideGroupCoordinate(UpdateRideGroupCoordinateContent content, string memberID)
+        {
+            try
+            {
+                #region 發送【更新座標】指令至後端
+
+                UpdateRideGroupCoordinateRequest request = new UpdateRideGroupCoordinateRequest()
+                {
+                    MemberID = memberID,
+                    CoordinateX = content.CoordinateX,
+                    CoordinateY = content.CoordinateY
+                };
+                CommandData<UpdateRideGroupCoordinateResponse> response = await this.serverService.DoAction<UpdateRideGroupCoordinateResponse>((int)RideCommandIDType.UpdateCoordinate, CommandType.Ride, request).ConfigureAwait(false);
+                this.logger.LogInfo("更新組隊騎乘座標結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)}", null);
+
+                switch (response.Data.Result)
+                {
+                    case (int)UpdateCoordinateResultType.Success:
+                        return new ResponseResult()
+                        {
+                            Result = true,
+                            ResultCode = StatusCodes.Status200OK,
+                            ResultMessage = ResponseSuccessMessageType.UpdateSuccess.ToString()
+                        };
+
+                    case (int)UpdateCoordinateResultType.Fail:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
+                        };
+
+                    default:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = StatusCodes.Status502BadGateway,
+                            ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                        };
+                }
+
+                #endregion 發送【更新座標】指令至後端
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("更新組隊騎乘座標發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                };
+            }
+        }
+
+        /// <summary>
+        /// 發送組隊騎乘通知
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> SendNotify(string memberID)
+        {
+            try
+            {
+                #region 發送【通知隊友】指令至後端
+
+                RideGroupNotifyRequest request = new RideGroupNotifyRequest()
+                {
+                    MemberID = memberID
+                };
+                CommandData<RideGroupNotifyResponse> response = await this.serverService.DoAction<RideGroupNotifyResponse>((int)RideCommandIDType.UpdateCoordinate, CommandType.Ride, request).ConfigureAwait(false);
+                this.logger.LogInfo("發送組隊騎乘通知結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)}", null);
+
+                switch (response.Data.Result)
+                {
+                    case (int)NotifyRideGroupMemberResultType.Success:
+                        return new ResponseResult()
+                        {
+                            Result = true,
+                            ResultCode = StatusCodes.Status200OK,
+                            ResultMessage = ResponseSuccessMessageType.NotifySuccess.ToString()
+                        };
+
+                    case (int)NotifyRideGroupMemberResultType.Fail:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.NotifyFail.ToString()
+                        };
+
+                    default:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = StatusCodes.Status502BadGateway,
+                            ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                        };
+                }
+
+                #endregion 發送【通知隊友】指令至後端
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("發送組隊騎乘通知發生錯誤", $"MemberID: {memberID}", ex);
                 return new ResponseResult()
                 {
                     Result = false,

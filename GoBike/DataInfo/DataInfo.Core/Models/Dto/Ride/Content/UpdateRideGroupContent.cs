@@ -40,10 +40,10 @@ namespace DataInfo.Core.Models.Dto.Ride.Content
               })
               .Must(memberIDs =>
               {
-                  return memberIDs.Where(memberID => !string.IsNullOrEmpty(memberID)).Any();
+                  return memberIDs.Count() <= AppSettingHelper.Appsetting.Rule.MaxGroupCount;
               }).WithMessage(content =>
               {
-                  return $"{ResponseErrorMessageType.MemberIDEmpty}|MemberIDs: {JsonConvert.SerializeObject(content.MemberIDs)}";
+                  return $"{ResponseErrorMessageType.ExceedMaxPeople}|MemberIDs: {JsonConvert.SerializeObject(content.MemberIDs)}";
               });
         }
     }

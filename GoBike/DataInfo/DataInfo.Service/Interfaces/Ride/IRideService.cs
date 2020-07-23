@@ -55,5 +55,20 @@ namespace DataInfo.Service.Interfaces.Ride
         /// <param name="action">action</param>
         /// <returns>ResponseResult</returns>
         Task<ResponseResult> UpdateRideGroup(UpdateRideGroupContent content, string memberID, ActionType action);
+
+        /// <summary>
+        /// 更新組隊騎乘座標
+        /// </summary>
+        /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
+        /// <returns>ResponseResult</returns>
+        Task<ResponseResult> UpdateRideGroupCoordinate(UpdateRideGroupCoordinateContent content, string memberID);
+
+        /// <summary>
+        /// 發送組隊騎乘通知
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>ResponseResult</returns>
+        Task<ResponseResult> SendNotify(string memberID);
     }
 }

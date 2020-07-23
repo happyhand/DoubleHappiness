@@ -19,13 +19,13 @@ namespace DataInfo.Api.Controllers.Ride
     /// </summary>
     [ApiController]
     [Authorize]
-    [Route("api/Ride/[controller]")]
-    public class ReplyGroupController : JwtController
+    [Route("api/Ride/Group/[controller]")]
+    public class ReplyController : JwtController
     {
         /// <summary>
         /// logger
         /// </summary>
-        private readonly ILogger logger = LogManager.GetLogger("RideReplyGroupController");
+        private readonly ILogger logger = LogManager.GetLogger("RideGroupReplyController");
 
         /// <summary>
         /// rideService
@@ -37,7 +37,7 @@ namespace DataInfo.Api.Controllers.Ride
         /// </summary>
         /// <param name="jwtService">jwtService</param>
         /// <param name="rideService">rideService</param>
-        public ReplyGroupController(IJwtService jwtService, IRideService rideService) : base(jwtService)
+        public ReplyController(IJwtService jwtService, IRideService rideService) : base(jwtService)
         {
             this.rideService = rideService;
         }

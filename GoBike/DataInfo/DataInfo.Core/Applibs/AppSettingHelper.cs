@@ -501,6 +501,11 @@ namespace DataInfo.Core.Applibs
             /// Gets or sets TakeBrowseCount
             /// </summary>
             public int TakeBrowseCount { get; set; }
+
+            /// <summary>
+            /// Gets or sets MaxGroupCount
+            /// </summary>
+            public int MaxGroupCount { get; set; }
         }
 
         #endregion 規則設定資料

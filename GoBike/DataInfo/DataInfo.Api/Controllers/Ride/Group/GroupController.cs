@@ -15,11 +15,11 @@ using System.Threading.Tasks;
 namespace DataInfo.Api.Controllers.Ride
 {
     /// <summary>
-    /// 組隊功能
+    /// 組隊騎乘功能
     /// </summary>
     [ApiController]
     [Authorize]
-    [Route("api/Ride/[controller]")]
+    [Route("api/Ride/Group")]
     public class GroupController : JwtController
     {
         /// <summary>
@@ -43,7 +43,7 @@ namespace DataInfo.Api.Controllers.Ride
         }
 
         /// <summary>
-        /// 組隊功能 - 取得組隊隊員列表
+        /// 組隊騎乘功能 - 取得組隊騎乘成員列表
         /// </summary>
         /// <returns>IActionResult</returns>
         [HttpGet]
@@ -52,13 +52,13 @@ namespace DataInfo.Api.Controllers.Ride
             string memberID = this.GetMemberID();
             try
             {
-                this.logger.LogInfo("會員請求取得組隊隊員列表", $"MemberID: {memberID}", null);
+                this.logger.LogInfo("會員請求取得組隊騎乘成員列表", $"MemberID: {memberID}", null);
                 ResponseResult responseResult = await rideService.GetRideGroupMemberList(memberID).ConfigureAwait(false);
                 return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員請求取得組隊隊員列表發生錯誤", $"MemberID: {memberID}", ex);
+                this.logger.LogError("會員請求取得組隊騎乘成員列表發生錯誤", $"MemberID: {memberID}", ex);
                 return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,
@@ -69,7 +69,7 @@ namespace DataInfo.Api.Controllers.Ride
         }
 
         /// <summary>
-        /// 組隊功能 - 組隊騎乘
+        /// 組隊騎乘功能 - 組隊騎乘
         /// </summary>
         /// <param name="content">content</param>
         /// <returns>IActionResult</returns>
