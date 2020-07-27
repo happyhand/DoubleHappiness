@@ -158,6 +158,8 @@ namespace DataInfo.Api
             services.AddTransient<IValidator<UpdateRideGroupContent>, UpdateRideGroupContentValidator>();
             services.AddTransient<IValidator<UpdateRideGroupCoordinateContent>, UpdateRideGroupCoordinateContentValidator>();
 
+            services.AddTransient<IValidator<TeamContent>, TeamContentValidator>();
+            services.AddTransient<IValidator<TeamKickContent>, TeamKickContentValidator>();
             services.AddTransient<IValidator<TeamBrowseContent>, TeamBrowseContentValidator>();
 
             //// 忽略 Model Binding 驗證不過跳 400 Error 的功能，以便客製化回應訊息

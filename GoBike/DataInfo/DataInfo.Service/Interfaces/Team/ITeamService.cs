@@ -19,6 +19,14 @@ namespace DataInfo.Service.Interfaces.Team
         Task<ResponseResult> ChangeLeader(string memberID, TeamChangeLeaderContent content);
 
         /// <summary>
+        /// 踢離車隊隊員
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
+        /// <returns>ResponseResult</returns>
+        Task<ResponseResult> KickTeamMamber(string memberID, TeamKickContent content);
+
+        /// <summary>
         /// 建立車隊
         /// </summary>
         /// <param name="memberID">memberID</param>

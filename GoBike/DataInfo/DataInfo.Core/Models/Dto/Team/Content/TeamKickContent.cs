@@ -1,32 +1,34 @@
-﻿using DataInfo.Core.Applibs;
-using DataInfo.Core.Models.Enum;
+﻿using DataInfo.Core.Models.Enum;
 using FluentValidation;
-using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Linq;
 
-namespace DataInfo.Core.Models.Dto.Ride.Content
+namespace DataInfo.Core.Models.Dto.Team.Content
 {
     /// <summary>
-    /// 更新組隊騎乘內容
+    /// 踢離車隊隊員內容
     /// </summary>
-    public class UpdateRideGroupContent
+    public class TeamKickContent
     {
         /// <summary>
         /// Gets or sets 會員 ID 列表
         /// </summary>
         public IEnumerable<string> MemberIDs { get; set; }
+
+        /// <summary>
+        /// Gets or sets 車隊 ID
+        /// </summary>
+        public string TeamID { get; set; }
     }
 
     /// <summary>
-    /// 驗證更新組隊騎乘內容
+    /// 驗證踢離車隊隊員內容
     /// </summary>
-    public class UpdateRideGroupContentValidator : AbstractValidator<UpdateRideGroupContent>
+    public class TeamKickContentValidator : AbstractValidator<TeamKickContent>
     {
         /// <summary>
         /// 建構式
         /// </summary>
-        public UpdateRideGroupContentValidator()
+        public TeamKickContentValidator()
         {
             this.CascadeMode = CascadeMode.StopOnFirstFailure;
             RuleFor(content => content.MemberIDs)
@@ -37,13 +39,16 @@ namespace DataInfo.Core.Models.Dto.Ride.Content
               .NotEmpty().WithMessage(content =>
               {
                   return $"{ResponseErrorMessageType.MemberIDEmpty}";
+              });
+
+            RuleFor(content => content.TeamID)
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.TeamIDEmpty}";
               })
-              .Must(memberIDs =>
+              .NotEmpty().WithMessage(content =>
               {
-                  return memberIDs.Count() <= AppSettingHelper.Appsetting.Rule.MaxGroupCount;
-              }).WithMessage(content =>
-              {
-                  return $"{ResponseErrorMessageType.ExceedMaxPeople}|MemberIDs: {JsonConvert.SerializeObject(content.MemberIDs)}";
+                  return $"{ResponseErrorMessageType.TeamIDEmpty}";
               });
         }
     }

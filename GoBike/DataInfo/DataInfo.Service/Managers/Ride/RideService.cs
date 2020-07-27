@@ -182,7 +182,7 @@ namespace DataInfo.Service.Managers.Ride
                 AddRideInfoRequest request = this.mapper.Map<AddRideInfoRequest>(content);
                 request.MemberID = memberID;
                 CommandData<AddRideInfoResponse> response = await this.serverService.DoAction<AddRideInfoResponse>((int)RideCommandIDType.CreateRideRecord, CommandType.Ride, request).ConfigureAwait(false);
-                this.logger.LogInfo("新增騎乘資料結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                this.logger.LogInfo("新增騎乘資料結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)}", null);
 
                 switch (response.Data.Result)
                 {

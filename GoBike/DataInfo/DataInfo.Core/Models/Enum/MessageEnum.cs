@@ -234,6 +234,16 @@
         /// 超出最大人數，請重新操作
         /// </summary>
         ExceedMaxPeople,
+
+        /// <summary>
+        /// 車隊解散失敗，請重新操作
+        /// </summary>
+        DisbandFail,
+
+        /// <summary>
+        /// 踢離車隊隊員失敗，請重新操作
+        /// </summary>
+        KickFail,
     }
 
     /// <summary>
@@ -265,5 +275,15 @@
         /// 通知成功
         /// </summary>
         NotifySuccess,
+
+        /// <summary>
+        /// 車隊解散成功
+        /// </summary>
+        DisbandSuccess,
+
+        /// <summary>
+        /// 踢離車隊隊員成功
+        /// </summary>
+        KickSuccess,
     }
 }

@@ -477,7 +477,12 @@
         /// <summary>
         /// 加入或離開車隊
         /// </summary>
-        JoinOrLeaveTeam = 1011
+        JoinOrLeaveTeam = 1011,
+
+        /// <summary>
+        /// 踢離車隊成員
+        /// </summary>
+        KickTeamMember = 1012,
     }
 
     /// <summary>
@@ -515,6 +520,27 @@
         /// 更新成功
         /// </summary>
         Success = 1,
+    }
+
+    /// <summary>
+    /// 踢離車隊成員結果類別資料
+    /// </summary>
+    public enum KickTeamMemberResultType
+    {
+        /// <summary>
+        /// 踢離失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 踢離成功
+        /// </summary>
+        Success = 1,
+
+        /// <summary>
+        /// 權限不足
+        /// </summary>
+        AuthorityNotEnough = 2,
     }
 
     /// <summary>

@@ -1,61 +1,65 @@
 ﻿using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dto.Response;
+using DataInfo.Core.Models.Dto.Team.Content;
 using DataInfo.Core.Models.Enum;
 using DataInfo.Service.Interfaces.Common;
-using DataInfo.Service.Interfaces.Member;
+using DataInfo.Service.Interfaces.Team;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Threading.Tasks;
 
-namespace DataInfo.Api.Controllers.Member
+namespace DataInfo.Api.Controllers.Team
 {
     /// <summary>
-    /// 保持在線
+    /// 踢離車隊隊員
     /// </summary>
     [ApiController]
     [Authorize]
-    [Route("api/Member/[controller]")]
-    public class KeepOnlineController : JwtController
+    [Route("api/Team/[controller]")]
+    public class KickController : JwtController
     {
         /// <summary>
         /// logger
         /// </summary>
-        private readonly ILogger logger = LogManager.GetLogger("MemberKeepOnlineController");
+        private readonly ILogger logger = LogManager.GetLogger("TeamKickController");
 
         /// <summary>
-        /// memberService
+        /// teamService
         /// </summary>
-        private readonly IMemberService memberService;
+        private readonly ITeamService teamService;
 
         /// <summary>
         /// 建構式
         /// </summary>
         /// <param name="jwtService">jwtService</param>
-        /// <param name="memberService">memberService</param>
-        public KeepOnlineController(IJwtService jwtService, IMemberService memberService) : base(jwtService)
+        /// <param name="teamService">teamService</param>
+        public KickController(IJwtService jwtService, ITeamService teamService) : base(jwtService)
         {
-            this.memberService = memberService;
+            this.teamService = teamService;
         }
 
         /// <summary>
-        /// 保持在線
+        /// 踢離車隊隊員
         /// </summary>
+        /// <param name="content">content</param>
         /// <returns>IActionResult</returns>
-        [HttpGet]
-        public async Task<IActionResult> Get()
+        [HttpPost]
+        public async Task<IActionResult> Post(TeamKickContent content)
         {
             string memberID = this.GetMemberID();
             try
             {
-                ResponseResult responseResult = await this.memberService.KeepOnline(memberID).ConfigureAwait(false);
+                this.logger.LogInfo("會員請求踢離車隊隊員", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                ResponseResult responseResult = await teamService.KickTeamMamber(memberID, content).ConfigureAwait(false);
                 return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員請求保持在線發生錯誤", $"MemberID: {memberID}", ex);
+                this.logger.LogError("會員請求踢離車隊隊員發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
                 return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,
