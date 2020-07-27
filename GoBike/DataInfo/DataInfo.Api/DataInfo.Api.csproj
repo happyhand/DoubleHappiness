@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <OutputPath>C:\6s\Mine\DoubleHappiness\api.gobike.com\</OutputPath>
-    <DocumentationFile>C:\6s\Mine\DoubleHappiness\api.gobike.com\GoBike.API.Swagger.xml</DocumentationFile>
+    <OutputPath>D:\DoubleHappiness\api.gobike.com\</OutputPath>
+    <DocumentationFile>D:\DoubleHappiness\api.gobike.com\GoBike.API.Swagger.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

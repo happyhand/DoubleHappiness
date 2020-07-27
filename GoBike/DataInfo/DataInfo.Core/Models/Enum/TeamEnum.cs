@@ -1,6 +1,27 @@
 ﻿namespace DataInfo.Core.Models.Enum
 {
     /// <summary>
+    /// 可活動動作狀態類別資料
+    /// </summary>
+    public enum ActivityActionStatusType
+    {
+        /// <summary>
+        /// 取消活動
+        /// </summary>
+        Delete = -1,
+
+        /// <summary>
+        /// 取消加入
+        /// </summary>
+        Cancel = 0,
+
+        /// <summary>
+        /// 加入活動
+        /// </summary>
+        Join = 1
+    }
+
+    /// <summary>
     /// 加入狀態類別資料
     /// </summary>
     public enum JoinStatusType

@@ -15,6 +15,7 @@ using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Server;
 using DataInfo.Service.Interfaces.Team;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using NLog;
 using System;
@@ -382,7 +383,9 @@ namespace DataInfo.Service.Managers.Team
                 }
 
                 TeamActivityDetailView teamActivityDetailView = this.mapper.Map<TeamActivityDetailView>(teamActivityDao);
-                teamActivityDetailView.HasJoin = teamActivityDao.MemberList.Contains(memberID) ? (int)JoinStatusType.Join : (int)JoinStatusType.None;
+                teamActivityDetailView.ActionStatus = teamActivityDao.FounderID.Equals(memberID) ?
+                                                      (int)ActivityActionStatusType.Delete : teamActivityDao.MemberList.Contains(memberID) ?
+                                                      (int)ActivityActionStatusType.Cancel : (int)JoinStatusType.Join;
                 return new ResponseResult()
                 {
                     Result = true,
@@ -405,7 +408,42 @@ namespace DataInfo.Service.Managers.Team
         }
 
         /// <summary>
-        /// 取得車隊活動列表
+        /// 取得已參加的車隊活動列表
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> GetJoinList(string memberID)
+        {
+            try
+            {
+                IEnumerable<TeamActivityDao> teamActivityDaos = await this.teamActivityRepository.Get(memberID).ConfigureAwait(false);
+                IEnumerable<TeamActivityListView> teamActivityListViews = teamActivityDaos.Select(dao =>
+                {
+                    TeamActivityListView teamActivityListView = this.mapper.Map<TeamActivityListView>(dao);
+                    teamActivityListView.HasJoin = dao.MemberList.Contains(memberID) ? (int)JoinStatusType.Join : (int)JoinStatusType.None;
+                    return teamActivityListView;
+                });
+                return new ResponseResult()
+                {
+                    Result = true,
+                    ResultCode = StatusCodes.Status200OK,
+                    Content = teamActivityListViews
+                };
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得已參加的車隊活動列表發生錯誤", $"MemberID: {memberID}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                };
+            }
+        }
+
+        /// <summary>
+        /// 取得車隊的活動列表
         /// </summary>
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
@@ -421,7 +459,7 @@ namespace DataInfo.Service.Managers.Team
                 if (!validationResult.IsValid)
                 {
                     string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("取得車隊活動列表結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    this.logger.LogWarn("取得車隊的活動列表結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                     return new ResponseResult()
                     {
                         Result = false,
@@ -452,7 +490,7 @@ namespace DataInfo.Service.Managers.Team
             }
             catch (Exception ex)
             {
-                this.logger.LogError("取得車隊活動列表發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                this.logger.LogError("取得車隊的活動列表發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
                 return new ResponseResult()
                 {
                     Result = false,

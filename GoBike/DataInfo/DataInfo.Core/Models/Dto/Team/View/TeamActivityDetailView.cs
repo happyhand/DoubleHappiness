@@ -19,6 +19,11 @@ namespace DataInfo.Core.Models.Dto.Team.View
         public string ActID { get; set; }
 
         /// <summary>
+        /// Gets or sets 活動動作狀態
+        /// </summary>
+        public int ActionStatus { get; set; }
+
+        /// <summary>
         /// Gets or sets 路線描述
         /// </summary>
         public string Description { get; set; }
@@ -32,11 +37,6 @@ namespace DataInfo.Core.Models.Dto.Team.View
         /// Gets or sets 主辦人名稱
         /// </summary>
         public string FounderName { get; set; }
-
-        /// <summary>
-        /// Gets or sets 是否已經參加
-        /// </summary>
-        public int HasJoin { get; set; }
 
         /// <summary>
         /// Gets or sets 最高海拔

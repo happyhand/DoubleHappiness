@@ -17,7 +17,7 @@ namespace DataInfo.Api.Controllers.Ride
     /// </summary>
     [ApiController]
     [Authorize]
-    [Route("api/Ride/Group")]
+    [Route("api/Ride/Group/[controller]")]
     public class NotifyController : JwtController
     {
         /// <summary>

@@ -35,7 +35,14 @@ namespace DataInfo.Service.Interfaces.Team
         Task<ResponseResult> GetDetail(string memberID, TeamActivityDetailContent content);
 
         /// <summary>
-        /// 取得車隊活動列表
+        /// 取得已參加的車隊活動列表
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>ResponseResult</returns>
+        Task<ResponseResult> GetJoinList(string memberID);
+
+        /// <summary>
+        /// 取得車隊的活動列表
         /// </summary>
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>

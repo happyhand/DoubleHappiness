@@ -2,9 +2,11 @@
 using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dto.Response;
 using DataInfo.Core.Models.Dto.Team.Content;
+using DataInfo.Core.Models.Enum;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Team;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using NLog;
@@ -42,7 +44,33 @@ namespace DataInfo.Api.Controllers.Team
         }
 
         /// <summary>
-        /// 取得車隊活動列表
+        /// 取得會員已參加的車隊活動列表
+        /// </summary>
+        /// <returns>IActionResult</returns>
+        [HttpGet()]
+        public async Task<IActionResult> Get()
+        {
+            string memberID = this.GetMemberID();
+            try
+            {
+                this.logger.LogInfo("會員請求取得已參加的車隊活動列表", $"MemberID: {memberID}", null);
+                ResponseResult responseResult = await this.teamActivityService.GetJoinList(memberID).ConfigureAwait(false);
+                return this.ResponseHandler(responseResult);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("會員請求取得已參加的車隊活動列表發生錯誤", $"MemberID: {memberID}", ex);
+                return this.ResponseHandler(new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                });
+            }
+        }
+
+        /// <summary>
+        /// 取得車隊的活動列表
         /// </summary>
         /// <param name="teamID">teamID</param>
         /// <returns>IActionResult</returns>
@@ -52,14 +80,14 @@ namespace DataInfo.Api.Controllers.Team
             string memberID = this.GetMemberID();
             try
             {
-                this.logger.LogInfo("會員請求取得車隊活動列表", $"MemberID: {memberID} TeamID: {teamID}", null);
+                this.logger.LogInfo("會員請求取得車隊的活動列表", $"MemberID: {memberID} TeamID: {teamID}", null);
                 TeamContent content = new TeamContent() { TeamID = teamID };
                 ResponseResult responseResult = await this.teamActivityService.GetList(memberID, content).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員請求取得車隊活動列表發生錯誤", $"MemberID: {memberID} TeamID: {teamID}", ex);
+                this.logger.LogError("會員請求取得車隊的活動列表發生錯誤", $"MemberID: {memberID} TeamID: {teamID}", ex);
                 return Ok(new ResponseResult()
                 {
                     Result = false,

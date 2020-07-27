@@ -18,6 +18,13 @@ namespace DataInfo.Repository.Interfaces.Team
         Task<IEnumerable<TeamActivityDao>> Get(string memberID, string teamID);
 
         /// <summary>
+        /// 取得會員已加入的車隊活動資料列表
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>TeamActivityDaos</returns>
+        Task<IEnumerable<TeamActivityDao>> Get(string memberID);
+
+        /// <summary>
         /// 取得車隊活動資料
         /// </summary>
         /// <param name="memberID">memberID</param>

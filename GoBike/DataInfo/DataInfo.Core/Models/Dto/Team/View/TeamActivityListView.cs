@@ -31,19 +31,24 @@
         public int HasJoin { get; set; }
 
         /// <summary>
+        /// Gets or sets 最高海拔
+        /// </summary>
+        public float MaxAltitude { get; set; }
+
+        /// <summary>
         /// Gets or sets 集合時間
         /// </summary>
         public string MeetTime { get; set; }
 
         /// <summary>
+        /// Gets or sets 車隊 ID
+        /// </summary>
+        public string TeamID { get; set; }
+
+        /// <summary>
         /// Gets or sets 標題
         /// </summary>
         public string Title { get; set; }
-
-        /// <summary>
-        /// Gets or sets 最高海拔
-        /// </summary>
-        public float MaxAltitude { get; set; }
 
         /// <summary>
         /// Gets or sets 總距離

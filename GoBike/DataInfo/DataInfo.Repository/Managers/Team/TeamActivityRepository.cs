@@ -76,6 +76,28 @@ namespace DataInfo.Repository.Managers.Team
         }
 
         /// <summary>
+        /// 取得會員已加入的車隊活動資料列表
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>TeamActivityDaos</returns>
+        public async Task<IEnumerable<TeamActivityDao>> Get(string memberID)
+        {
+            try
+            {
+                ISugarQueryable<TeamData, TeamActivity, UserInfo> query = this.Db.Queryable<TeamData, TeamActivity, UserInfo>(
+                                                          (td, ta, ui) => ta.TeamID.Equals(td.TeamID) && ta.MemberID.Equals(ui.MemberID))
+                                                          .Where((td, ta, ui) => ta.MemberList.Contains(memberID));
+
+                return (await this.TransformTeamActivityDao(query).ConfigureAwait(false));
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得會員已加入的車隊活動資料列表發生錯誤", $"MemberID: {memberID}", ex);
+                return new List<TeamActivityDao>();
+            }
+        }
+
+        /// <summary>
         /// 取得車隊活動資料
         /// </summary>
         /// <param name="memberID">memberID</param>
