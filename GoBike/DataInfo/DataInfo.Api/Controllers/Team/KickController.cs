@@ -54,7 +54,7 @@ namespace DataInfo.Api.Controllers.Team
             try
             {
                 this.logger.LogInfo("會員請求踢離車隊隊員", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await teamService.KickTeamMamber(memberID, content).ConfigureAwait(false);
+                ResponseResult responseResult = await teamService.Kick(memberID, content).ConfigureAwait(false);
                 return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)

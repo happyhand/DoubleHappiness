@@ -188,7 +188,7 @@ namespace DataInfo.Service.Managers.Ride
                 {
                     case (int)CreateRideRecordResultType.Success:
                         string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.RideRecord}";
-                        this.redisRepository.DeleteCache(cacheKey);
+                        this.redisRepository.DeleteCache(AppSettingHelper.Appsetting.Redis.RideDB, cacheKey);
                         return new ResponseResult()
                         {
                             Result = true,
@@ -237,7 +237,7 @@ namespace DataInfo.Service.Managers.Ride
             try
             {
                 string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.HomeInfo}";
-                IEnumerable<RideFriendWeekRankView> rideFriendWeekRankViews = await this.redisRepository.GetCache<IEnumerable<RideFriendWeekRankView>>(cacheKey).ConfigureAwait(false);
+                IEnumerable<RideFriendWeekRankView> rideFriendWeekRankViews = await this.redisRepository.GetCache<IEnumerable<RideFriendWeekRankView>>(AppSettingHelper.Appsetting.Redis.RideDB, cacheKey).ConfigureAwait(false);
                 if (rideFriendWeekRankViews == null)
                 {
                     IEnumerable<string> friendIDList = await this.interactiveRepository.GetFriendList(memberID).ConfigureAwait(false);
@@ -264,7 +264,7 @@ namespace DataInfo.Service.Managers.Ride
                     });
 
                     rideFriendWeekRankViews = rideFriendWeekRankViews.OrderByDescending(data => data.WeekDistance);
-                    this.redisRepository.SetCache(cacheKey, JsonConvert.SerializeObject(rideFriendWeekRankViews), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
+                    this.redisRepository.SetCache(AppSettingHelper.Appsetting.Redis.RideDB, cacheKey, JsonConvert.SerializeObject(rideFriendWeekRankViews), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
                 }
 
                 return new ResponseResult()
@@ -299,14 +299,14 @@ namespace DataInfo.Service.Managers.Ride
                 int redisDB = AppSettingHelper.Appsetting.Redis.ServerDB;
                 string groupMemberCacheKey = AppSettingHelper.Appsetting.Redis.Flag.GroupMember;
                 string cacheKey = $"{groupMemberCacheKey}_{memberID}";
-                RideGroupMemberDao rideGroupMemberDao = await this.redisRepository.GetCache<RideGroupMemberDao>(cacheKey, redisDB).ConfigureAwait(false);
+                RideGroupMemberDao rideGroupMemberDao = await this.redisRepository.GetCache<RideGroupMemberDao>(redisDB, cacheKey).ConfigureAwait(false);
                 if (rideGroupMemberDao != null)
                 {
-                    RideGroupDao rideGroupDao = await this.redisRepository.GetCache<RideGroupDao>(rideGroupMemberDao.RideGroupKey, redisDB).ConfigureAwait(false);
+                    RideGroupDao rideGroupDao = await this.redisRepository.GetCache<RideGroupDao>(redisDB, rideGroupMemberDao.RideGroupKey).ConfigureAwait(false);
                     if (rideGroupDao != null)
                     {
                         IEnumerable<MemberDao> memberDaos = await this.memberRepository.Get(rideGroupDao.MemberList, null).ConfigureAwait(false);
-                        Dictionary<string, RideGroupMemberDao> rideGroupMemberDaoMap = await this.redisRepository.GetCache<RideGroupMemberDao>(rideGroupDao.MemberList.Select(id => $"{groupMemberCacheKey}_{id}"), redisDB).ConfigureAwait(false);
+                        Dictionary<string, RideGroupMemberDao> rideGroupMemberDaoMap = await this.redisRepository.GetCache<RideGroupMemberDao>(redisDB, rideGroupDao.MemberList.Select(id => $"{groupMemberCacheKey}_{id}")).ConfigureAwait(false);
                         rideGroupMemberViews = memberDaos.Select(memberDao => this.TransformRideGroupMemberView(memberDao, rideGroupMemberDaoMap)).Where(view => view != null).ToList();
                     }
                 }
@@ -340,12 +340,12 @@ namespace DataInfo.Service.Managers.Ride
             try
             {
                 string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.RideRecord}";
-                IEnumerable<RideSimpleRecordView> rideSimpleRecordViews = await this.redisRepository.GetCache<IEnumerable<RideSimpleRecordView>>(cacheKey).ConfigureAwait(false);
+                IEnumerable<RideSimpleRecordView> rideSimpleRecordViews = await this.redisRepository.GetCache<IEnumerable<RideSimpleRecordView>>(AppSettingHelper.Appsetting.Redis.RideDB, cacheKey).ConfigureAwait(false);
                 if (rideSimpleRecordViews == null)
                 {
                     IEnumerable<RideDao> rideDaos = await this.rideRepository.GetRecordList(memberID).ConfigureAwait(false);
                     rideSimpleRecordViews = this.mapper.Map<IEnumerable<RideSimpleRecordView>>(rideDaos);
-                    this.redisRepository.SetCache(cacheKey, JsonConvert.SerializeObject(rideSimpleRecordViews), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
+                    this.redisRepository.SetCache(AppSettingHelper.Appsetting.Redis.RideDB, cacheKey, JsonConvert.SerializeObject(rideSimpleRecordViews), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
                 }
 
                 return new ResponseResult()

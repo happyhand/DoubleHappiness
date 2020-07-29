@@ -53,7 +53,7 @@ namespace DataInfo.Api.Controllers.Team
             {
                 this.logger.LogInfo("會員請求搜尋車隊", $"MemberID: {memberID} SearchKey: {searchKey}", null);
                 TeamSearchContent content = new TeamSearchContent() { SearchKey = searchKey };
-                ResponseResult responseResult = await teamService.SearchTeam(memberID, content).ConfigureAwait(false);
+                ResponseResult responseResult = await teamService.Search(memberID, content).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)

@@ -12,71 +12,87 @@ namespace DataInfo.Repository.Interfaces.Common
         /// <summary>
         /// 刪除快取資料
         /// </summary>
-        /// <param name="cacheKey">cacheKey</param>
         /// <param name="db">db</param>
+        /// <param name="cacheKey">cacheKey</param>
         /// <returns>bool</returns>
-        Task<bool> DeleteCache(string cacheKey, int? db = null);
+        Task<bool> DeleteCache(int db, string cacheKey);
+
+        /// <summary>
+        /// 刪除多筆快取資料
+        /// </summary>
+        /// <param name="db">db</param>
+        /// <param name="cacheKeys">cacheKeys</param>
+        /// <returns>bool</returns>
+        Task<bool> DeleteCache(int db, IEnumerable<string> cacheKeys);
 
         /// <summary>
         /// 讀取快取資料
         /// </summary>
+        /// <param name="db">db</param>
         /// <param name="cacheKey">cacheKey</param>
         /// <returns>T</returns>
-        Task<T> GetCache<T>(string cacheKey, int? db = null);
+        Task<T> GetCache<T>(int db, string cacheKey);
 
         /// <summary>
         /// 讀取多筆快取資料
         /// </summary>
+        /// <param name="db">db</param>
         /// <param name="cacheKeys">cacheKeys</param>
         /// <returns>T Map</returns>
-        Task<Dictionary<string, T>> GetCache<T>(IEnumerable<string> cacheKeys, int? db = null);
+        Task<Dictionary<string, T>> GetCache<T>(int db, IEnumerable<string> cacheKeys);
 
         /// <summary>
         /// 讀取快取資料
         /// </summary>
+        /// <param name="db">db</param>
         /// <param name="cacheKey">cacheKey</param>
         /// <param name="hashKey">hashKey</param>
         /// <returns>T</returns>
-        Task<T> GetCache<T>(string cacheKey, string hashKey, int? db = null);
+        Task<T> GetCache<T>(int db, string cacheKey, string hashKey);
 
         /// <summary>
         /// 取得 RedisKeys
         /// </summary>
+        /// <param name="db">db</param>
         /// <param name="cacheKey">cacheKey</param>
         /// <returns>RedisKeys</returns>
-        IEnumerable<string> GetRedisKeys(string cacheKey, int? db = null);
+        IEnumerable<string> GetRedisKeys(int db, string cacheKey);
 
         /// <summary>
         /// 檢查資料是否存在
         /// </summary>
+        /// <param name="db">db</param>
         /// <param name="cacheKey">cacheKey</param>
         /// <param name="isFuzzy">isFuzzy</param>
         /// <returns>bool</returns>
-        Task<bool> IsExist(string cacheKey, bool isFuzzy, int? db = null);
+        Task<bool> IsExist(int db, string cacheKey, bool isFuzzy);
 
         /// <summary>
         /// 寫入快取資料
         /// </summary>
+        /// <param name="db">db</param>
         /// <param name="cacheKey">cacheKey</param>
         /// <param name="dataJSON">dataJSON</param>
         /// <param name="cacheTimes">cacheTimes</param>
-        Task SetCache(string cacheKey, string dataJSON, TimeSpan? cacheTimes, int? db = null);
+        Task SetCache(int db, string cacheKey, string dataJSON, TimeSpan? cacheTimes);
 
         /// <summary>
         /// 寫入快取資料
         /// </summary>
+        /// <param name="db">db</param>
         /// <param name="cacheKey">cacheKey</param>
         /// <param name="hashKey">hashKey</param>
         /// <param name="dataJSON">dataJSON</param>
         /// <param name="cacheTimes">cacheTimes</param>
-        Task SetCache(string cacheKey, string hashKey, string dataJSON, TimeSpan? cacheTimes, int? db = null);
+        Task SetCache(int db, string cacheKey, string hashKey, string dataJSON, TimeSpan? cacheTimes);
 
         /// <summary>
         /// 更新快取資料到期時間
         /// </summary>
+        /// <param name="db">db</param>
         /// <param name="cacheKey">cacheKey</param>
         /// <param name="cacheTimes">cacheTimes</param>
         /// <returns>bool</returns>
-        Task<bool> UpdateCacheExpire(string cacheKey, TimeSpan? cacheTimes, int? db = null);
+        Task<bool> UpdateCacheExpire(int db, string cacheKey, TimeSpan? cacheTimes);
     }
 }

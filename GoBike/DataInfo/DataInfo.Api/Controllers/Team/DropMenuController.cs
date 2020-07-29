@@ -50,7 +50,7 @@ namespace DataInfo.Api.Controllers.Team
             try
             {
                 this.logger.LogInfo("會員請求取得車隊下拉選單", $"MemberID: {memberID}", null);
-                ResponseResult responseResult = await teamService.GetTeamDropMenu(memberID).ConfigureAwait(false);
+                ResponseResult responseResult = await teamService.GetDropMenu(memberID).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)

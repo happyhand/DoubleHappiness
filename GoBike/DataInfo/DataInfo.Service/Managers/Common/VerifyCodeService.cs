@@ -45,7 +45,7 @@ namespace DataInfo.Service.Managers.Common
             try
             {
                 string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.VerifierCode}-{email}";
-                this.redisRepository.DeleteCache(cacheKey);
+                this.redisRepository.DeleteCache(AppSettingHelper.Appsetting.Redis.CommonDB, cacheKey);
             }
             catch (Exception ex)
             {
@@ -64,7 +64,7 @@ namespace DataInfo.Service.Managers.Common
             {
                 string verifierCode = Guid.NewGuid().ToString().Substring(0, AppSettingHelper.Appsetting.VerifierCode.Length);
                 string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.VerifierCode}-{email}";
-                this.redisRepository.SetCache(cacheKey, JsonConvert.SerializeObject(verifierCode), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.VerifierCode.ExpirationDate));
+                this.redisRepository.SetCache(AppSettingHelper.Appsetting.Redis.CommonDB, cacheKey, JsonConvert.SerializeObject(verifierCode), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.VerifierCode.ExpirationDate));
                 return verifierCode;
             }
             catch (Exception ex)
@@ -84,7 +84,7 @@ namespace DataInfo.Service.Managers.Common
             try
             {
                 string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.VerifierCode}-{email}";
-                return await this.redisRepository.IsExist(cacheKey, false).ConfigureAwait(false);
+                return await this.redisRepository.IsExist(AppSettingHelper.Appsetting.Redis.CommonDB, cacheKey, false).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -105,7 +105,7 @@ namespace DataInfo.Service.Managers.Common
             try
             {
                 string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.VerifierCode}-{email}";
-                string matchCode = await this.redisRepository.GetCache<string>(cacheKey).ConfigureAwait(false);
+                string matchCode = await this.redisRepository.GetCache<string>(AppSettingHelper.Appsetting.Redis.CommonDB, cacheKey).ConfigureAwait(false);
                 bool result = verifierCode.Equals(matchCode);
                 if (result && isDelete)
                 {

@@ -24,7 +24,7 @@ namespace DataInfo.Service.Interfaces.Team
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> KickTeamMamber(string memberID, TeamKickContent content);
+        Task<ResponseResult> Kick(string memberID, TeamKickContent content);
 
         /// <summary>
         /// 建立車隊
@@ -45,33 +45,33 @@ namespace DataInfo.Service.Interfaces.Team
         /// <summary>
         /// 更新車隊資料
         /// </summary>
-        /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> Edit(string memberID, TeamEditContent content);
+        Task<ResponseResult> Edit(TeamEditContent content, string memberID);
 
         /// <summary>
-        /// 取得瀏覽車隊
+        /// 取得瀏覽車隊資訊
         /// </summary>
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> GetBrowseTeam(string memberID, TeamBrowseContent content);
+        Task<ResponseResult> GetBrowseInfo(string memberID, TeamBrowseContent content);
 
         /// <summary>
         /// 取得車隊下拉選單
         /// </summary>
         /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> GetTeamDropMenu(string memberID);
+        Task<ResponseResult> GetDropMenu(string memberID);
 
         /// <summary>
         /// 取得車隊資訊
         /// </summary>
         /// <param name="memberID">memberID</param>
-        /// <param name="content">content</param>
+        /// <param name="teamID">teamID</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> GetTeamInfo(string memberID, TeamContent content);
+        Task<ResponseResult> GetInfo(string memberID, string teamID);
 
         /// <summary>
         /// 取得車隊訊息
@@ -79,7 +79,7 @@ namespace DataInfo.Service.Interfaces.Team
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> GetTeamMessage(string memberID, TeamContent content);
+        Task<ResponseResult> GetMessage(string memberID, TeamContent content);
 
         /// <summary>
         /// 取得車隊設定資訊
@@ -87,7 +87,7 @@ namespace DataInfo.Service.Interfaces.Team
         /// <param name="memberID">memberID</param>
         /// <param name="teamID">teamID</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> GetTeamSetting(string memberID, string teamID);
+        Task<ResponseResult> GetSetting(string memberID, string teamID);
 
         /// <summary>
         /// 離開車隊
@@ -103,7 +103,7 @@ namespace DataInfo.Service.Interfaces.Team
         /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> SearchTeam(string memberID, TeamSearchContent content);
+        Task<ResponseResult> Search(string memberID, TeamSearchContent content);
 
         /// <summary>
         /// 更新車隊副隊長

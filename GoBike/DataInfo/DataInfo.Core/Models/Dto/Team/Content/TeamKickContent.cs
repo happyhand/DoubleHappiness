@@ -10,9 +10,9 @@ namespace DataInfo.Core.Models.Dto.Team.Content
     public class TeamKickContent
     {
         /// <summary>
-        /// Gets or sets 會員 ID 列表
+        /// Gets or sets 會員 ID
         /// </summary>
-        public IEnumerable<string> MemberIDs { get; set; }
+        public string MemberID { get; set; }
 
         /// <summary>
         /// Gets or sets 車隊 ID
@@ -31,7 +31,7 @@ namespace DataInfo.Core.Models.Dto.Team.Content
         public TeamKickContentValidator()
         {
             this.CascadeMode = CascadeMode.StopOnFirstFailure;
-            RuleFor(content => content.MemberIDs)
+            RuleFor(content => content.MemberID)
               .NotNull().WithMessage(content =>
               {
                   return $"{ResponseErrorMessageType.MemberIDEmpty}";

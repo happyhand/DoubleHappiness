@@ -42,7 +42,7 @@ namespace DataInfo.Api.Controllers.Team
         }
 
         /// <summary>
-        /// 取得瀏覽車隊列表
+        /// 取得瀏覽車隊資訊
         /// </summary>
         /// <param name="content">content</param>
         /// <returns>IActionResult</returns>
@@ -52,13 +52,13 @@ namespace DataInfo.Api.Controllers.Team
             string memberID = this.GetMemberID();
             try
             {
-                this.logger.LogInfo("會員請求取得瀏覽車隊列表", $"MemberID: {memberID}", null);
-                ResponseResult responseResult = await teamService.GetBrowseTeam(memberID, content).ConfigureAwait(false);
+                this.logger.LogInfo("會員請求取得瀏覽車隊資訊", $"MemberID: {memberID}", null);
+                ResponseResult responseResult = await teamService.GetBrowseInfo(memberID, content).ConfigureAwait(false);
                 return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員請求取得瀏覽車隊列表發生錯誤", $"MemberID: {memberID}", ex);
+                this.logger.LogError("會員請求取得瀏覽車隊資訊發生錯誤", $"MemberID: {memberID}", ex);
                 return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,

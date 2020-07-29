@@ -298,6 +298,11 @@ namespace DataInfo.Core.Applibs
             public string Member { get; set; }
 
             /// <summary>
+            /// Gets or sets Team
+            /// </summary>
+            public string Team { get; set; }
+
+            /// <summary>
             /// Gets or sets RideGroup
             /// </summary>
             public string RideGroup { get; set; }
@@ -319,9 +324,24 @@ namespace DataInfo.Core.Applibs
             public string ConnectionStrings { get; set; }
 
             /// <summary>
-            /// Gets or sets DB
+            /// Gets or sets CommonDB
             /// </summary>
-            public int DB { get; set; }
+            public int CommonDB { get; set; }
+
+            /// <summary>
+            /// Gets or sets MemberDB
+            /// </summary>
+            public int MemberDB { get; set; }
+
+            /// <summary>
+            /// Gets or sets RideDB
+            /// </summary>
+            public int RideDB { get; set; }
+
+            /// <summary>
+            /// Gets or sets TeamDB
+            /// </summary>
+            public int TeamDB { get; set; }
 
             /// <summary>
             /// Gets or sets ExpirationDate
@@ -358,6 +378,11 @@ namespace DataInfo.Core.Applibs
             /// Gets or sets CardInfo
             /// </summary>
             public string CardInfo { get; set; }
+
+            /// <summary>
+            /// Gets or sets TeamInfo
+            /// </summary>
+            public string TeamInfo { get; set; }
 
             /// <summary>
             /// Gets or sets Friend

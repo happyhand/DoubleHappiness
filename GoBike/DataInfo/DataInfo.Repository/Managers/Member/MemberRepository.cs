@@ -149,7 +149,7 @@ namespace DataInfo.Repository.Managers.Member
         public async Task<int> GetOnlineType(string memberID)
         {
             string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.LastLogin}";
-            return await this.redisRepository.IsExist(cacheKey, false).ConfigureAwait(false) ? (int)OnlineStatusType.Online : (int)OnlineStatusType.Offline;
+            return await this.redisRepository.IsExist(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey, false).ConfigureAwait(false) ? (int)OnlineStatusType.Online : (int)OnlineStatusType.Offline;
         }
 
         /// <summary>

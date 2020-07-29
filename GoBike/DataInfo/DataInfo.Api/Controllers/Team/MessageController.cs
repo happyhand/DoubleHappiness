@@ -54,7 +54,7 @@ namespace DataInfo.Api.Controllers.Team
             {
                 this.logger.LogInfo("會員請求取得車隊訊息", $"MemberID: {memberID} TeamID: {teamID}", null);
                 TeamContent content = new TeamContent() { TeamID = teamID };
-                ResponseResult responseResult = await teamService.GetTeamMessage(memberID, content).ConfigureAwait(false);
+                ResponseResult responseResult = await teamService.GetMessage(memberID, content).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
