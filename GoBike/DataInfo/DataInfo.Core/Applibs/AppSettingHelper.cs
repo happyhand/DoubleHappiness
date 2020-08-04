@@ -523,6 +523,11 @@ namespace DataInfo.Core.Applibs
             public int NicknameLength { get; set; }
 
             /// <summary>
+            /// Gets or sets TeamNameLength
+            /// </summary>
+            public int TeamNameLength { get; set; }
+
+            /// <summary>
             /// Gets or sets TakeBrowseCount
             /// </summary>
             public int TakeBrowseCount { get; set; }

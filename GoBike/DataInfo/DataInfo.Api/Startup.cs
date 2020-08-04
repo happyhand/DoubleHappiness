@@ -159,6 +159,7 @@ namespace DataInfo.Api
             services.AddTransient<IValidator<UpdateRideGroupCoordinateContent>, UpdateRideGroupCoordinateContentValidator>();
 
             services.AddTransient<IValidator<TeamContent>, TeamContentValidator>();
+            services.AddTransient<IValidator<TeamCreateContent>, TeamCreateContentValidator>();
             services.AddTransient<IValidator<TeamKickContent>, TeamKickContentValidator>();
             services.AddTransient<IValidator<TeamBrowseContent>, TeamBrowseContentValidator>();
 

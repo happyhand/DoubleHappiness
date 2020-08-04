@@ -474,7 +474,7 @@ namespace DataInfo.Service.Managers.Member
             {
                 if (!Utility.ValidateNickname(content.Nickname, AppSettingHelper.Appsetting.Rule.NicknameLength))
                 {
-                    return Tuple.Create<string, MemberEditInfoRequest>(ResponseErrorMessageType.NicknameFormatError.ToString(), null);
+                    return Tuple.Create<string, MemberEditInfoRequest>(ResponseErrorMessageType.ExceedMaxNickname.ToString(), null);
                 }
 
                 memberUpdateInfoData.NickName = content.Nickname;

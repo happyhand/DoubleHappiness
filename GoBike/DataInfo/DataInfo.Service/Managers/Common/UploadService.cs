@@ -26,24 +26,38 @@ namespace DataInfo.Service.Managers.Common
         /// 上傳圖片
         /// </summary>
         /// <param name="imgBase64s">imgBase64s</param>
+        /// <param name="path">path</param>
+        /// <param name="isIgnoreUri">isIgnoreUri</param>
         /// <returns>strings</returns>
-        private async Task<IEnumerable<string>> UploadImages(UploadImageRequest request)
+        private async Task<IEnumerable<string>> UploadImages(IEnumerable<string> imgBase64s, string path, bool isIgnoreUri)
         {
             try
             {
+                UploadImageRequest request = new UploadImageRequest()
+                {
+                    ImgBase64s = imgBase64s,
+                    Path = AppSettingHelper.Appsetting.UploadServer.Member.Path
+                };
+
                 HttpResponseMessage httpResponseMessage = await Utility.ApiPost(AppSettingHelper.Appsetting.UploadServer.Domain, AppSettingHelper.Appsetting.UploadServer.Api, JsonConvert.SerializeObject(request));
                 if (!httpResponseMessage.IsSuccessStatusCode)
                 {
-                    this.logger.LogWarn("上傳圖片結果", $"Result: 上傳圖片失敗 Request: {JsonConvert.SerializeObject(request)}", null);
+                    this.logger.LogWarn("上傳圖片失敗", $"ImgBase64s: {JsonConvert.SerializeObject(imgBase64s)} Path: {path} IsIgnoreUri: {isIgnoreUri}", null);
                     return null;
                 }
 
                 string dataJson = await httpResponseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
-                return JsonConvert.DeserializeObject<IEnumerable<string>>(dataJson);
+                IEnumerable<string> imgUris = JsonConvert.DeserializeObject<IEnumerable<string>>(dataJson);
+                if (isIgnoreUri)
+                {
+                    imgUris = imgUris.Select(uri => uri.Replace(AppSettingHelper.Appsetting.UploadServer.Member.Path, string.Empty));
+                }
+
+                return imgUris;
             }
             catch (Exception ex)
             {
-                this.logger.LogError("上傳圖片發生錯誤", $"Request: {JsonConvert.SerializeObject(request)}", ex);
+                this.logger.LogError("上傳圖片發生錯誤", $"ImgBase64s: {JsonConvert.SerializeObject(imgBase64s)} Path: {path} IsIgnoreUri: {isIgnoreUri}", ex);
                 return null;
             }
         }
@@ -54,26 +68,15 @@ namespace DataInfo.Service.Managers.Common
         /// <param name="imgBase64s">imgBase64s</param>
         /// <param name="isIgnoreUri">isIgnoreUri</param>
         /// <returns>strings</returns>
-        public async Task<IEnumerable<string>> UploadMemberImages(IEnumerable<string> imgBase64s, bool isIgnoreUri)
+        public Task<IEnumerable<string>> UploadMemberImages(IEnumerable<string> imgBase64s, bool isIgnoreUri)
         {
             try
             {
-                UploadImageRequest request = new UploadImageRequest()
-                {
-                    ImgBase64s = imgBase64s,
-                    Path = AppSettingHelper.Appsetting.UploadServer.Member.Path
-                };
-                IEnumerable<string> imgUris = await this.UploadImages(request).ConfigureAwait(false);
-                if (isIgnoreUri)
-                {
-                    imgUris = imgUris.Select(uri => uri.Replace(AppSettingHelper.Appsetting.UploadServer.Member.Path, string.Empty));
-                }
-
-                return imgUris;
+                return this.UploadImages(imgBase64s, AppSettingHelper.Appsetting.UploadServer.Member.Path, isIgnoreUri);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("上傳會員圖片發生錯誤", $"ImgBase64s: {JsonConvert.SerializeObject(imgBase64s)}", ex);
+                this.logger.LogError("上傳會員圖片發生錯誤", $"ImgBase64s: {JsonConvert.SerializeObject(imgBase64s)} IsIgnoreUri: {isIgnoreUri}", ex);
                 return null;
             }
         }
@@ -84,26 +87,15 @@ namespace DataInfo.Service.Managers.Common
         /// <param name="imgBase64s">imgBase64s</param>
         /// <param name="isIgnoreUri">isIgnoreUri</param>
         /// <returns>strings</returns>
-        public async Task<IEnumerable<string>> UploadRideImages(IEnumerable<string> imgBase64s, bool isIgnoreUri)
+        public Task<IEnumerable<string>> UploadRideImages(IEnumerable<string> imgBase64s, bool isIgnoreUri)
         {
             try
             {
-                UploadImageRequest request = new UploadImageRequest()
-                {
-                    ImgBase64s = imgBase64s,
-                    Path = AppSettingHelper.Appsetting.UploadServer.Ride.Path
-                };
-                IEnumerable<string> imgUris = await this.UploadImages(request).ConfigureAwait(false);
-                if (isIgnoreUri)
-                {
-                    imgUris = imgUris.Select(uri => uri.Replace(AppSettingHelper.Appsetting.UploadServer.Ride.Path, string.Empty));
-                }
-
-                return imgUris;
+                return this.UploadImages(imgBase64s, AppSettingHelper.Appsetting.UploadServer.Ride.Path, isIgnoreUri);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("上傳騎乘圖片發生錯誤", $"ImgBase64s: {JsonConvert.SerializeObject(imgBase64s)}", ex);
+                this.logger.LogError("上傳騎乘圖片發生錯誤", $"ImgBase64s: {JsonConvert.SerializeObject(imgBase64s)} IsIgnoreUri: {isIgnoreUri}", ex);
                 return null;
             }
         }
@@ -114,26 +106,15 @@ namespace DataInfo.Service.Managers.Common
         /// <param name="imgBase64s">imgBase64s</param>
         /// <param name="isIgnoreUri">isIgnoreUri</param>
         /// <returns>strings</returns>
-        public async Task<IEnumerable<string>> UploadTeamActivityImages(IEnumerable<string> imgBase64s, bool isIgnoreUri)
+        public Task<IEnumerable<string>> UploadTeamActivityImages(IEnumerable<string> imgBase64s, bool isIgnoreUri)
         {
             try
             {
-                UploadImageRequest request = new UploadImageRequest()
-                {
-                    ImgBase64s = imgBase64s,
-                    Path = AppSettingHelper.Appsetting.UploadServer.TeamActivity.Path
-                };
-                IEnumerable<string> imgUris = await this.UploadImages(request).ConfigureAwait(false);
-                if (isIgnoreUri)
-                {
-                    imgUris = imgUris.Select(uri => uri.Replace(AppSettingHelper.Appsetting.UploadServer.TeamActivity.Path, string.Empty));
-                }
-
-                return imgUris;
+                return this.UploadImages(imgBase64s, AppSettingHelper.Appsetting.UploadServer.TeamActivity.Path, isIgnoreUri);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("上傳車隊活動圖片發生錯誤", $"ImgBase64s: {JsonConvert.SerializeObject(imgBase64s)}", ex);
+                this.logger.LogError("上傳車隊活動圖片發生錯誤", $"ImgBase64s: {JsonConvert.SerializeObject(imgBase64s)} IsIgnoreUri: {isIgnoreUri}", ex);
                 return null;
             }
         }
@@ -144,26 +125,15 @@ namespace DataInfo.Service.Managers.Common
         /// <param name="imgBase64s">imgBase64s</param>
         /// <param name="isIgnoreUri">isIgnoreUri</param>
         /// <returns>strings</returns>
-        public async Task<IEnumerable<string>> UploadTeamImages(IEnumerable<string> imgBase64s, bool isIgnoreUri)
+        public Task<IEnumerable<string>> UploadTeamImages(IEnumerable<string> imgBase64s, bool isIgnoreUri)
         {
             try
             {
-                UploadImageRequest request = new UploadImageRequest()
-                {
-                    ImgBase64s = imgBase64s,
-                    Path = AppSettingHelper.Appsetting.UploadServer.Team.Path
-                };
-                IEnumerable<string> imgUris = await this.UploadImages(request).ConfigureAwait(false);
-                if (isIgnoreUri)
-                {
-                    imgUris = imgUris.Select(uri => uri.Replace(AppSettingHelper.Appsetting.UploadServer.Team.Path, string.Empty));
-                }
-
-                return imgUris;
+                return this.UploadImages(imgBase64s, AppSettingHelper.Appsetting.UploadServer.Team.Path, isIgnoreUri);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("上傳車隊圖片發生錯誤", $"ImgBase64s: {JsonConvert.SerializeObject(imgBase64s)}", ex);
+                this.logger.LogError("上傳車隊圖片發生錯誤", $"ImgBase64s: {JsonConvert.SerializeObject(imgBase64s)} IsIgnoreUri: {isIgnoreUri}", ex);
                 return null;
             }
         }

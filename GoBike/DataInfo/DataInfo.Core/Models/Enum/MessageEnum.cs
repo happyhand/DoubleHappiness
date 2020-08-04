@@ -111,6 +111,16 @@
         LoginFail,
 
         /// <summary>
+        /// 資料建立失敗，請稍後再試
+        /// </summary>
+        CreateFail,
+
+        /// <summary>
+        /// 資料重複，請重新操作
+        /// </summary>
+        RepeatFail,
+
+        /// <summary>
         /// 資料更新失敗，請稍後再試
         /// </summary>
         UpdateFail,
@@ -149,11 +159,6 @@
         /// 生日格式不符，請重新輸入
         /// </summary>
         BirthdayFormatError,
-
-        /// <summary>
-        /// 暱稱格式不符，請重新輸入
-        /// </summary>
-        NicknameFormatError,
 
         /// <summary>
         /// 請輸入搜尋關鍵字
@@ -211,9 +216,24 @@
         TeamIDEmpty,
 
         /// <summary>
+        /// 未輸入車隊名稱，請重新輸入
+        /// </summary>
+        TeamNameEmpty,
+
+        /// <summary>
         /// 未輸入所在地，請重新輸入
         /// </summary>
         CountyEmpty,
+
+        /// <summary>
+        /// 未設定加入車隊是否需先審核，請重新輸入
+        /// </summary>
+        ExamineStatusEmpty,
+
+        /// <summary>
+        /// 未設定是否開放搜尋，請重新輸入
+        /// </summary>
+        SearchStatusEmpty,
 
         /// <summary>
         /// 回覆失敗，請重新操作
@@ -236,6 +256,21 @@
         ExceedMaxPeople,
 
         /// <summary>
+        /// 暱稱超出最大字數，請重新輸入
+        /// </summary>
+        ExceedMaxNickname,
+
+        /// <summary>
+        /// 車隊名稱超出最大字數，請重新輸入
+        /// </summary>
+        ExceedMaxTeamName,
+
+        /// <summary>
+        /// 車隊簡介超出最大字數，請重新輸入
+        /// </summary>
+        ExceedMaxTeamInfo,
+
+        /// <summary>
         /// 車隊解散失敗，請重新操作
         /// </summary>
         DisbandFail,
@@ -255,6 +290,11 @@
         /// 已發送驗證碼至您的信箱，請於 5 分鐘內檢視並輸入驗證碼
         /// </summary>
         SendVerifierCodeSuccess,
+
+        /// <summary>
+        /// 資料建立成功
+        /// </summary>
+        CreateSuccess,
 
         /// <summary>
         /// 資料更新成功

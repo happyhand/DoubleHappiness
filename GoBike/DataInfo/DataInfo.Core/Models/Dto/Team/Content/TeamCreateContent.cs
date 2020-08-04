@@ -58,41 +58,60 @@ namespace DataInfo.Core.Models.Dto.Team.Content
         /// </summary>
         public TeamCreateContentValidator()
         {
-            ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
-            //RuleFor(content => content.Avatar)
-            //.NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.AvatarEmpty)
-            //.NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Team.AvatarEmpty);
-
-            //RuleFor(content => content.FrontCover)
-            //.NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.FrontCoverEmpty)
-            //.NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Team.FrontCoverEmpty);
-
+            this.CascadeMode = CascadeMode.StopOnFirstFailure;
             RuleFor(content => content.County)
-            .Must(county =>
-            {
-                Dictionary<string, string> countyMap = AppSettingHelper.Appsetting.CountyMap;
-                return county >= Convert.ToInt32(countyMap.Keys.FirstOrDefault()) && county <= Convert.ToInt32(countyMap.Keys.LastOrDefault());
-            }).WithMessage(MessageHelper.Message.ResponseMessage.Team.CountyEmpty);
+              .Must(county =>
+              {
+                  Dictionary<string, string> countyMap = AppSettingHelper.Appsetting.CountyMap;
+                  return county >= Convert.ToInt32(countyMap.Keys.FirstOrDefault()) && county <= Convert.ToInt32(countyMap.Keys.LastOrDefault());
+              }).WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.CountyEmpty}|County: {content.County}";
+              });
+
+            RuleFor(content => content.TeamInfo)
+              .Must(info =>
+              {
+                  return string.IsNullOrEmpty(info) || info.Length <= AppSettingHelper.Appsetting.Rule.TeamNameLength;
+              }).WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.ExceedMaxTeamInfo}|TeamInfo: {content.TeamInfo}";
+              });
 
             RuleFor(content => content.ExamineStatus)
-           .Must(examineStatus =>
-           {
-               return examineStatus == (int)TeamExamineStatusType.Close || examineStatus == (int)TeamExamineStatusType.Open;
-           }).WithMessage(MessageHelper.Message.ResponseMessage.Team.ExamineStatusEmpty);
+              .Must(examineStatus =>
+              {
+                  return examineStatus == (int)TeamExamineStatusType.Close || examineStatus == (int)TeamExamineStatusType.Open;
+              }).WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.ExamineStatusEmpty}|ExamineStatus: {content.ExamineStatus}";
+              });
 
             RuleFor(content => content.SearchStatus)
-           .Must(searchStatus =>
-           {
-               return searchStatus == (int)TeamSearchStatusType.Close || searchStatus == (int)TeamSearchStatusType.Open;
-           }).WithMessage(MessageHelper.Message.ResponseMessage.Team.SearchStatusEmpty);
-
-            //RuleFor(content => content.TeamInfo)
-            //.NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.TeamInfoEmpty)
-            //.NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Team.TeamInfoEmpty);
+              .Must(searchStatus =>
+              {
+                  return searchStatus == (int)TeamSearchStatusType.Close || searchStatus == (int)TeamSearchStatusType.Open;
+              }).WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.SearchStatusEmpty}|SearchStatus: {content.SearchStatus}";
+              });
 
             RuleFor(content => content.TeamName)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.TeamNameEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Team.TeamNameEmpty);
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.TeamNameEmpty}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.TeamNameEmpty}";
+              })
+              .Must(teamName =>
+              {
+                  return Utility.ValidateNickname(teamName, AppSettingHelper.Appsetting.Rule.TeamNameLength);
+              }).WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.ExceedMaxTeamName}|TeamName: {content.TeamName}";
+              });
         }
     }
 }

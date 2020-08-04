@@ -264,24 +264,6 @@ namespace DataInfo.Service.Managers.Team
         {
             try
             {
-                #region 驗證資料
-
-                TeamCreateContentValidator contentValidator = new TeamCreateContentValidator();
-                ValidationResult validationResult = contentValidator.Validate(content);
-                if (!validationResult.IsValid)
-                {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("建立車隊結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = errorMessgae
-                    };
-                }
-
-                #endregion 驗證資料
-
                 #region 上傳圖片
 
                 if (!string.IsNullOrEmpty(content.Avatar) || !string.IsNullOrEmpty(content.FrontCover))
@@ -290,12 +272,12 @@ namespace DataInfo.Service.Managers.Team
                     IEnumerable<string> imgUris = await this.uploadService.UploadTeamImages(imgBase64s, true).ConfigureAwait(false);
                     if (imgUris == null || !imgUris.Any())
                     {
-                        this.logger.LogWarn("建立車隊結果", $"Result: 上傳圖片失敗 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                        this.logger.LogWarn("建立車隊失敗，上傳圖片失敗", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.InputError,
-                            Content = MessageHelper.Message.ResponseMessage.Upload.PhotoFail
+                            ResultCode = StatusCodes.Status502BadGateway,
+                            ResultMessage = ResponseErrorMessageType.UploadPhotoFail.ToString()
                         };
                     }
 
@@ -304,12 +286,12 @@ namespace DataInfo.Service.Managers.Team
                         string avatar = imgUris.ElementAt(0);
                         if (string.IsNullOrEmpty(avatar))
                         {
-                            this.logger.LogWarn("建立車隊結果", $"Result: 車隊頭像轉換失敗 MemberID: {memberID} Avatar: {content.Avatar} FrontCover: {content.FrontCover}", null);
+                            this.logger.LogWarn("建立車隊失敗，車隊頭像轉換失敗", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                             return new ResponseResult()
                             {
                                 Result = false,
-                                ResultCode = (int)ResponseResultType.InputError,
-                                Content = MessageHelper.Message.ResponseMessage.Upload.PhotoFail
+                                ResultCode = StatusCodes.Status400BadRequest,
+                                ResultMessage = ResponseErrorMessageType.UploadAvatarFail.ToString()
                             };
                         }
 
@@ -321,12 +303,12 @@ namespace DataInfo.Service.Managers.Team
                         string frontCover = imgUris.ElementAt(1);
                         if (string.IsNullOrEmpty(frontCover))
                         {
-                            this.logger.LogWarn("建立車隊結果", $"Result: 車隊封面轉換失敗 MemberID: {memberID} Avatar: {content.Avatar} FrontCover: {content.FrontCover}", null);
+                            this.logger.LogWarn("建立車隊失敗，車隊封面轉換失敗", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                             return new ResponseResult()
                             {
                                 Result = false,
-                                ResultCode = (int)ResponseResultType.InputError,
-                                Content = MessageHelper.Message.ResponseMessage.Upload.PhotoFail
+                                ResultCode = StatusCodes.Status400BadRequest,
+                                ResultMessage = ResponseErrorMessageType.UploadFrontCoverFail.ToString()
                             };
                         }
 
@@ -342,39 +324,39 @@ namespace DataInfo.Service.Managers.Team
                 request.MemberID = memberID;
 
                 CommandData<TeamCreateResponse> response = await this.serverService.DoAction<TeamCreateResponse>((int)TeamCommandIDType.CreateNewTeam, CommandType.Team, request).ConfigureAwait(false);
-                this.logger.LogInfo("建立車隊結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                this.logger.LogInfo("建立車隊結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)}", null);
                 switch (response.Data.Result)
                 {
                     case (int)CreateNewTeamResultType.Success:
                         return new ResponseResult()
                         {
                             Result = true,
-                            ResultCode = (int)ResponseResultType.Success,
-                            Content = MessageHelper.Message.ResponseMessage.Add.Success
+                            ResultCode = StatusCodes.Status200OK,
+                            ResultMessage = ResponseSuccessMessageType.CreateSuccess.ToString()
                         };
 
                     case (int)CreateNewTeamResultType.Fail:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.CreateFail,
-                            Content = MessageHelper.Message.ResponseMessage.Add.Fail
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.CreateFail.ToString()
                         };
 
                     case (int)CreateNewTeamResultType.Repeat:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.Repeat,
-                            Content = MessageHelper.Message.ResponseMessage.Add.Fail
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.RepeatFail.ToString()
                         };
 
                     default:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.UnknownError,
-                            Content = MessageHelper.Message.ResponseMessage.Add.Fail
+                            ResultCode = StatusCodes.Status502BadGateway,
+                            ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                         };
                 }
 
@@ -386,8 +368,8 @@ namespace DataInfo.Service.Managers.Team
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Add.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }
