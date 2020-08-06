@@ -173,70 +173,53 @@ namespace DataInfo.Service.Managers.Team
         {
             try
             {
-                #region 驗證資料
-
-                TeamChangeLeaderContentValidator contentValidator = new TeamChangeLeaderContentValidator();
-                ValidationResult validationResult = contentValidator.Validate(content);
-                if (!validationResult.IsValid)
-                {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("更換車隊隊長結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = errorMessgae
-                    };
-                }
-
-                #endregion 驗證資料
-
                 #region 發送【更換隊長】指令至後端
 
                 TeamChangeLeaderRequest request = this.mapper.Map<TeamChangeLeaderRequest>(content);
                 request.LeaderID = memberID;
                 CommandData<TeamChangeLeaderResponse> response = await this.serverService.DoAction<TeamChangeLeaderResponse>((int)TeamCommandIDType.ChangeLeader, CommandType.Team, request).ConfigureAwait(false);
-                this.logger.LogInfo("更換車隊隊長結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                this.logger.LogInfo("更換車隊隊長結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)}", null);
                 switch (response.Data.Result)
                 {
                     case (int)ChangeLeaderResultType.Success:
+                        this.DeleteTeamCache(content.TeamID);
                         return new ResponseResult()
                         {
                             Result = true,
-                            ResultCode = (int)ResponseResultType.Success,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Success
+                            ResultCode = StatusCodes.Status200OK,
+                            ResultMessage = ResponseSuccessMessageType.ChangeLeaderSuccess.ToString()
                         };
 
                     case (int)ChangeLeaderResultType.Fail:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.UpdateFail,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.ChangeLeaderFail.ToString()
                         };
 
                     case (int)ChangeLeaderResultType.Repeat:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.Repeat,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.ChangeLeaderFail.ToString()
                         };
 
                     case (int)ChangeLeaderResultType.AuthorityNotEnough:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.DenyAccess,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.TeamAuthorityNotEnough.ToString()
                         };
 
                     default:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.UnknownError,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            ResultCode = StatusCodes.Status502BadGateway,
+                            ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                         };
                 }
 
@@ -248,8 +231,8 @@ namespace DataInfo.Service.Managers.Team
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Update.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }
@@ -604,21 +587,29 @@ namespace DataInfo.Service.Managers.Team
         {
             try
             {
-                Task<IEnumerable<TeamDao>> nearbyTeamListTask = this.teamRepository.GetNearbyTeam(memberID, content.County);
-                Task<IEnumerable<TeamDao>> newCreationTeamListTask = this.teamRepository.GetNewCreationTeam(memberID);
-                Task<IEnumerable<TeamDao>> recommendTeamListTask = this.teamRepository.GetRecommendTeam(memberID);
-                IEnumerable<TeamDao>[] teamDaos = new IEnumerable<TeamDao>[]
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.BrowseInfo}";
+                IEnumerable<IEnumerable<TeamSearchView>> teamBrowseInfoViews = await this.redisRepository.GetCache<IEnumerable<IEnumerable<TeamSearchView>>>(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey).ConfigureAwait(false);
+                if (teamBrowseInfoViews == null)
                 {
+                    Task<IEnumerable<TeamDao>> nearbyTeamListTask = this.teamRepository.GetNearbyTeam(memberID, content.County);
+                    Task<IEnumerable<TeamDao>> newCreationTeamListTask = this.teamRepository.GetNewCreationTeam(memberID);
+                    Task<IEnumerable<TeamDao>> recommendTeamListTask = this.teamRepository.GetRecommendTeam(memberID);
+                    IEnumerable<TeamDao>[] teamDaos = new IEnumerable<TeamDao>[]
+                    {
                     await nearbyTeamListTask.ConfigureAwait(false),
                     await newCreationTeamListTask.ConfigureAwait(false),
                     await recommendTeamListTask.ConfigureAwait(false)
-                };
+                    };
+
+                    teamBrowseInfoViews = this.mapper.Map<IEnumerable<IEnumerable<TeamSearchView>>>(teamDaos);
+                    this.redisRepository.SetCache(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey, JsonConvert.SerializeObject(teamBrowseInfoViews), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
+                }
 
                 return new ResponseResult()
                 {
                     Result = true,
                     ResultCode = StatusCodes.Status200OK,
-                    Content = this.mapper.Map<IEnumerable<IEnumerable<TeamSearchView>>>(teamDaos)
+                    Content = teamBrowseInfoViews
                 };
             }
             catch (Exception ex)
@@ -642,33 +633,38 @@ namespace DataInfo.Service.Managers.Team
         {
             try
             {
-                MemberDao memberDao = await this.memberRepository.Get(memberID, MemberSearchType.MemberID).ConfigureAwait(false);
-                if (memberDao == null)
+                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.DropMenu}";
+                IEnumerable<TeamDropMenuView>[] teamDropMenuViews = await this.redisRepository.GetCache<IEnumerable<TeamDropMenuView>[]>(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey).ConfigureAwait(false);
+                if (teamDropMenuViews == null)
                 {
-                    this.logger.LogWarn("取得車隊下拉選單結果", $"Result: 無會員資料 MemberID: {memberID}", null);
-                    return new ResponseResult()
+                    MemberDao memberDao = await this.memberRepository.Get(memberID, MemberSearchType.MemberID).ConfigureAwait(false);
+                    if (memberDao == null)
                     {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.Missed,
-                        Content = MessageHelper.Message.ResponseMessage.Member.MemberNotExist
+                        this.logger.LogWarn("取得車隊下拉選單失敗，無會員資料", $"MemberID: {memberID}", null);
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.MemberIDEmpty.ToString()
+                        };
+                    }
+
+                    Task<IEnumerable<TeamDao>> joinTeamDaosTask = this.teamRepository.Get(memberDao.TeamList);
+                    Task<IEnumerable<TeamDao>> applyTeamDaosTask = this.teamRepository.GetTeamOfApplyJoin(memberID);
+                    IEnumerable<TeamDropMenuView> joinTeamDropMenuView = this.mapper.Map<IEnumerable<TeamDropMenuView>>(await joinTeamDaosTask.ConfigureAwait(false));
+                    IEnumerable<TeamDropMenuView> applyTeamDropMenuView = this.mapper.Map<IEnumerable<TeamDropMenuView>>(await applyTeamDaosTask.ConfigureAwait(false));
+                    //// TODO 已加入的車隊需顯示是否有新的訊息
+                    teamDropMenuViews = new IEnumerable<TeamDropMenuView>[] {
+                    joinTeamDropMenuView,
+                    applyTeamDropMenuView,
                     };
                 }
-
-                Task<IEnumerable<TeamDao>> joinTeamDaosTask = this.teamRepository.Get(memberDao.TeamList);
-                Task<IEnumerable<TeamDao>> applyTeamDaosTask = this.teamRepository.GetTeamOfApplyJoin(memberID);
-                IEnumerable<TeamDropMenuView> joinTeamDropMenuView = this.mapper.Map<IEnumerable<TeamDropMenuView>>(await joinTeamDaosTask.ConfigureAwait(false));
-                IEnumerable<TeamDropMenuView> applyTeamDropMenuView = this.mapper.Map<IEnumerable<TeamDropMenuView>>(await applyTeamDaosTask.ConfigureAwait(false));
-
-                //// TODO 已加入的車隊需顯示是否有新的訊息
 
                 return new ResponseResult()
                 {
                     Result = true,
-                    ResultCode = (int)ResponseResultType.Success,
-                    Content = new List<IEnumerable<TeamDropMenuView>>() {
-                    joinTeamDropMenuView,
-                    applyTeamDropMenuView,
-                    }
+                    ResultCode = StatusCodes.Status200OK,
+                    Content = teamDropMenuViews
                 };
             }
             catch (Exception ex)
@@ -677,8 +673,8 @@ namespace DataInfo.Service.Managers.Team
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }
@@ -770,6 +766,7 @@ namespace DataInfo.Service.Managers.Team
 
                     teamInfoView.MemberList = teamMemberViews.OrderByDescending(view => view.Role).ThenBy(view => view.Nickname);
                     teamInfoView.InteractiveStatus = (int)this.GetTeamInteractiveStatus(memberID, teamDao);
+                    this.redisRepository.SetCache(AppSettingHelper.Appsetting.Redis.TeamDB, cacheKey, JsonConvert.SerializeObject(teamInfoView), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
 
                     #endregion 取得資料
                 }

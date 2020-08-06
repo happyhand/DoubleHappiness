@@ -279,6 +279,11 @@
         /// 踢離車隊隊員失敗，請重新操作
         /// </summary>
         KickFail,
+
+        /// <summary>
+        /// 移交隊長失敗，請重新操作
+        /// </summary>
+        ChangeLeaderFail,
     }
 
     /// <summary>
@@ -325,5 +330,10 @@
         /// 踢離車隊隊員成功
         /// </summary>
         KickSuccess,
+
+        /// <summary>
+        /// 移交隊長成功
+        /// </summary>
+        ChangeLeaderSuccess,
     }
 }

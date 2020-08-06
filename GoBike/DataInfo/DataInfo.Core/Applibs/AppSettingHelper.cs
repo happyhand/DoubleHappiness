@@ -408,6 +408,16 @@ namespace DataInfo.Core.Applibs
             /// Gets or sets Search
             /// </summary>
             public string Search { get; set; }
+
+            /// <summary>
+            /// Gets or sets BrowseInfo
+            /// </summary>
+            public string BrowseInfo { get; set; }
+
+            /// <summary>
+            /// Gets or sets DropMenu
+            /// </summary>
+            public string DropMenu { get; set; }
         }
 
         #endregion Redis 設定資料
