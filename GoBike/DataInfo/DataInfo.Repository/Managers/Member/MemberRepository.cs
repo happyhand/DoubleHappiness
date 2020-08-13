@@ -50,32 +50,35 @@ namespace DataInfo.Repository.Managers.Member
         {
             try
             {
-                //// TODO 待確認是否要啟用 "是否可被搜尋" 功能
-                ISugarQueryable<UserAccount, UserInfo> query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID));
-                switch (type)
+                using (SqlSugarClient db = this.NewDB)
                 {
-                    case MemberSearchType.MemberID:
-                        query = query.Where((ua, ui) => ua.MemberID.Equals(key));
-                        break;
+                    //// TODO 待確認是否要啟用 "是否可被搜尋" 功能
+                    ISugarQueryable<UserAccount, UserInfo> query = db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID));
+                    switch (type)
+                    {
+                        case MemberSearchType.MemberID:
+                            query = query.Where((ua, ui) => ua.MemberID.Equals(key));
+                            break;
 
-                    case MemberSearchType.Email:
-                        query = query.Where((ua, ui) => ua.Email.Equals(key));
-                        break;
+                        case MemberSearchType.Email:
+                            query = query.Where((ua, ui) => ua.Email.Equals(key));
+                            break;
 
-                    case MemberSearchType.Nickname:
-                        query = query.Where((ua, ui) => ui.NickName.Equals(key));
-                        break;
+                        case MemberSearchType.Nickname:
+                            query = query.Where((ua, ui) => ui.NickName.Equals(key));
+                            break;
 
-                    case MemberSearchType.Mobile:
-                        query = query.Where((ua, ui) => ui.Mobile.Equals(key));
-                        break;
+                        case MemberSearchType.Mobile:
+                            query = query.Where((ua, ui) => ui.Mobile.Equals(key));
+                            break;
 
-                    default:
-                        this.logger.LogWarn("取得會員資料失敗，未設置搜尋類型", $"Key: {key} Type: {type}", null);
-                        return null;
+                        default:
+                            this.logger.LogWarn("取得會員資料失敗，未設置搜尋類型", $"Key: {key} Type: {type}", null);
+                            return null;
+                    }
+
+                    return (await this.TransformMemberDao(query).ConfigureAwait(false)).FirstOrDefault();
                 }
-
-                return (await this.TransformMemberDao(query).ConfigureAwait(false)).FirstOrDefault();
             }
             catch (Exception ex)
             {

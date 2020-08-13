@@ -1,4 +1,5 @@
 ﻿using DataInfo.Core.Models.Dto.Member.View;
+using System;
 using System.Collections.Generic;
 
 namespace DataInfo.Core.Models.Dto.Team.View
@@ -22,5 +23,10 @@ namespace DataInfo.Core.Models.Dto.Team.View
         /// Gets or sets 成員列表
         /// </summary>
         public IEnumerable<MemberSimpleInfoView> MemberList { get; set; }
+
+        /// <summary>
+        /// Gets or sets 訊息最新時間
+        /// </summary>
+        public DateTime MessageLatestTime { get; set; }
     }
 }

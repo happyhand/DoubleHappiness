@@ -764,12 +764,17 @@ namespace DataInfo.Service.Managers.Team
                 IEnumerable<TeamBullentiListView> teamBullentiListViews = this.mapper.Map<IEnumerable<TeamBullentiListView>>(await teamBulletinDaos.ConfigureAwait(false));
                 IEnumerable<MemberSimpleInfoView> applyJoinViews = this.mapper.Map<IEnumerable<MemberSimpleInfoView>>(await memberOfApplyJoinList.ConfigureAwait(false));
                 IEnumerable<MemberSimpleInfoView> teamMemberViews = this.mapper.Map<IEnumerable<MemberSimpleInfoView>>(await memberOfTeamList.ConfigureAwait(false));
+
+                string messageLatestTimeCacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Team}-{content.TeamID}-{AppSettingHelper.Appsetting.Redis.SubFlag.MessageLatestTime}";
+                DateTime messageLatestTime = await this.redisRepository.GetCache<DateTime>(AppSettingHelper.Appsetting.Redis.TeamDB, messageLatestTimeCacheKey).ConfigureAwait(false);
+
                 return new ResponseResult()
                 {
                     Result = true,
                     ResultCode = (int)ResponseResultType.Success,
                     Content = new TeamMessageView()
                     {
+                        MessageLatestTime = messageLatestTime,
                         BullentiList = teamBullentiListViews,
                         ApplyJoinList = applyJoinViews,
                         MemberList = teamMemberViews

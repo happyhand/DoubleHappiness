@@ -7,6 +7,7 @@ using DataInfo.Repository.Interfaces.Ride;
 using DataInfo.Repository.Managers.Base;
 using Newtonsoft.Json;
 using NLog;
+using SqlSugar;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -69,18 +70,21 @@ namespace DataInfo.Repository.Managers.Ride
         {
             try
             {
-                RideData rideData = await this.Db.Queryable<RideData>().Where(data => data.MemberID.Equals(memberID)).FirstAsync().ConfigureAwait(false);
-                if (rideData == null)
+                using (SqlSugarClient db = this.NewDB)
                 {
-                    this.logger.LogWarn("取得總里程失敗，無騎乘資料", $"MemberID: {memberID}", null);
-                    return null;
-                }
+                    RideData rideData = await db.Queryable<RideData>().Where(data => data.MemberID.Equals(memberID)).FirstAsync().ConfigureAwait(false);
+                    if (rideData == null)
+                    {
+                        this.logger.LogWarn("取得總里程失敗，無騎乘資料", $"MemberID: {memberID}", null);
+                        return null;
+                    }
 
-                return new RideDistanceDao()
-                {
-                    MemberID = rideData.MemberID,
-                    TotalDistance = rideData.TotalDistance
-                };
+                    return new RideDistanceDao()
+                    {
+                        MemberID = rideData.MemberID,
+                        TotalDistance = rideData.TotalDistance
+                    };
+                }
             }
             catch (Exception ex)
             {

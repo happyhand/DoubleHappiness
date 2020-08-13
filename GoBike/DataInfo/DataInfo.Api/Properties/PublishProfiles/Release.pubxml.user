@@ -13,7 +13,7 @@
       <publishTime>02/16/2020 14:43:39</publishTime>
     </File>
     <File Include="appsettings.json">
-      <publishTime>05/07/2020 13:48:33</publishTime>
+      <publishTime>08/06/2020 20:59:27</publishTime>
     </File>
     <File Include="AutoMapper.dll">
       <publishTime>08/12/2019 12:42:04</publishTime>
@@ -34,37 +34,37 @@
       <publishTime>09/12/2019 17:08:36</publishTime>
     </File>
     <File Include="DataInfo.Api.deps.json">
-      <publishTime>05/08/2020 17:17:22</publishTime>
+      <publishTime>08/13/2020 20:46:05</publishTime>
     </File>
     <File Include="DataInfo.Api.dll">
-      <publishTime>05/08/2020 17:17:20</publishTime>
+      <publishTime>08/13/2020 20:46:04</publishTime>
     </File>
     <File Include="DataInfo.Api.exe">
-      <publishTime>05/08/2020 17:17:21</publishTime>
+      <publishTime>08/13/2020 20:46:04</publishTime>
     </File>
     <File Include="DataInfo.Api.pdb">
-      <publishTime>05/08/2020 17:17:20</publishTime>
+      <publishTime>08/13/2020 20:46:04</publishTime>
     </File>
     <File Include="DataInfo.Api.runtimeconfig.json">
-      <publishTime>04/29/2020 21:24:31</publishTime>
+      <publishTime>06/20/2020 16:43:14</publishTime>
     </File>
     <File Include="DataInfo.Core.dll">
-      <publishTime>05/08/2020 17:17:19</publishTime>
+      <publishTime>08/13/2020 19:39:39</publishTime>
     </File>
     <File Include="DataInfo.Core.pdb">
-      <publishTime>05/08/2020 17:17:19</publishTime>
+      <publishTime>08/13/2020 19:39:39</publishTime>
     </File>
     <File Include="DataInfo.Repository.dll">
-      <publishTime>05/08/2020 17:17:19</publishTime>
+      <publishTime>08/13/2020 20:46:02</publishTime>
     </File>
     <File Include="DataInfo.Repository.pdb">
-      <publishTime>05/08/2020 17:17:19</publishTime>
+      <publishTime>08/13/2020 20:46:02</publishTime>
     </File>
     <File Include="DataInfo.Service.dll">
-      <publishTime>05/08/2020 17:17:20</publishTime>
+      <publishTime>08/13/2020 20:46:03</publishTime>
     </File>
     <File Include="DataInfo.Service.pdb">
-      <publishTime>05/08/2020 17:17:20</publishTime>
+      <publishTime>08/13/2020 20:46:03</publishTime>
     </File>
     <File Include="de/Microsoft.CodeAnalysis.CSharp.resources.dll">
       <publishTime>09/12/2019 17:08:58</publishTime>
@@ -157,7 +157,7 @@
       <publishTime>02/16/2020 14:43:39</publishTime>
     </File>
     <File Include="message.json">
-      <publishTime>05/07/2020 15:24:19</publishTime>
+      <publishTime>06/20/2020 15:44:52</publishTime>
     </File>
     <File Include="Microsoft.AspNetCore.Authentication.JwtBearer.dll">
       <publishTime>01/18/2020 17:35:30</publishTime>
@@ -337,7 +337,7 @@
       <publishTime>11/09/2019 00:56:44</publishTime>
     </File>
     <File Include="NLog.config">
-      <publishTime>02/16/2020 14:50:22</publishTime>
+      <publishTime>07/23/2020 11:51:58</publishTime>
     </File>
     <File Include="NLog.dll">
       <publishTime>08/25/2019 19:04:30</publishTime>
@@ -535,7 +535,7 @@
       <publishTime>09/12/2019 17:08:36</publishTime>
     </File>
     <File Include="web.config">
-      <publishTime>05/08/2020 17:17:22</publishTime>
+      <publishTime>08/13/2020 20:46:05</publishTime>
     </File>
     <File Include="zh-Hans/Microsoft.CodeAnalysis.CSharp.resources.dll">
       <publishTime>09/12/2019 17:09:00</publishTime>

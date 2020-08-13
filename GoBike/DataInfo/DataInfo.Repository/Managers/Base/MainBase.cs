@@ -27,6 +27,20 @@ namespace DataInfo.Repository.Managers.Base
             });
         }
 
+        public SqlSugarClient NewDB
+        {
+            get
+            {
+                return new SqlSugarClient(new ConnectionConfig()
+                {
+                    ConnectionString = AppSettingHelper.Appsetting.Sql.ConnectionStrings,
+                    DbType = DbType.MySql,
+                    InitKeyType = InitKeyType.Attribute,
+                    IsAutoCloseConnection = true,
+                });
+            }
+        }
+
         ///// <summary>
         ///// Gets Member 資料表
         ///// </summary>
