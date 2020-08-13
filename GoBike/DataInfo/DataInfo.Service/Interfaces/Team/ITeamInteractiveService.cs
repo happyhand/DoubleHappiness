@@ -12,25 +12,25 @@ namespace DataInfo.Service.Interfaces.Team
         /// <summary>
         /// 申請加入車隊
         /// </summary>
-        /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> ApplyJoinTeam(string memberID, TeamApplyJoinContent content);
+        Task<ResponseResult> ApplyJoinTeam(TeamApplyJoinContent content, string memberID);
 
         /// <summary>
         /// 取消申請加入車隊
         /// </summary>
-        /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> CancelApplyJoinTeam(string memberID, TeamApplyJoinContent content);
+        Task<ResponseResult> CancelApplyJoinTeam(TeamApplyJoinContent content, string memberID);
 
         /// <summary>
         /// 回覆申請加入車隊
         /// </summary>
-        /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> ResponseApplyJoinTeam(string memberID, TeamResponseApplyJoinContent content);
+        Task<ResponseResult> ResponseApplyJoinTeam(TeamResponseApplyJoinContent content, string memberID);
     }
 }

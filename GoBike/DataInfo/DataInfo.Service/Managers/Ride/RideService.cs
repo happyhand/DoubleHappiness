@@ -187,8 +187,8 @@ namespace DataInfo.Service.Managers.Ride
                 switch (response.Data.Result)
                 {
                     case (int)CreateRideRecordResultType.Success:
-                        string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.RideRecord}";
-                        this.redisRepository.DeleteCache(AppSettingHelper.Appsetting.Redis.RideDB, cacheKey);
+                        //string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.RideRecord}";
+                        //this.redisRepository.DeleteCache(AppSettingHelper.Appsetting.Redis.RideDB, cacheKey);
                         return new ResponseResult()
                         {
                             Result = true,
@@ -237,7 +237,8 @@ namespace DataInfo.Service.Managers.Ride
             try
             {
                 string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.HomeInfo}";
-                IEnumerable<RideFriendWeekRankView> rideFriendWeekRankViews = await this.redisRepository.GetCache<IEnumerable<RideFriendWeekRankView>>(AppSettingHelper.Appsetting.Redis.RideDB, cacheKey).ConfigureAwait(false);
+                //IEnumerable<RideFriendWeekRankView> rideFriendWeekRankViews = await this.redisRepository.GetCache<IEnumerable<RideFriendWeekRankView>>(AppSettingHelper.Appsetting.Redis.RideDB, cacheKey).ConfigureAwait(false);
+                IEnumerable<RideFriendWeekRankView> rideFriendWeekRankViews = null;
                 if (rideFriendWeekRankViews == null)
                 {
                     IEnumerable<string> friendIDList = await this.interactiveRepository.GetFriendList(memberID).ConfigureAwait(false);
@@ -264,7 +265,7 @@ namespace DataInfo.Service.Managers.Ride
                     });
 
                     rideFriendWeekRankViews = rideFriendWeekRankViews.OrderByDescending(data => data.WeekDistance);
-                    this.redisRepository.SetCache(AppSettingHelper.Appsetting.Redis.RideDB, cacheKey, JsonConvert.SerializeObject(rideFriendWeekRankViews), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
+                    //this.redisRepository.SetCache(AppSettingHelper.Appsetting.Redis.RideDB, cacheKey, JsonConvert.SerializeObject(rideFriendWeekRankViews), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
                 }
 
                 return new ResponseResult()
@@ -340,12 +341,13 @@ namespace DataInfo.Service.Managers.Ride
             try
             {
                 string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.RideRecord}";
-                IEnumerable<RideSimpleRecordView> rideSimpleRecordViews = await this.redisRepository.GetCache<IEnumerable<RideSimpleRecordView>>(AppSettingHelper.Appsetting.Redis.RideDB, cacheKey).ConfigureAwait(false);
+                //IEnumerable<RideSimpleRecordView> rideSimpleRecordViews = await this.redisRepository.GetCache<IEnumerable<RideSimpleRecordView>>(AppSettingHelper.Appsetting.Redis.RideDB, cacheKey).ConfigureAwait(false);
+                IEnumerable<RideSimpleRecordView> rideSimpleRecordViews = null;
                 if (rideSimpleRecordViews == null)
                 {
                     IEnumerable<RideDao> rideDaos = await this.rideRepository.GetRecordList(memberID).ConfigureAwait(false);
                     rideSimpleRecordViews = this.mapper.Map<IEnumerable<RideSimpleRecordView>>(rideDaos);
-                    this.redisRepository.SetCache(AppSettingHelper.Appsetting.Redis.RideDB, cacheKey, JsonConvert.SerializeObject(rideSimpleRecordViews), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
+                    //this.redisRepository.SetCache(AppSettingHelper.Appsetting.Redis.RideDB, cacheKey, JsonConvert.SerializeObject(rideSimpleRecordViews), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
                 }
 
                 return new ResponseResult()

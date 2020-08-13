@@ -1,4 +1,6 @@
-﻿namespace DataInfo.Core.Models.Dto.Team.View
+﻿using System;
+
+namespace DataInfo.Core.Models.Dto.Team.View
 {
     /// <summary>
     /// 車隊下拉選單可視資料
@@ -11,9 +13,9 @@
         public string Avatar { get; set; }
 
         /// <summary>
-        /// Gets or sets 訊息數量
+        /// Gets or sets 訊息最新時間
         /// </summary>
-        public int MessageCount { get; set; }
+        public DateTime MessageLatestTime { get; set; }
 
         /// <summary>
         /// Gets or sets 車隊 ID

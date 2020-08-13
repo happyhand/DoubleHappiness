@@ -55,7 +55,7 @@ namespace DataInfo.Api.Controllers.Team
             try
             {
                 this.logger.LogInfo("會員請求更換車隊隊長", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await teamService.ChangeLeader(memberID, content).ConfigureAwait(false);
+                ResponseResult responseResult = await teamService.ChangeLeader(content, memberID).ConfigureAwait(false);
                 return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)

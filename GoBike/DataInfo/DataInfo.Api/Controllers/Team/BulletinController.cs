@@ -2,9 +2,11 @@
 using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dto.Response;
 using DataInfo.Core.Models.Dto.Team.Content;
+using DataInfo.Core.Models.Enum;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Team;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using NLog;
@@ -53,21 +55,17 @@ namespace DataInfo.Api.Controllers.Team
             try
             {
                 this.logger.LogInfo("會員請求刪除車隊公告", $"MemberID: {memberID} BulletinID: {bulletinID}", null);
-                TeamBulletinContent content = new TeamBulletinContent()
-                {
-                    BulletinID = bulletinID
-                };
-                ResponseResult responseResult = await this.teamBulletinService.Delete(memberID, content).ConfigureAwait(false);
-                return Ok(responseResult);
+                ResponseResult responseResult = await this.teamBulletinService.Delete(memberID, bulletinID).ConfigureAwait(false);
+                return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求刪除車隊公告發生錯誤", $"MemberID: {memberID} BulletinID: {bulletinID}", ex);
-                return Ok(new ResponseResult()
+                return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Update.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 });
             }
         }
@@ -84,18 +82,17 @@ namespace DataInfo.Api.Controllers.Team
             try
             {
                 this.logger.LogInfo("會員請求取得車隊公告列表", $"MemberID: {memberID} TeamID: {teamID}", null);
-                TeamContent content = new TeamContent() { TeamID = teamID };
-                ResponseResult responseResult = await this.teamBulletinService.GetList(memberID, content).ConfigureAwait(false);
-                return Ok(responseResult);
+                ResponseResult responseResult = await this.teamBulletinService.GetList(memberID, teamID).ConfigureAwait(false);
+                return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求取得車隊公告列表發生錯誤", $"MemberID: {memberID} TeamID: {teamID}", ex);
-                return Ok(new ResponseResult()
+                return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 });
             }
         }
@@ -112,17 +109,17 @@ namespace DataInfo.Api.Controllers.Team
             try
             {
                 this.logger.LogInfo("會員請求更新車隊公告", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await this.teamBulletinService.Edit(memberID, content).ConfigureAwait(false);
-                return Ok(responseResult);
+                ResponseResult responseResult = await this.teamBulletinService.Edit(content, memberID).ConfigureAwait(false);
+                return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求更新車隊公告發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
-                return Ok(new ResponseResult()
+                return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Add.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 });
             }
         }
@@ -139,17 +136,17 @@ namespace DataInfo.Api.Controllers.Team
             try
             {
                 this.logger.LogInfo("會員請求新增車隊公告", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await this.teamBulletinService.Add(memberID, content).ConfigureAwait(false);
-                return Ok(responseResult);
+                ResponseResult responseResult = await this.teamBulletinService.Add(content, memberID).ConfigureAwait(false);
+                return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求新增車隊公告發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
-                return Ok(new ResponseResult()
+                return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Add.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 });
             }
         }

@@ -1,4 +1,5 @@
 ﻿using DataInfo.Core.Applibs;
+using DataInfo.Core.Models.Enum;
 using FluentValidation;
 
 namespace DataInfo.Core.Models.Dto.Team.Content
@@ -24,11 +25,17 @@ namespace DataInfo.Core.Models.Dto.Team.Content
         /// </summary>
         public TeamBulletinContentValidator()
         {
-            ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
+            this.CascadeMode = CascadeMode.StopOnFirstFailure;
 
             RuleFor(content => content.BulletinID)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.BulletinIDEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Team.BulletinIDEmpty);
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.BulletinIDEmpty}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.BulletinIDEmpty}";
+              });
         }
     }
 }

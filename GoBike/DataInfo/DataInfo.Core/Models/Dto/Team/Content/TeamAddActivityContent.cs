@@ -1,5 +1,5 @@
-﻿using DataInfo.Core.Applibs;
-using DataInfo.Core.Models.Dto.Team.Content.data;
+﻿using DataInfo.Core.Models.Dto.Team.Content.data;
+using DataInfo.Core.Models.Enum;
 using FluentValidation;
 using System;
 using System.Collections.Generic;
@@ -57,40 +57,88 @@ namespace DataInfo.Core.Models.Dto.Team.Content
         /// </summary>
         public TeamAddActivityContentValidator()
         {
-            ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
+            this.CascadeMode = CascadeMode.StopOnFirstFailure;
             RuleFor(content => content.ActDate)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.ActivityDateEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Team.ActivityDateEmpty)
-            .Must(actDate =>
-            {
-                return DateTime.TryParse(actDate, out DateTime dateTime);
-            }).WithMessage(MessageHelper.Message.ResponseMessage.Team.ActivityDateEmpty);
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.TeamActivityActDateEmpty}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.TeamActivityActDateEmpty}";
+              })
+              .Must(actDate =>
+              {
+                  return DateTime.TryParse(actDate, out DateTime dateTime);
+              }).WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.TeamActivityActDateFail}|ActDate: {content.ActDate}";
+              });
 
             RuleFor(content => content.MeetTime)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.ActivityMeetTimeEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Team.ActivityMeetTimeEmpty)
-            .Must(meetTime =>
-            {
-                return DateTime.TryParse(meetTime, out DateTime dateTime);
-            }).WithMessage(MessageHelper.Message.ResponseMessage.Team.ActivityMeetTimeEmpty);
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.TeamActivityMeetTimeEmpty}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.TeamActivityMeetTimeEmpty}";
+              })
+              .Must(meetTime =>
+              {
+                  return DateTime.TryParse(meetTime, out DateTime dateTime);
+              }).WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.TeamActivityMeetTimeFail}|MeetTime: {content.MeetTime}";
+              });
 
             RuleFor(content => content.MaxAltitude)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.ActivityAltitudeEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Team.ActivityAltitudeEmpty)
-            .GreaterThan(default(float)).WithMessage(MessageHelper.Message.ResponseMessage.Team.ActivityAltitudeEmpty);
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.TeamActivityMaxAltitudeEmpty}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.TeamActivityMaxAltitudeEmpty}";
+              })
+              .GreaterThan(default(float)).WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.TeamActivityMaxAltitudeFail}|MaxAltitude: {content.MaxAltitude}";
+              });
 
             RuleFor(content => content.TotalDistance)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.ActivityDistanceEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Team.ActivityDistanceEmpty)
-            .GreaterThan(default(float)).WithMessage(MessageHelper.Message.ResponseMessage.Team.ActivityDistanceEmpty);
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.TeamActivityTotalDistanceEmpty}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.TeamActivityTotalDistanceEmpty}";
+              })
+              .GreaterThan(default(float)).WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.TeamActivityTotalDistanceFail}|TotalDistance: {content.TotalDistance}";
+              });
 
             RuleFor(content => content.Title)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.ActivityTitleEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Team.ActivityTitleEmpty);
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.TeamActivityTitleEmpty}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.TeamActivityTitleEmpty}";
+              });
 
             RuleFor(content => content.TeamID)
-           .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.TeamIDEmpty)
-           .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Team.TeamIDEmpty);
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.TeamIDEmpty}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.TeamIDEmpty}";
+              });
         }
     }
 }

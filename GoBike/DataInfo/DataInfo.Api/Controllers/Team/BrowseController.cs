@@ -53,7 +53,7 @@ namespace DataInfo.Api.Controllers.Team
             try
             {
                 this.logger.LogInfo("會員請求取得瀏覽車隊資訊", $"MemberID: {memberID}", null);
-                ResponseResult responseResult = await teamService.GetBrowseInfo(memberID, content).ConfigureAwait(false);
+                ResponseResult responseResult = await teamService.GetBrowseInfo(content, memberID).ConfigureAwait(false);
                 return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)

@@ -298,14 +298,14 @@ namespace DataInfo.Core.Applibs
             public string Member { get; set; }
 
             /// <summary>
-            /// Gets or sets Team
-            /// </summary>
-            public string Team { get; set; }
-
-            /// <summary>
             /// Gets or sets RideGroup
             /// </summary>
             public string RideGroup { get; set; }
+
+            /// <summary>
+            /// Gets or sets Team
+            /// </summary>
+            public string Team { get; set; }
 
             /// <summary>
             /// Gets or sets VerifierCode
@@ -319,29 +319,14 @@ namespace DataInfo.Core.Applibs
         public class RedisSetting
         {
             /// <summary>
-            /// Gets or sets ConnectionStrings
-            /// </summary>
-            public string ConnectionStrings { get; set; }
-
-            /// <summary>
             /// Gets or sets CommonDB
             /// </summary>
             public int CommonDB { get; set; }
 
             /// <summary>
-            /// Gets or sets MemberDB
+            /// Gets or sets ConnectionStrings
             /// </summary>
-            public int MemberDB { get; set; }
-
-            /// <summary>
-            /// Gets or sets RideDB
-            /// </summary>
-            public int RideDB { get; set; }
-
-            /// <summary>
-            /// Gets or sets TeamDB
-            /// </summary>
-            public int TeamDB { get; set; }
+            public string ConnectionStrings { get; set; }
 
             /// <summary>
             /// Gets or sets ExpirationDate
@@ -354,6 +339,16 @@ namespace DataInfo.Core.Applibs
             public RedisFlag Flag { get; set; }
 
             /// <summary>
+            /// Gets or sets MemberDB
+            /// </summary>
+            public int MemberDB { get; set; }
+
+            /// <summary>
+            /// Gets or sets RideDB
+            /// </summary>
+            public int RideDB { get; set; }
+
+            /// <summary>
             /// Gets or sets ServerDB
             /// </summary>
             public int ServerDB { get; set; }
@@ -362,6 +357,11 @@ namespace DataInfo.Core.Applibs
             /// Gets or sets SubFlag
             /// </summary>
             public RedisSubFlag SubFlag { get; set; }
+
+            /// <summary>
+            /// Gets or sets TeamDB
+            /// </summary>
+            public int TeamDB { get; set; }
         }
 
         /// <summary>
@@ -375,14 +375,19 @@ namespace DataInfo.Core.Applibs
             public string Black { get; set; }
 
             /// <summary>
+            /// Gets or sets BrowseInfo
+            /// </summary>
+            public string BrowseInfo { get; set; }
+
+            /// <summary>
             /// Gets or sets CardInfo
             /// </summary>
             public string CardInfo { get; set; }
 
             /// <summary>
-            /// Gets or sets TeamInfo
+            /// Gets or sets DropMenu
             /// </summary>
-            public string TeamInfo { get; set; }
+            public string DropMenu { get; set; }
 
             /// <summary>
             /// Gets or sets Friend
@@ -400,6 +405,11 @@ namespace DataInfo.Core.Applibs
             public string LastLogin { get; set; }
 
             /// <summary>
+            /// Gets or sets MessageLatestTime
+            /// </summary>
+            public string MessageLatestTime { get; set; }
+
+            /// <summary>
             /// Gets or sets RideRecord
             /// </summary>
             public string RideRecord { get; set; }
@@ -410,14 +420,9 @@ namespace DataInfo.Core.Applibs
             public string Search { get; set; }
 
             /// <summary>
-            /// Gets or sets BrowseInfo
+            /// Gets or sets TeamInfo
             /// </summary>
-            public string BrowseInfo { get; set; }
-
-            /// <summary>
-            /// Gets or sets DropMenu
-            /// </summary>
-            public string DropMenu { get; set; }
+            public string TeamInfo { get; set; }
         }
 
         #endregion Redis 設定資料
@@ -528,14 +533,14 @@ namespace DataInfo.Core.Applibs
             public int DaysOfNewCreation { get; set; }
 
             /// <summary>
+            /// Gets or sets MaxGroupCount
+            /// </summary>
+            public int MaxGroupCount { get; set; }
+
+            /// <summary>
             /// Gets or sets NicknameLength
             /// </summary>
             public int NicknameLength { get; set; }
-
-            /// <summary>
-            /// Gets or sets TeamNameLength
-            /// </summary>
-            public int TeamNameLength { get; set; }
 
             /// <summary>
             /// Gets or sets TakeBrowseCount
@@ -543,9 +548,9 @@ namespace DataInfo.Core.Applibs
             public int TakeBrowseCount { get; set; }
 
             /// <summary>
-            /// Gets or sets MaxGroupCount
+            /// Gets or sets TeamNameLength
             /// </summary>
-            public int MaxGroupCount { get; set; }
+            public int TeamNameLength { get; set; }
         }
 
         #endregion 規則設定資料

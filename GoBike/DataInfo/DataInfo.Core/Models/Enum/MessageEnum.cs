@@ -156,7 +156,7 @@
         UploadHomePhotoFail,
 
         /// <summary>
-        /// 生日格式不符，請重新輸入
+        /// 生日日期設定錯誤，請重新輸入
         /// </summary>
         BirthdayFormatError,
 
@@ -216,6 +216,16 @@
         TeamIDEmpty,
 
         /// <summary>
+        /// 無車隊活動資料，請重新操作
+        /// </summary>
+        ActIDEmpty,
+
+        /// <summary>
+        /// 無車隊公告資料，請重新操作
+        /// </summary>
+        BulletinIDEmpty,
+
+        /// <summary>
         /// 未輸入車隊名稱，請重新輸入
         /// </summary>
         TeamNameEmpty,
@@ -239,6 +249,11 @@
         /// 回覆失敗，請重新操作
         /// </summary>
         ReplyFail,
+
+        /// <summary>
+        /// 申請失敗，請重新操作
+        /// </summary>
+        ApplyFail,
 
         /// <summary>
         /// 通知失敗，請重新操作
@@ -284,6 +299,61 @@
         /// 移交隊長失敗，請重新操作
         /// </summary>
         ChangeLeaderFail,
+
+        /// <summary>
+        /// 未輸入車隊活動日期，請重新輸入
+        /// </summary>
+        TeamActivityActDateEmpty,
+
+        /// <summary>
+        /// 車隊活動日期設定錯誤，請重新輸入
+        /// </summary>
+        TeamActivityActDateFail,
+
+        /// <summary>
+        /// 未輸入車隊活動集合時間，請重新輸入
+        /// </summary>
+        TeamActivityMeetTimeEmpty,
+
+        /// <summary>
+        /// 車隊活動集合時間設定錯誤，請重新輸入
+        /// </summary>
+        TeamActivityMeetTimeFail,
+
+        /// <summary>
+        /// 未輸入車隊活動最高海拔，請重新輸入
+        /// </summary>
+        TeamActivityMaxAltitudeEmpty,
+
+        /// <summary>
+        /// 車隊活動最高海拔設定錯誤，請重新輸入
+        /// </summary>
+        TeamActivityMaxAltitudeFail,
+
+        /// <summary>
+        /// 未輸入車隊活動總距離，請重新輸入
+        /// </summary>
+        TeamActivityTotalDistanceEmpty,
+
+        /// <summary>
+        /// 車隊活動總距離設定錯誤，請重新輸入
+        /// </summary>
+        TeamActivityTotalDistanceFail,
+
+        /// <summary>
+        /// 未輸入車隊活動標題，請重新輸入
+        /// </summary>
+        TeamActivityTitleEmpty,
+
+        /// <summary>
+        /// 未輸入車隊公告內容，請重新輸入
+        /// </summary>
+        BulletinContentEmpty,
+
+        /// <summary>
+        /// 未設定車隊公告天數，請重新輸入
+        /// </summary>
+        BulletinDayEmpty,
     }
 
     /// <summary>
@@ -315,6 +385,11 @@
         /// 回覆成功
         /// </summary>
         ReplySuccess,
+
+        /// <summary>
+        /// 申請成功
+        /// </summary>
+        ApplySuccess,
 
         /// <summary>
         /// 通知成功

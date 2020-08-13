@@ -163,6 +163,12 @@ namespace DataInfo.Api
             services.AddTransient<IValidator<TeamKickContent>, TeamKickContentValidator>();
             services.AddTransient<IValidator<TeamBrowseContent>, TeamBrowseContentValidator>();
             services.AddTransient<IValidator<TeamChangeLeaderContent>, TeamChangeLeaderContentValidator>();
+            services.AddTransient<IValidator<TeamAddActivityContent>, TeamAddActivityContentValidator>();
+            services.AddTransient<IValidator<TeamActivityDetailContent>, TeamActivityDetailContentValidator>();
+            services.AddTransient<IValidator<TeamApplyJoinContent>, TeamApplyJoinContentValidator>();
+            services.AddTransient<IValidator<TeamResponseApplyJoinContent>, TeamResponseApplyJoinContentValidator>();
+            services.AddTransient<IValidator<TeamBulletinContent>, TeamBulletinContentValidator>();
+            services.AddTransient<IValidator<TeamAddBulletinContent>, TeamAddBulletinContentValidator>();
 
             //// 忽略 Model Binding 驗證不過跳 400 Error 的功能，以便客製化回應訊息
             services.Configure<ApiBehaviorOptions>(options =>

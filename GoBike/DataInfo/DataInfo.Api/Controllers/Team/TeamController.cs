@@ -55,7 +55,7 @@ namespace DataInfo.Api.Controllers.Team
             try
             {
                 this.logger.LogInfo("會員請求解散車隊", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await teamService.Disband(memberID, content).ConfigureAwait(false);
+                ResponseResult responseResult = await teamService.Disband(content, memberID).ConfigureAwait(false);
                 return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
@@ -109,7 +109,7 @@ namespace DataInfo.Api.Controllers.Team
             try
             {
                 this.logger.LogInfo("會員請求建立車隊", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await teamService.Create(memberID, content).ConfigureAwait(false);
+                ResponseResult responseResult = await teamService.Create(content, memberID).ConfigureAwait(false);
                 return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)

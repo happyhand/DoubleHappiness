@@ -1,5 +1,8 @@
-﻿using DataInfo.Core.Models.Dao.Team;
+﻿using DataInfo.Core.Applibs;
+using DataInfo.Core.Models.Dao.Team;
 using DataInfo.Core.Models.Enum;
+using DataInfo.Repository.Interfaces.Common;
+using Newtonsoft.Json;
 using System;
 using System.Linq;
 
@@ -10,6 +13,16 @@ namespace DataInfo.Service.Managers.Team
     /// </summary>
     public class TeamBaseService
     {
+        /// <summary>
+        /// redisRepository
+        /// </summary>
+        protected readonly IRedisRepository redisRepository;
+
+        public TeamBaseService(IRedisRepository redisRepository)
+        {
+            this.redisRepository = redisRepository;
+        }
+
         /// <summary>
         /// 取得車隊互動狀態
         /// </summary>
@@ -29,6 +42,32 @@ namespace DataInfo.Service.Managers.Team
             else
             {
                 return TeamInteractiveType.None;
+            }
+        }
+
+        /// <summary>
+        /// 取得車隊角色
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="teamDao">teamDao</param>
+        /// <returns>TeamRoleType</returns>
+        protected TeamRoleType GetTeamRole(string memberID, TeamDao teamDao)
+        {
+            if (teamDao.Leader.Equals(memberID))
+            {
+                return TeamRoleType.Leader;
+            }
+            else if (teamDao.TeamViceLeaderIDs.Contains(memberID))
+            {
+                return TeamRoleType.ViceLeader;
+            }
+            else if (teamDao.TeamMemberIDs.Contains(memberID))
+            {
+                return TeamRoleType.Normal;
+            }
+            else
+            {
+                return TeamRoleType.None;
             }
         }
 
@@ -56,29 +95,13 @@ namespace DataInfo.Service.Managers.Team
         }
 
         /// <summary>
-        /// 取得車隊角色
+        /// 更新車隊訊息最新時間
         /// </summary>
-        /// <param name="memberID">memberID</param>
-        /// <param name="teamDao">teamDao</param>
-        /// <returns>TeamRoleType</returns>
-        protected TeamRoleType GetTeamRole(string memberID, TeamDao teamDao)
+        /// <param name="teamID">teamID</param>
+        protected void UpdateTeamMessageLatestTime(string teamID)
         {
-            if (teamDao.Leader.Equals(memberID))
-            {
-                return TeamRoleType.Leader;
-            }
-            else if (teamDao.TeamViceLeaderIDs.Contains(memberID))
-            {
-                return TeamRoleType.ViceLeader;
-            }
-            else if (teamDao.TeamMemberIDs.Contains(memberID))
-            {
-                return TeamRoleType.Normal;
-            }
-            else
-            {
-                return TeamRoleType.None;
-            }
+            string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Team}-{teamID}-{AppSettingHelper.Appsetting.Redis.SubFlag.MessageLatestTime}";
+            this.redisRepository.SetCache(AppSettingHelper.Appsetting.Redis.TeamDB, cacheKey, JsonConvert.SerializeObject(DateTime.UtcNow), null);
         }
     }
 }

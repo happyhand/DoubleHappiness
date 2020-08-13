@@ -1,4 +1,5 @@
 ﻿using DataInfo.Core.Applibs;
+using DataInfo.Core.Models.Enum;
 using FluentValidation;
 
 namespace DataInfo.Core.Models.Dto.Team.Content
@@ -34,20 +35,41 @@ namespace DataInfo.Core.Models.Dto.Team.Content
         /// </summary>
         public TeamAddBulletinContentValidator()
         {
-            ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
+            this.CascadeMode = CascadeMode.StopOnFirstFailure;
 
             RuleFor(content => content.TeamID)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.TeamIDEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Team.TeamIDEmpty);
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.TeamIDEmpty}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.TeamIDEmpty}";
+              });
 
             RuleFor(content => content.Content)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.BulletinIDEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Team.BulletinIDEmpty);
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.BulletinContentEmpty}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.BulletinContentEmpty}";
+              });
 
             RuleFor(content => content.Day)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.BulletinDayEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Team.BulletinDayEmpty)
-            .GreaterThan(default(int)).WithMessage(MessageHelper.Message.ResponseMessage.Team.BulletinDayEmpty);
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.BulletinDayEmpty}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.BulletinDayEmpty}";
+              })
+              .GreaterThan(default(int)).WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.BulletinDayEmpty}|Day: {content.Day}";
+              });
         }
     }
 }

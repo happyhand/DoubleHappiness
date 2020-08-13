@@ -80,7 +80,7 @@ namespace DataInfo.Service.Managers.Team
         {
             if (string.IsNullOrEmpty(content.ActID))
             {
-                return Tuple.Create<string, TeamUpdateActivityRequest>(MessageHelper.Message.ResponseMessage.Team.ActivityIDEmpty, null);
+                return Tuple.Create<string, TeamUpdateActivityRequest>(ResponseErrorMessageType.ActIDEmpty.ToString(), null);
             }
 
             TeamUpdateActivityRequest request = new TeamUpdateActivityRequest
@@ -97,7 +97,7 @@ namespace DataInfo.Service.Managers.Team
                 IEnumerable<string> imgUris = await this.uploadService.UploadTeamActivityImages(imgBase64s, true).ConfigureAwait(false);
                 if (imgUris == null || !imgUris.Any())
                 {
-                    return Tuple.Create<string, TeamUpdateActivityRequest>(MessageHelper.Message.ResponseMessage.Upload.PhotoFail, null);
+                    return Tuple.Create<string, TeamUpdateActivityRequest>(ResponseErrorMessageType.UploadPhotoFail.ToString(), null);
                 }
 
                 for (int i = 0; i < content.Routes.Count(); i++)
@@ -113,7 +113,7 @@ namespace DataInfo.Service.Managers.Team
             {
                 if (!DateTime.TryParse(content.ActDate, out DateTime actDate))
                 {
-                    return Tuple.Create<string, TeamUpdateActivityRequest>(MessageHelper.Message.ResponseMessage.Team.ActivityDateError, null);
+                    return Tuple.Create<string, TeamUpdateActivityRequest>(ResponseErrorMessageType.TeamActivityActDateFail.ToString(), null);
                 }
 
                 request.ActDate = actDate.ToString("yyyy-MM-dd");
@@ -123,7 +123,7 @@ namespace DataInfo.Service.Managers.Team
             {
                 if (!DateTime.TryParse(content.MeetTime, out DateTime meetTime))
                 {
-                    return Tuple.Create<string, TeamUpdateActivityRequest>(MessageHelper.Message.ResponseMessage.Team.ActivityMeetTimeError, null);
+                    return Tuple.Create<string, TeamUpdateActivityRequest>(ResponseErrorMessageType.TeamActivityMeetTimeFail.ToString(), null);
                 }
 
                 request.MeetTime = meetTime.ToString("HH:mm:ss");
@@ -162,24 +162,6 @@ namespace DataInfo.Service.Managers.Team
         {
             try
             {
-                #region 驗證資料
-
-                TeamAddActivityContentValidator teamAddActivityContentValidator = new TeamAddActivityContentValidator();
-                ValidationResult validationResult = teamAddActivityContentValidator.Validate(content);
-                if (!validationResult.IsValid)
-                {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("新增車隊活動結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = errorMessgae
-                    };
-                }
-
-                #endregion 驗證資料
-
                 #region 上傳圖片
 
                 IEnumerable<string> imgBase64s = (content.Routes != null && content.Routes.Any()) ? content.Routes.Select(route => route.Photo) : null;
@@ -189,12 +171,12 @@ namespace DataInfo.Service.Managers.Team
                     IEnumerable<string> imgUris = await this.uploadService.UploadTeamActivityImages(imgBase64s, true).ConfigureAwait(false);
                     if (imgUris == null || !imgUris.Any())
                     {
-                        this.logger.LogWarn("新增車隊活動結果", $"Result: 上傳圖片失敗 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                        this.logger.LogWarn("新增車隊活動失敗，上傳圖片失敗", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.InputError,
-                            Content = MessageHelper.Message.ResponseMessage.Upload.PhotoFail
+                            ResultCode = StatusCodes.Status502BadGateway,
+                            ResultMessage = ResponseErrorMessageType.UploadPhotoFail.ToString()
                         };
                     }
 
@@ -224,24 +206,24 @@ namespace DataInfo.Service.Managers.Team
                         return new ResponseResult()
                         {
                             Result = true,
-                            ResultCode = (int)ResponseResultType.Success,
-                            Content = MessageHelper.Message.ResponseMessage.Add.Success
+                            ResultCode = StatusCodes.Status200OK,
+                            ResultMessage = ResponseSuccessMessageType.CreateSuccess.ToString()
                         };
 
                     case (int)UpdateActivityResultType.Fail:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.CreateFail,
-                            Content = MessageHelper.Message.ResponseMessage.Add.Fail
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.CreateFail.ToString()
                         };
 
                     default:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.UnknownError,
-                            Content = MessageHelper.Message.ResponseMessage.Add.Fail
+                            ResultCode = StatusCodes.Status502BadGateway,
+                            ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                         };
                 }
 
@@ -253,8 +235,8 @@ namespace DataInfo.Service.Managers.Team
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Add.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }
@@ -274,12 +256,12 @@ namespace DataInfo.Service.Managers.Team
                 Tuple<string, TeamUpdateActivityRequest> updateHandlerResult = await this.UpdateHandler(memberID, content).ConfigureAwait(false);
                 if (!string.IsNullOrEmpty(updateHandlerResult.Item1))
                 {
-                    this.logger.LogWarn("更新車隊活動資料結果", $"Result: 更新失敗({updateHandlerResult.Item1}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    this.logger.LogWarn("更新車隊活動資料失敗，資料驗證錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} Error: {updateHandlerResult.Item1}", null);
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = updateHandlerResult.Item1
+                        ResultCode = StatusCodes.Status400BadRequest,
+                        ResultMessage = updateHandlerResult.Item1
                     };
                 }
 
@@ -297,32 +279,32 @@ namespace DataInfo.Service.Managers.Team
                         return new ResponseResult()
                         {
                             Result = true,
-                            ResultCode = (int)ResponseResultType.Success,
-                            Content = MessageHelper.Message.ResponseMessage.Add.Success
+                            ResultCode = StatusCodes.Status200OK,
+                            ResultMessage = ResponseSuccessMessageType.UpdateSuccess.ToString()
                         };
 
                     case (int)UpdateActivityResultType.Fail:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.UpdateFail,
-                            Content = MessageHelper.Message.ResponseMessage.Add.Fail
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
                         };
 
                     case (int)UpdateActivityResultType.AuthorityNotEnough:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.DenyAccess,
-                            Content = MessageHelper.Message.ResponseMessage.Team.TeamAuthorityNotEnough
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.TeamAuthorityNotEnough.ToString()
                         };
 
                     default:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.UnknownError,
-                            Content = MessageHelper.Message.ResponseMessage.Add.Fail
+                            ResultCode = StatusCodes.Status502BadGateway,
+                            ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                         };
                 }
 
@@ -334,8 +316,8 @@ namespace DataInfo.Service.Managers.Team
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Update.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }
@@ -350,35 +332,17 @@ namespace DataInfo.Service.Managers.Team
         {
             try
             {
-                #region 驗證資料
-
-                TeamActivityDetailContentValidator teamActivityDetailContentValidator = new TeamActivityDetailContentValidator();
-                ValidationResult validationResult = teamActivityDetailContentValidator.Validate(content);
-                if (!validationResult.IsValid)
-                {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("取得車隊活動明細資料結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = errorMessgae
-                    };
-                }
-
-                #endregion 驗證資料
-
                 #region 取得資料
 
                 TeamActivityDao teamActivityDao = await this.teamActivityRepository.Get(memberID, content.TeamID, content.ActID).ConfigureAwait(false);
                 if (teamActivityDao == null)
                 {
-                    this.logger.LogWarn("取得車隊活動明細資料結果", $"Result: 無車隊活動資料 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    this.logger.LogWarn("取得車隊活動明細資料失敗，無車隊活動資料", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.Missed,
-                        Content = MessageHelper.Message.ResponseMessage.Team.ActivityNotExist
+                        ResultCode = StatusCodes.Status409Conflict,
+                        ResultMessage = ResponseErrorMessageType.ActIDEmpty.ToString()
                     };
                 }
 
@@ -389,7 +353,7 @@ namespace DataInfo.Service.Managers.Team
                 return new ResponseResult()
                 {
                     Result = true,
-                    ResultCode = (int)ResponseResultType.Success,
+                    ResultCode = StatusCodes.Status200OK,
                     Content = teamActivityDetailView
                 };
 
@@ -401,8 +365,8 @@ namespace DataInfo.Service.Managers.Team
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }
@@ -452,24 +416,6 @@ namespace DataInfo.Service.Managers.Team
         {
             try
             {
-                #region 驗證資料
-
-                TeamContentValidator teamContentValidator = new TeamContentValidator();
-                ValidationResult validationResult = teamContentValidator.Validate(content);
-                if (!validationResult.IsValid)
-                {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("取得車隊的活動列表結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = errorMessgae
-                    };
-                }
-
-                #endregion 驗證資料
-
                 #region 取得資料
 
                 IEnumerable<TeamActivityDao> teamActivityDaos = await this.teamActivityRepository.Get(memberID, content.TeamID).ConfigureAwait(false);
@@ -482,7 +428,7 @@ namespace DataInfo.Service.Managers.Team
                 return new ResponseResult()
                 {
                     Result = true,
-                    ResultCode = (int)ResponseResultType.Success,
+                    ResultCode = StatusCodes.Status200OK,
                     Content = teamActivityListViews
                 };
 
@@ -494,8 +440,8 @@ namespace DataInfo.Service.Managers.Team
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }

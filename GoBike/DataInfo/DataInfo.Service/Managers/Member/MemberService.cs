@@ -382,10 +382,10 @@ namespace DataInfo.Service.Managers.Member
             try
             {
                 this.logger.LogInfo("刪除會員快取資訊", $"MemberID: {memberID}", null);
-                string cardInfoCacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.CardInfo}";
-                string homeInfoCacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.HomeInfo}";
-                this.redisRepository.DeleteCache(AppSettingHelper.Appsetting.Redis.MemberDB, cardInfoCacheKey);
-                this.redisRepository.DeleteCache(AppSettingHelper.Appsetting.Redis.MemberDB, homeInfoCacheKey);
+                //string cardInfoCacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.CardInfo}";
+                //string homeInfoCacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.HomeInfo}";
+                //this.redisRepository.DeleteCache(AppSettingHelper.Appsetting.Redis.MemberDB, cardInfoCacheKey);
+                //this.redisRepository.DeleteCache(AppSettingHelper.Appsetting.Redis.MemberDB, homeInfoCacheKey);
             }
             catch (Exception ex)
             {
@@ -579,7 +579,8 @@ namespace DataInfo.Service.Managers.Member
                 //// TODO 待確認有沒有要限制其他會員可不可以搜尋到資料
 
                 string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{content.MemberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.CardInfo}";
-                MemberCardInfoView memberCardInfoView = await this.redisRepository.GetCache<MemberCardInfoView>(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey).ConfigureAwait(false);
+                //MemberCardInfoView memberCardInfoView = await this.redisRepository.GetCache<MemberCardInfoView>(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey).ConfigureAwait(false);
+                MemberCardInfoView memberCardInfoView = null;
                 if (memberCardInfoView == null)
                 {
                     MemberDao memberDao = await this.memberRepository.Get(content.MemberID, MemberSearchType.MemberID).ConfigureAwait(false);
@@ -595,7 +596,7 @@ namespace DataInfo.Service.Managers.Member
                     }
 
                     memberCardInfoView = this.mapper.Map<MemberCardInfoView>(memberDao);
-                    this.redisRepository.SetCache(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey, JsonConvert.SerializeObject(memberCardInfoView), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
+                    //this.redisRepository.SetCache(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey, JsonConvert.SerializeObject(memberCardInfoView), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
                 }
 
                 return new ResponseResult()
@@ -669,7 +670,8 @@ namespace DataInfo.Service.Managers.Member
             try
             {
                 string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.HomeInfo}";
-                MemberHomeInfoView memberHomeInfoView = await this.redisRepository.GetCache<MemberHomeInfoView>(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey).ConfigureAwait(false);
+                //MemberHomeInfoView memberHomeInfoView = await this.redisRepository.GetCache<MemberHomeInfoView>(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey).ConfigureAwait(false);
+                MemberHomeInfoView memberHomeInfoView = null;
                 if (memberHomeInfoView == null)
                 {
                     MemberDao memberDao = await this.memberRepository.Get(memberID, MemberSearchType.MemberID).ConfigureAwait(false);
@@ -680,7 +682,7 @@ namespace DataInfo.Service.Managers.Member
                         memberHomeInfoView.TotalDistance = rideDistanceDao.TotalDistance;
                     }
 
-                    this.redisRepository.SetCache(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey, JsonConvert.SerializeObject(memberHomeInfoView), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
+                    //this.redisRepository.SetCache(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey, JsonConvert.SerializeObject(memberHomeInfoView), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
                 }
 
                 return new ResponseResult()
@@ -919,14 +921,15 @@ namespace DataInfo.Service.Managers.Member
                 #endregion 驗證資料
 
                 string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{searchMemberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.Search}-{searchKey}-{searchType}";
-                IEnumerable<MemberSimpleInfoView> memberSimpleInfoViews = await this.redisRepository.GetCache<IEnumerable<MemberSimpleInfoView>>(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey).ConfigureAwait(false);
+                //IEnumerable<MemberSimpleInfoView> memberSimpleInfoViews = await this.redisRepository.GetCache<IEnumerable<MemberSimpleInfoView>>(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey).ConfigureAwait(false);
+                IEnumerable<MemberSimpleInfoView> memberSimpleInfoViews = null;
                 if (memberSimpleInfoViews == null)
                 {
                     bool isFuzzy = searchType.Equals((int)SearchType.Fuzzy);
                     string[] ignoreMemberIds = new string[] { searchMemberID };
                     IEnumerable<MemberDao> memberDaos = await this.memberRepository.Search(searchKey, isFuzzy, ignoreMemberIds).ConfigureAwait(false);
                     memberSimpleInfoViews = await this.TransformMemberSimpleInfoView(memberDaos).ConfigureAwait(false);
-                    this.redisRepository.SetCache(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey, JsonConvert.SerializeObject(memberSimpleInfoViews), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
+                    //this.redisRepository.SetCache(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey, JsonConvert.SerializeObject(memberSimpleInfoViews), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
                 }
 
                 return new ResponseResult()

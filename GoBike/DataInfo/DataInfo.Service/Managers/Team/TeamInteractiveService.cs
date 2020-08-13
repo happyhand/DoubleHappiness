@@ -12,6 +12,7 @@ using DataInfo.Repository.Interfaces.Team;
 using DataInfo.Service.Interfaces.Server;
 using DataInfo.Service.Interfaces.Team;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using NLog;
 using System;
@@ -84,49 +85,35 @@ namespace DataInfo.Service.Managers.Team
         /// <summary>
         /// 申請加入車隊
         /// </summary>
-        /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> ApplyJoinTeam(string memberID, TeamApplyJoinContent content)
+        public async Task<ResponseResult> ApplyJoinTeam(TeamApplyJoinContent content, string memberID)
         {
             try
             {
                 #region 驗證資料
 
-                TeamApplyJoinContentValidator teamApplyJoinContentValidator = new TeamApplyJoinContentValidator();
-                ValidationResult validationResult = teamApplyJoinContentValidator.Validate(content);
-                if (!validationResult.IsValid)
-                {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("申請加入車隊結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = errorMessgae
-                    };
-                }
-
                 TeamDao teamDao = await this.teamRepository.Get(content.TeamID).ConfigureAwait(false);
                 if (teamDao.ApplyJoinList.Contains(memberID))
                 {
-                    this.logger.LogWarn("申請加入車隊結果", $"Result: 會員已申請加入車隊，直接回應成功 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    this.logger.LogWarn("申請加入車隊失敗，會員已申請加入車隊，直接回應成功", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                     return new ResponseResult()
                     {
                         Result = true,
-                        ResultCode = (int)ResponseResultType.Success,
-                        Content = MessageHelper.Message.ResponseMessage.Update.Success
+                        ResultCode = StatusCodes.Status200OK,
+                        ResultMessage = ResponseSuccessMessageType.ApplySuccess.ToString()
                     };
                 }
 
                 if (this.MemberHasJoinTeam(memberID, teamDao))
                 {
-                    this.logger.LogWarn("申請加入車隊結果", $"Result: 會員已加入車隊 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    this.logger.LogWarn("申請加入車隊失敗，會員已加入車隊", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                        ResultCode = StatusCodes.Status409Conflict,
+                        ResultMessage = ResponseErrorMessageType.ApplyFail.ToString()
                     };
                 }
 
@@ -149,24 +136,24 @@ namespace DataInfo.Service.Managers.Team
                         return new ResponseResult()
                         {
                             Result = true,
-                            ResultCode = (int)ResponseResultType.Success,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Success
+                            ResultCode = StatusCodes.Status200OK,
+                            ResultMessage = ResponseSuccessMessageType.ApplySuccess.ToString()
                         };
 
                     case (int)UpdateApplyJoinListResultType.Fail:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.UpdateFail,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.ApplyFail.ToString()
                         };
 
                     default:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.UnknownError,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            ResultCode = StatusCodes.Status502BadGateway,
+                            ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                         };
                 }
 
@@ -178,8 +165,8 @@ namespace DataInfo.Service.Managers.Team
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Update.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }
@@ -187,38 +174,24 @@ namespace DataInfo.Service.Managers.Team
         /// <summary>
         /// 取消申請加入車隊
         /// </summary>
-        /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> CancelApplyJoinTeam(string memberID, TeamApplyJoinContent content)
+        public async Task<ResponseResult> CancelApplyJoinTeam(TeamApplyJoinContent content, string memberID)
         {
             try
             {
                 #region 驗證資料
 
-                TeamApplyJoinContentValidator teamApplyJoinContentValidator = new TeamApplyJoinContentValidator();
-                ValidationResult validationResult = teamApplyJoinContentValidator.Validate(content);
-                if (!validationResult.IsValid)
-                {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("取消申請加入車隊結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = errorMessgae
-                    };
-                }
-
                 TeamDao teamDao = await this.teamRepository.Get(content.TeamID).ConfigureAwait(false);
                 if (!teamDao.ApplyJoinList.Contains(memberID))
                 {
-                    this.logger.LogWarn("取消申請加入車隊結果", $"Result: 會員未申請加入車隊，直接回應成功 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    this.logger.LogWarn("取消申請加入車隊失敗，會員未申請加入車隊，直接回應成功", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                     return new ResponseResult()
                     {
                         Result = true,
-                        ResultCode = (int)ResponseResultType.Success,
-                        Content = MessageHelper.Message.ResponseMessage.Update.Success
+                        ResultCode = StatusCodes.Status200OK,
+                        ResultMessage = ResponseSuccessMessageType.UpdateSuccess.ToString()
                     };
                 }
 
@@ -241,24 +214,24 @@ namespace DataInfo.Service.Managers.Team
                         return new ResponseResult()
                         {
                             Result = true,
-                            ResultCode = (int)ResponseResultType.Success,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Success
+                            ResultCode = StatusCodes.Status200OK,
+                            ResultMessage = ResponseSuccessMessageType.UpdateSuccess.ToString()
                         };
 
                     case (int)UpdateApplyJoinListResultType.Fail:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.UpdateFail,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
                         };
 
                     default:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.UnknownError,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            ResultCode = StatusCodes.Status502BadGateway,
+                            ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                         };
                 }
 
@@ -270,8 +243,8 @@ namespace DataInfo.Service.Managers.Team
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Update.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }
@@ -279,49 +252,35 @@ namespace DataInfo.Service.Managers.Team
         /// <summary>
         /// 回覆申請加入車隊
         /// </summary>
-        /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> ResponseApplyJoinTeam(string memberID, TeamResponseApplyJoinContent content)
+        public async Task<ResponseResult> ResponseApplyJoinTeam(TeamResponseApplyJoinContent content, string memberID)
         {
             try
             {
                 #region 驗證資料
 
-                TeamResponseApplyJoinContentValidator teamResponseApplyJoinContentValidator = new TeamResponseApplyJoinContentValidator();
-                ValidationResult validationResult = teamResponseApplyJoinContentValidator.Validate(content);
-                if (!validationResult.IsValid)
-                {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("回覆申請加入車隊結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = errorMessgae
-                    };
-                }
-
                 TeamDao teamDao = await this.teamRepository.Get(content.TeamID).ConfigureAwait(false);
                 if (!teamDao.ApplyJoinList.Contains(content.MemberID))
                 {
-                    this.logger.LogWarn("回覆申請加入車隊結果", $"Result: 會員未申請加入車隊 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    this.logger.LogWarn("回覆申請加入車隊失敗，會員未申請加入車隊", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                        ResultCode = StatusCodes.Status409Conflict,
+                        ResultMessage = ResponseErrorMessageType.ReplyFail.ToString()
                     };
                 }
 
                 if (!this.MemberHasTeamAuthority(memberID, teamDao, false))
                 {
-                    this.logger.LogWarn("回覆申請加入車隊結果", $"Result: 無車隊權限 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    this.logger.LogWarn("回覆申請加入車隊失敗，無車隊權限", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = MessageHelper.Message.ResponseMessage.Team.TeamAuthorityNotEnough
+                        ResultCode = StatusCodes.Status409Conflict,
+                        ResultMessage = ResponseErrorMessageType.TeamAuthorityNotEnough.ToString()
                     };
                 }
 
@@ -329,12 +288,12 @@ namespace DataInfo.Service.Managers.Team
                 {
                     if (this.MemberHasJoinTeam(content.MemberID, teamDao))
                     {
-                        this.logger.LogWarn("回覆申請加入車隊結果", $"Result: 會員已加入車隊，直接回應成功 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                        this.logger.LogWarn("回覆申請加入車隊失敗，會員已加入車隊，直接回應成功", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                         return new ResponseResult()
                         {
                             Result = true,
-                            ResultCode = (int)ResponseResultType.Success,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Success
+                            ResultCode = StatusCodes.Status200OK,
+                            ResultMessage = ResponseSuccessMessageType.ReplySuccess.ToString()
                         };
                     }
                 }
@@ -354,24 +313,24 @@ namespace DataInfo.Service.Managers.Team
                             return new ResponseResult()
                             {
                                 Result = true,
-                                ResultCode = (int)ResponseResultType.Success,
-                                Content = MessageHelper.Message.ResponseMessage.Update.Success
+                                ResultCode = StatusCodes.Status200OK,
+                                ResultMessage = ResponseSuccessMessageType.ReplySuccess.ToString()
                             };
 
                         case (int)JoinOrLeaveTeamResultType.Fail:
                             return new ResponseResult()
                             {
                                 Result = false,
-                                ResultCode = (int)ResponseResultType.UpdateFail,
-                                Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                                ResultCode = StatusCodes.Status409Conflict,
+                                ResultMessage = ResponseErrorMessageType.ReplyFail.ToString()
                             };
 
                         default:
                             return new ResponseResult()
                             {
                                 Result = false,
-                                ResultCode = (int)ResponseResultType.UnknownError,
-                                Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                                ResultCode = StatusCodes.Status502BadGateway,
+                                ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                             };
                     }
 
@@ -395,24 +354,24 @@ namespace DataInfo.Service.Managers.Team
                             return new ResponseResult()
                             {
                                 Result = true,
-                                ResultCode = (int)ResponseResultType.Success,
-                                Content = MessageHelper.Message.ResponseMessage.Update.Success
+                                ResultCode = StatusCodes.Status200OK,
+                                ResultMessage = ResponseSuccessMessageType.ReplySuccess.ToString()
                             };
 
                         case (int)UpdateApplyJoinListResultType.Fail:
                             return new ResponseResult()
                             {
                                 Result = false,
-                                ResultCode = (int)ResponseResultType.UpdateFail,
-                                Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                                ResultCode = StatusCodes.Status409Conflict,
+                                ResultMessage = ResponseErrorMessageType.ReplyFail.ToString()
                             };
 
                         default:
                             return new ResponseResult()
                             {
                                 Result = false,
-                                ResultCode = (int)ResponseResultType.UnknownError,
-                                Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                                ResultCode = StatusCodes.Status502BadGateway,
+                                ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                             };
                     }
 
@@ -420,12 +379,12 @@ namespace DataInfo.Service.Managers.Team
                 }
                 else
                 {
-                    this.logger.LogWarn("回覆申請加入車隊結果", $"Result: 回覆動作無效 MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                    this.logger.LogWarn("回覆申請加入車隊失敗，回覆動作無效", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                     return new ResponseResult()
                     {
                         Result = false,
-                        ResultCode = (int)ResponseResultType.UpdateFail,
-                        Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                        ResultCode = StatusCodes.Status409Conflict,
+                        ResultMessage = ResponseErrorMessageType.ReplyFail.ToString()
                     };
                 }
             }
@@ -435,8 +394,8 @@ namespace DataInfo.Service.Managers.Team
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Update.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }

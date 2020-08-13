@@ -54,7 +54,7 @@ namespace DataInfo.Api.Controllers.Team
             try
             {
                 this.logger.LogInfo("會員請求刪除車隊副隊長", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await teamService.UpdateViceLeader(memberID, content, ActionType.Delete).ConfigureAwait(false);
+                ResponseResult responseResult = await teamService.UpdateViceLeader(content, memberID, ActionType.Delete).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)
@@ -81,7 +81,7 @@ namespace DataInfo.Api.Controllers.Team
             try
             {
                 this.logger.LogInfo("會員請求新增車隊副隊長", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await teamService.UpdateViceLeader(memberID, content, ActionType.Add).ConfigureAwait(false);
+                ResponseResult responseResult = await teamService.UpdateViceLeader(content, memberID, ActionType.Add).ConfigureAwait(false);
                 return Ok(responseResult);
             }
             catch (Exception ex)

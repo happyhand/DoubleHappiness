@@ -95,13 +95,14 @@ namespace DataInfo.Service.Managers.Interactive
             try
             {
                 string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Interactive}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.Black}";
-                IEnumerable<MemberSimpleInfoView> memberSimpleInfoViews = await this.redisRepository.GetCache<IEnumerable<MemberSimpleInfoView>>(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey).ConfigureAwait(false);
+                //IEnumerable<MemberSimpleInfoView> memberSimpleInfoViews = await this.redisRepository.GetCache<IEnumerable<MemberSimpleInfoView>>(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey).ConfigureAwait(false);
+                IEnumerable<MemberSimpleInfoView> memberSimpleInfoViews = null;
                 if (memberSimpleInfoViews == null)
                 {
                     IEnumerable<string> blackIDList = await this.interactiveRepository.GetBlackList(memberID).ConfigureAwait(false);
                     IEnumerable<MemberDao> blackDaoList = await memberRepository.Get(blackIDList, null).ConfigureAwait(false);
                     memberSimpleInfoViews = await this.memberService.TransformMemberSimpleInfoView(blackDaoList).ConfigureAwait(false);
-                    this.redisRepository.SetCache(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey, JsonConvert.SerializeObject(memberSimpleInfoViews), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
+                    //this.redisRepository.SetCache(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey, JsonConvert.SerializeObject(memberSimpleInfoViews), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
                 }
 
                 return new ResponseResult()
@@ -133,7 +134,8 @@ namespace DataInfo.Service.Managers.Interactive
             try
             {
                 string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Interactive}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.Friend}";
-                List<IEnumerable<MemberSimpleInfoView>> memberSimpleInfoViews = await this.redisRepository.GetCache<List<IEnumerable<MemberSimpleInfoView>>>(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey).ConfigureAwait(false);
+                //List<IEnumerable<MemberSimpleInfoView>> memberSimpleInfoViews = await this.redisRepository.GetCache<List<IEnumerable<MemberSimpleInfoView>>>(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey).ConfigureAwait(false);
+                List<IEnumerable<MemberSimpleInfoView>> memberSimpleInfoViews = null;
                 if (memberSimpleInfoViews == null)
                 {
                     Task<IEnumerable<string>> friendIDListTask = this.interactiveRepository.GetFriendList(memberID);
@@ -154,7 +156,7 @@ namespace DataInfo.Service.Managers.Interactive
                         await this.memberService.TransformMemberSimpleInfoView(friendDaoList).ConfigureAwait(false),
                         await this.memberService.TransformMemberSimpleInfoView(beFriendDaoList).ConfigureAwait(false),
                     };
-                    this.redisRepository.SetCache(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey, JsonConvert.SerializeObject(memberSimpleInfoViews), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
+                    //this.redisRepository.SetCache(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey, JsonConvert.SerializeObject(memberSimpleInfoViews), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
                 }
 
                 return new ResponseResult()
@@ -244,9 +246,9 @@ namespace DataInfo.Service.Managers.Interactive
 
                         #region 刪除 Interactive 的 Redis
 
-                        string subFlag = status.Equals(InteractiveType.Friend) ? AppSettingHelper.Appsetting.Redis.SubFlag.Friend : AppSettingHelper.Appsetting.Redis.SubFlag.Black;
-                        string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Interactive}-{memberID}-{subFlag}";
-                        this.redisRepository.DeleteCache(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey);
+                        //string subFlag = status.Equals(InteractiveType.Friend) ? AppSettingHelper.Appsetting.Redis.SubFlag.Friend : AppSettingHelper.Appsetting.Redis.SubFlag.Black;
+                        //string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Interactive}-{memberID}-{subFlag}";
+                        //this.redisRepository.DeleteCache(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey);
 
                         #endregion 刪除 Interactive 的 Redis
 

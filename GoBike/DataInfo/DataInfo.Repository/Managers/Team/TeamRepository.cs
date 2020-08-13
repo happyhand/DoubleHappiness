@@ -214,13 +214,16 @@ namespace DataInfo.Repository.Managers.Team
                 int takeBrowseCount = AppSettingHelper.Appsetting.Rule.TakeBrowseCount;
                 //// TODO 待確認推薦標準
                 IEnumerable<TeamData> teamDatas = await this.Db.Queryable<TeamData>()
-                                              .Where(data => (data.TeamViceLeaderIDs.Count() + data.TeamMemberIDs.Count()) >= 50)
+                                              //.Where(data => (data.TeamViceLeaderIDs.Count() + data.TeamMemberIDs.Count()) >= 50) //// 無法使用 JSON ... 等其他 Function
                                               .Where(data => !data.Leader.Equals(memberID))
                                               .Where(data => !data.TeamViceLeaderIDs.Contains(memberID))
                                               .Where(data => !data.TeamMemberIDs.Contains(memberID))
                                               .Take(takeBrowseCount)
                                               .ToListAsync().ConfigureAwait(false);
 
+                teamDatas = teamDatas.Where(data => (JsonConvert.DeserializeObject<IEnumerable<string>>(data.TeamViceLeaderIDs).Count()
+                                                    + JsonConvert.DeserializeObject<IEnumerable<string>>(data.TeamMemberIDs).Count())
+                                                    >= 50);
                 return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);
             }
             catch (Exception ex)

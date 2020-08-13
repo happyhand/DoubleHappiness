@@ -85,39 +85,6 @@ namespace DataInfo.Repository.Managers.Member
         }
 
         /// <summary>
-        /// 搜詢會員資料
-        /// </summary>
-        /// <param name="searchKey">searchKey</param>
-        /// <param name="isFuzzy">isFuzzy</param>
-        /// <param name="ignoreMemberIDs">ignoreMemberIDs</param>
-        /// <returns>MemberDaos</returns>
-        public async Task<IEnumerable<MemberDao>> Search(string key, bool isFuzzy, IEnumerable<string> ignoreMemberIDs)
-        {
-            try
-            {
-                //// TODO 待確認是否要啟用 "是否可被搜尋" 功能
-                //// 目前只開放 Email 跟 Nickname 提供搜尋
-                ISugarQueryable<UserAccount, UserInfo> query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID));
-                if (isFuzzy)
-                {
-                    query = query.Where((ua, ui) => ua.Email.Contains(key) || (!string.IsNullOrEmpty(ui.NickName) && ui.NickName.Contains(key)));
-                }
-                else
-                {
-                    query = query.Where((ua, ui) => ua.Email.Equals(key) || (!string.IsNullOrEmpty(ui.NickName) && ui.NickName.Equals(key)));
-                }
-
-                query = query.Where(ua => ignoreMemberIDs == null || !ignoreMemberIDs.Contains(ua.MemberID));
-                return await this.TransformMemberDao(query).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("搜詢會員資料發生錯誤", $"Key: {key} IsFuzzy: {isFuzzy} IgnoreMemberIDs: {JsonConvert.SerializeObject(ignoreMemberIDs)}", ex);
-                return new List<MemberDao>();
-            }
-        }
-
-        /// <summary>
         /// 取得指定會員資料列表
         /// </summary>
         /// <param name="memberIDs">memberIDs</param>
@@ -150,6 +117,39 @@ namespace DataInfo.Repository.Managers.Member
         {
             string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.LastLogin}";
             return await this.redisRepository.IsExist(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey, false).ConfigureAwait(false) ? (int)OnlineStatusType.Online : (int)OnlineStatusType.Offline;
+        }
+
+        /// <summary>
+        /// 搜詢會員資料
+        /// </summary>
+        /// <param name="searchKey">searchKey</param>
+        /// <param name="isFuzzy">isFuzzy</param>
+        /// <param name="ignoreMemberIDs">ignoreMemberIDs</param>
+        /// <returns>MemberDaos</returns>
+        public async Task<IEnumerable<MemberDao>> Search(string key, bool isFuzzy, IEnumerable<string> ignoreMemberIDs)
+        {
+            try
+            {
+                //// TODO 待確認是否要啟用 "是否可被搜尋" 功能
+                //// 目前只開放 Email 跟 Nickname 提供搜尋
+                ISugarQueryable<UserAccount, UserInfo> query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID));
+                if (isFuzzy)
+                {
+                    query = query.Where((ua, ui) => ua.Email.Contains(key) || (!string.IsNullOrEmpty(ui.NickName) && ui.NickName.Contains(key)));
+                }
+                else
+                {
+                    query = query.Where((ua, ui) => ua.Email.Equals(key) || (!string.IsNullOrEmpty(ui.NickName) && ui.NickName.Equals(key)));
+                }
+
+                query = query.Where(ua => ignoreMemberIDs == null || !ignoreMemberIDs.Contains(ua.MemberID));
+                return await this.TransformMemberDao(query).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("搜詢會員資料發生錯誤", $"Key: {key} IsFuzzy: {isFuzzy} IgnoreMemberIDs: {JsonConvert.SerializeObject(ignoreMemberIDs)}", ex);
+                return new List<MemberDao>();
+            }
         }
 
         /// <summary>

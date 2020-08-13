@@ -69,11 +69,6 @@ namespace DataInfo.Service.Managers.Team
         private readonly IUploadService uploadService;
 
         /// <summary>
-        /// redisRepository
-        /// </summary>
-        private readonly IRedisRepository redisRepository;
-
-        /// <summary>
         /// 建構式
         /// </summary>
         /// <param name="mapper">mapper</param>
@@ -83,7 +78,7 @@ namespace DataInfo.Service.Managers.Team
         /// <param name="teamRepository">teamRepository</param>
         /// <param name="teamBulletinRepository">teamBulletinRepository</param>
         /// <param name="redisRepository">redisRepository</param>
-        public TeamService(IMapper mapper, IUploadService uploadService, IServerService serverService, IMemberRepository memberRepository, ITeamRepository teamRepository, ITeamBulletinRepository teamBulletinRepository, IRedisRepository redisRepository)
+        public TeamService(IMapper mapper, IUploadService uploadService, IServerService serverService, IMemberRepository memberRepository, ITeamRepository teamRepository, ITeamBulletinRepository teamBulletinRepository, IRedisRepository redisRepository) : base(redisRepository)
         {
             this.mapper = mapper;
             this.uploadService = uploadService;
@@ -91,7 +86,26 @@ namespace DataInfo.Service.Managers.Team
             this.memberRepository = memberRepository;
             this.teamRepository = teamRepository;
             this.teamBulletinRepository = teamBulletinRepository;
-            this.redisRepository = redisRepository;
+        }
+
+        /// <summary>
+        /// 刪除車隊快取資訊
+        /// </summary>
+        /// <param name="teamID">teamID</param>
+        private void DeleteTeamCache(string teamID)
+        {
+            try
+            {
+                this.logger.LogInfo("刪除車隊快取資訊", $"TeamID: {teamID}", null);
+                //// TODO 待測試
+                //string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Team}-{teamID}-*";
+                //IEnumerable<string> redisKeys = this.redisRepository.GetRedisKeys(AppSettingHelper.Appsetting.Redis.TeamDB, cacheKey);
+                //this.redisRepository.DeleteCache(AppSettingHelper.Appsetting.Redis.TeamDB, redisKeys);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("刪除車隊快取資訊發生錯誤", $"TeamID: {teamID}", ex);
+            }
         }
 
         /// <summary>
@@ -166,10 +180,10 @@ namespace DataInfo.Service.Managers.Team
         /// <summary>
         /// 更換車隊隊長
         /// </summary>
-        /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> ChangeLeader(string memberID, TeamChangeLeaderContent content)
+        public async Task<ResponseResult> ChangeLeader(TeamChangeLeaderContent content, string memberID)
         {
             try
             {
@@ -183,6 +197,7 @@ namespace DataInfo.Service.Managers.Team
                 {
                     case (int)ChangeLeaderResultType.Success:
                         this.DeleteTeamCache(content.TeamID);
+                        this.UpdateTeamMessageLatestTime(content.TeamID);
                         return new ResponseResult()
                         {
                             Result = true,
@@ -240,10 +255,10 @@ namespace DataInfo.Service.Managers.Team
         /// <summary>
         /// 建立車隊
         /// </summary>
-        /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> Create(string memberID, TeamCreateContent content)
+        public async Task<ResponseResult> Create(TeamCreateContent content, string memberID)
         {
             try
             {
@@ -360,10 +375,10 @@ namespace DataInfo.Service.Managers.Team
         /// <summary>
         /// 解散車隊
         /// </summary>
-        /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> Disband(string memberID, TeamContent content)
+        public async Task<ResponseResult> Disband(TeamContent content, string memberID)
         {
             try
             {
@@ -507,88 +522,18 @@ namespace DataInfo.Service.Managers.Team
         }
 
         /// <summary>
-        /// 踢離車隊隊員
-        /// </summary>
-        /// <param name="memberID">memberID</param>
-        /// <param name="content">content</param>
-        /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> Kick(string memberID, TeamKickContent content)
-        {
-            try
-            {
-                #region 發送【踢離車隊成員】指令至後端
-
-                TeamKickRequest request = new TeamKickRequest()
-                {
-                    MemberID = memberID,
-                    TeamID = content.TeamID,
-                    KickIdList = JsonConvert.SerializeObject(new string[] { content.MemberID })
-                };
-
-                CommandData<TeamKickResponse> response = await this.serverService.DoAction<TeamKickResponse>((int)TeamCommandIDType.KickTeamMember, CommandType.Team, request).ConfigureAwait(false);
-                this.logger.LogInfo("踢離車隊隊員結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)}", null);
-                switch (response.Data.Result)
-                {
-                    case (int)KickTeamMemberResultType.Success:
-                        this.DeleteTeamCache(content.TeamID);
-                        return new ResponseResult()
-                        {
-                            Result = true,
-                            ResultCode = StatusCodes.Status200OK,
-                            ResultMessage = ResponseSuccessMessageType.KickSuccess.ToString()
-                        };
-
-                    case (int)KickTeamMemberResultType.Fail:
-                        return new ResponseResult()
-                        {
-                            Result = false,
-                            ResultCode = StatusCodes.Status409Conflict,
-                            ResultMessage = ResponseErrorMessageType.KickFail.ToString()
-                        };
-
-                    case (int)KickTeamMemberResultType.AuthorityNotEnough:
-                        return new ResponseResult()
-                        {
-                            Result = false,
-                            ResultCode = StatusCodes.Status409Conflict,
-                            ResultMessage = ResponseErrorMessageType.TeamAuthorityNotEnough.ToString()
-                        };
-
-                    default:
-                        return new ResponseResult()
-                        {
-                            Result = false,
-                            ResultCode = StatusCodes.Status502BadGateway,
-                            ResultMessage = ResponseErrorMessageType.SystemError.ToString()
-                        };
-                }
-
-                #endregion 發送【踢離車隊成員】指令至後端
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("踢離車隊隊員發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
-                return new ResponseResult()
-                {
-                    Result = false,
-                    ResultCode = StatusCodes.Status500InternalServerError,
-                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
-                };
-            }
-        }
-
-        /// <summary>
         /// 取得瀏覽車隊資訊
         /// </summary>
-        /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> GetBrowseInfo(string memberID, TeamBrowseContent content)
+        public async Task<ResponseResult> GetBrowseInfo(TeamBrowseContent content, string memberID)
         {
             try
             {
                 string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.BrowseInfo}";
-                IEnumerable<IEnumerable<TeamSearchView>> teamBrowseInfoViews = await this.redisRepository.GetCache<IEnumerable<IEnumerable<TeamSearchView>>>(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey).ConfigureAwait(false);
+                //IEnumerable<IEnumerable<TeamSearchView>> teamBrowseInfoViews = await this.redisRepository.GetCache<IEnumerable<IEnumerable<TeamSearchView>>>(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey).ConfigureAwait(false);
+                IEnumerable<IEnumerable<TeamSearchView>> teamBrowseInfoViews = null;
                 if (teamBrowseInfoViews == null)
                 {
                     Task<IEnumerable<TeamDao>> nearbyTeamListTask = this.teamRepository.GetNearbyTeam(memberID, content.County);
@@ -602,7 +547,7 @@ namespace DataInfo.Service.Managers.Team
                     };
 
                     teamBrowseInfoViews = this.mapper.Map<IEnumerable<IEnumerable<TeamSearchView>>>(teamDaos);
-                    this.redisRepository.SetCache(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey, JsonConvert.SerializeObject(teamBrowseInfoViews), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
+                    //this.redisRepository.SetCache(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey, JsonConvert.SerializeObject(teamBrowseInfoViews), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
                 }
 
                 return new ResponseResult()
@@ -634,7 +579,8 @@ namespace DataInfo.Service.Managers.Team
             try
             {
                 string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.DropMenu}";
-                IEnumerable<TeamDropMenuView>[] teamDropMenuViews = await this.redisRepository.GetCache<IEnumerable<TeamDropMenuView>[]>(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey).ConfigureAwait(false);
+                //IEnumerable<TeamDropMenuView>[] teamDropMenuViews = await this.redisRepository.GetCache<IEnumerable<TeamDropMenuView>[]>(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey).ConfigureAwait(false);
+                IEnumerable<TeamDropMenuView>[] teamDropMenuViews = null;
                 if (teamDropMenuViews == null)
                 {
                     MemberDao memberDao = await this.memberRepository.Get(memberID, MemberSearchType.MemberID).ConfigureAwait(false);
@@ -651,13 +597,22 @@ namespace DataInfo.Service.Managers.Team
 
                     Task<IEnumerable<TeamDao>> joinTeamDaosTask = this.teamRepository.Get(memberDao.TeamList);
                     Task<IEnumerable<TeamDao>> applyTeamDaosTask = this.teamRepository.GetTeamOfApplyJoin(memberID);
-                    IEnumerable<TeamDropMenuView> joinTeamDropMenuView = this.mapper.Map<IEnumerable<TeamDropMenuView>>(await joinTeamDaosTask.ConfigureAwait(false));
-                    IEnumerable<TeamDropMenuView> applyTeamDropMenuView = this.mapper.Map<IEnumerable<TeamDropMenuView>>(await applyTeamDaosTask.ConfigureAwait(false));
-                    //// TODO 已加入的車隊需顯示是否有新的訊息
+                    IEnumerable<TeamDropMenuView> joinTeamDropMenuViews = this.mapper.Map<IEnumerable<TeamDropMenuView>>(await joinTeamDaosTask.ConfigureAwait(false));
+                    IEnumerable<TeamDropMenuView> applyTeamDropMenuViews = this.mapper.Map<IEnumerable<TeamDropMenuView>>(await applyTeamDaosTask.ConfigureAwait(false));
+                    foreach (TeamDropMenuView joinTeamDropMenuView in joinTeamDropMenuViews)
+                    {
+                        string messageLatestTimeCacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Team}-{joinTeamDropMenuView.TeamID}-{AppSettingHelper.Appsetting.Redis.SubFlag.MessageLatestTime}";
+                        DateTime messageLatestTime = await this.redisRepository.GetCache<DateTime>(AppSettingHelper.Appsetting.Redis.TeamDB, messageLatestTimeCacheKey).ConfigureAwait(false);
+                        this.logger.LogInfo("取得車隊下拉選單", $"MessageLatestTime: {JsonConvert.SerializeObject(messageLatestTime)}  messageLatestTime:{ messageLatestTime}", null);
+                        joinTeamDropMenuView.MessageLatestTime = messageLatestTime;
+                    }
+
                     teamDropMenuViews = new IEnumerable<TeamDropMenuView>[] {
-                    joinTeamDropMenuView,
-                    applyTeamDropMenuView,
+                    joinTeamDropMenuViews,
+                    applyTeamDropMenuViews,
                     };
+
+                    //this.redisRepository.SetCache(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey, JsonConvert.SerializeObject(teamDropMenuViews), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
                 }
 
                 return new ResponseResult()
@@ -676,26 +631,6 @@ namespace DataInfo.Service.Managers.Team
                     ResultCode = StatusCodes.Status500InternalServerError,
                     ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
-            }
-        }
-
-        /// <summary>
-        /// 刪除車隊快取資訊
-        /// </summary>
-        /// <param name="teamID">teamID</param>
-        private void DeleteTeamCache(string teamID)
-        {
-            try
-            {
-                this.logger.LogInfo("刪除車隊快取資訊", $"TeamID: {teamID}", null);
-                //// TODO 待測試
-                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Team}-{teamID}-*";
-                IEnumerable<string> redisKeys = this.redisRepository.GetRedisKeys(AppSettingHelper.Appsetting.Redis.TeamDB, cacheKey);
-                this.redisRepository.DeleteCache(AppSettingHelper.Appsetting.Redis.TeamDB, redisKeys);
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("刪除車隊快取資訊發生錯誤", $"TeamID: {teamID}", ex);
             }
         }
 
@@ -725,7 +660,8 @@ namespace DataInfo.Service.Managers.Team
                 #endregion 驗證資料
 
                 string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Team}-{teamID}-{AppSettingHelper.Appsetting.Redis.SubFlag.TeamInfo}-{memberID}";
-                TeamInfoView teamInfoView = await this.redisRepository.GetCache<TeamInfoView>(AppSettingHelper.Appsetting.Redis.TeamDB, cacheKey).ConfigureAwait(false);
+                //TeamInfoView teamInfoView = await this.redisRepository.GetCache<TeamInfoView>(AppSettingHelper.Appsetting.Redis.TeamDB, cacheKey).ConfigureAwait(false);
+                TeamInfoView teamInfoView = null;
                 if (teamInfoView == null)
                 {
                     #region 取得車隊資料
@@ -766,7 +702,8 @@ namespace DataInfo.Service.Managers.Team
 
                     teamInfoView.MemberList = teamMemberViews.OrderByDescending(view => view.Role).ThenBy(view => view.Nickname);
                     teamInfoView.InteractiveStatus = (int)this.GetTeamInteractiveStatus(memberID, teamDao);
-                    this.redisRepository.SetCache(AppSettingHelper.Appsetting.Redis.TeamDB, cacheKey, JsonConvert.SerializeObject(teamInfoView), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
+                    teamInfoView.Role = (int)role;
+                    //this.redisRepository.SetCache(AppSettingHelper.Appsetting.Redis.TeamDB, cacheKey, JsonConvert.SerializeObject(teamInfoView), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
 
                     #endregion 取得資料
                 }
@@ -793,10 +730,10 @@ namespace DataInfo.Service.Managers.Team
         /// <summary>
         /// 取得車隊訊息
         /// </summary>
-        /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> GetMessage(string memberID, TeamContent content)
+        public async Task<ResponseResult> GetMessage(TeamContent content, string memberID)
         {
             try
             {
@@ -925,6 +862,77 @@ namespace DataInfo.Service.Managers.Team
         }
 
         /// <summary>
+        /// 踢離車隊隊員
+        /// </summary>
+        /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> Kick(TeamKickContent content, string memberID)
+        {
+            try
+            {
+                #region 發送【踢離車隊成員】指令至後端
+
+                TeamKickRequest request = new TeamKickRequest()
+                {
+                    MemberID = memberID,
+                    TeamID = content.TeamID,
+                    KickIdList = JsonConvert.SerializeObject(new string[] { content.MemberID })
+                };
+
+                CommandData<TeamKickResponse> response = await this.serverService.DoAction<TeamKickResponse>((int)TeamCommandIDType.KickTeamMember, CommandType.Team, request).ConfigureAwait(false);
+                this.logger.LogInfo("踢離車隊隊員結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)}", null);
+                switch (response.Data.Result)
+                {
+                    case (int)KickTeamMemberResultType.Success:
+                        this.DeleteTeamCache(content.TeamID);
+                        return new ResponseResult()
+                        {
+                            Result = true,
+                            ResultCode = StatusCodes.Status200OK,
+                            ResultMessage = ResponseSuccessMessageType.KickSuccess.ToString()
+                        };
+
+                    case (int)KickTeamMemberResultType.Fail:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.KickFail.ToString()
+                        };
+
+                    case (int)KickTeamMemberResultType.AuthorityNotEnough:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.TeamAuthorityNotEnough.ToString()
+                        };
+
+                    default:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = StatusCodes.Status502BadGateway,
+                            ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                        };
+                }
+
+                #endregion 發送【踢離車隊成員】指令至後端
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("踢離車隊隊員發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                };
+            }
+        }
+
+        /// <summary>
         /// 離開車隊
         /// </summary>
         /// <param name="memberID">memberID</param>
@@ -998,10 +1006,10 @@ namespace DataInfo.Service.Managers.Team
         /// <summary>
         /// 搜尋車隊
         /// </summary>
-        /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> Search(string memberID, TeamSearchContent content)
+        public async Task<ResponseResult> Search(TeamSearchContent content, string memberID)
         {
             try
             {
@@ -1046,11 +1054,11 @@ namespace DataInfo.Service.Managers.Team
         /// <summary>
         /// 更新車隊副隊長
         /// </summary>
-        /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
         /// <param name="actionType">actionType</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> UpdateViceLeader(string memberID, TeamUpdateViceLeaderContent content, ActionType action)
+        public async Task<ResponseResult> UpdateViceLeader(TeamUpdateViceLeaderContent content, string memberID, ActionType action)
         {
             try
             {

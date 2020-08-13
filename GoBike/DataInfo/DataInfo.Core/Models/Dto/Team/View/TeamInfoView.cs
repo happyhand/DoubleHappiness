@@ -28,6 +28,11 @@ namespace DataInfo.Core.Models.Dto.Team.View
         public IEnumerable<TeamMemberView> MemberList { get; set; }
 
         /// <summary>
+        /// Gets or sets 車隊身分
+        /// </summary>
+        public int Role { get; set; }
+
+        /// <summary>
         /// Gets or sets 車隊簡介
         /// </summary>
         public string TeamInfo { get; set; }
