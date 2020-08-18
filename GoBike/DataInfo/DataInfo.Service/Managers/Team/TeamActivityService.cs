@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dao.Team;
 using DataInfo.Core.Models.Dto.Response;
@@ -14,7 +13,6 @@ using DataInfo.Repository.Interfaces.Team;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Server;
 using DataInfo.Service.Interfaces.Team;
-using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using NLog;
@@ -449,63 +447,45 @@ namespace DataInfo.Service.Managers.Team
         /// <summary>
         /// 加入或離開車隊活動
         /// </summary>
-        /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
         /// <param name="action">action</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> JoinOrLeave(string memberID, TeamActivityContent content, ActionType action)
+        public async Task<ResponseResult> JoinOrLeave(TeamActivityContent content, string memberID, ActionType action)
         {
             try
             {
-                #region 驗證資料
-
-                TeamActivityContentValidator teamActivityContentValidator = new TeamActivityContentValidator();
-                ValidationResult validationResult = teamActivityContentValidator.Validate(content);
-                if (!validationResult.IsValid)
-                {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("加入或離開車隊活動結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} Action: {action}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = errorMessgae
-                    };
-                }
-
-                #endregion 驗證資料
-
                 #region 發送【加入或離開車隊活動】指令至後端
 
                 TeamJoinOrLeaveActivityRequest request = this.mapper.Map<TeamJoinOrLeaveActivityRequest>(content);
                 request.Action = (int)action;
                 request.MemberID = memberID;
                 CommandData<TeamJoinOrLeaveActivityResponse> response = await this.serverService.DoAction<TeamJoinOrLeaveActivityResponse>((int)TeamCommandIDType.JoinOrLeaveTeamActivity, CommandType.Team, request).ConfigureAwait(false);
-                this.logger.LogInfo("加入或離開車隊活動結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} Action: {action}", null);
+                this.logger.LogInfo("加入或離開車隊活動結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)}", null);
                 switch (response.Data.Result)
                 {
                     case (int)JoinOrLeaveTeamActivityResultType.Success:
                         return new ResponseResult()
                         {
                             Result = true,
-                            ResultCode = (int)ResponseResultType.Success,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Success
+                            ResultCode = StatusCodes.Status200OK,
+                            ResultMessage = ResponseSuccessMessageType.UpdateSuccess.ToString()
                         };
 
                     case (int)JoinOrLeaveTeamActivityResultType.Fail:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.UpdateFail,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
                         };
 
                     default:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.UnknownError,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            ResultCode = StatusCodes.Status502BadGateway,
+                            ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                         };
                 }
 
@@ -513,12 +493,12 @@ namespace DataInfo.Service.Managers.Team
             }
             catch (Exception ex)
             {
-                this.logger.LogError("加入或離開車隊活動結果", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} Action: {action}", ex);
+                this.logger.LogError("加入或離開車隊活動發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} Action: {action}", ex);
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Update.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }

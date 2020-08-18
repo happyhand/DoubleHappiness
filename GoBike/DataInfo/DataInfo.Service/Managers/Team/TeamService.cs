@@ -737,24 +737,6 @@ namespace DataInfo.Service.Managers.Team
         {
             try
             {
-                #region 驗證資料
-
-                TeamContentValidator teamContentValidator = new TeamContentValidator();
-                ValidationResult validationResult = teamContentValidator.Validate(content);
-                if (!validationResult.IsValid)
-                {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("取得車隊訊息結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = errorMessgae
-                    };
-                }
-
-                #endregion 驗證資料
-
                 #region 取得資料
 
                 Task<IEnumerable<TeamBulletinDao>> teamBulletinDaos = this.teamBulletinRepository.Get(memberID, content.TeamID);
@@ -771,7 +753,7 @@ namespace DataInfo.Service.Managers.Team
                 return new ResponseResult()
                 {
                     Result = true,
-                    ResultCode = (int)ResponseResultType.Success,
+                    ResultCode = StatusCodes.Status200OK,
                     Content = new TeamMessageView()
                     {
                         MessageLatestTime = messageLatestTime,
@@ -789,8 +771,8 @@ namespace DataInfo.Service.Managers.Team
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }
@@ -1018,29 +1000,11 @@ namespace DataInfo.Service.Managers.Team
         {
             try
             {
-                #region 驗證資料
-
-                TeamSearchContentValidator teamSearchContentValidator = new TeamSearchContentValidator();
-                ValidationResult validationResult = teamSearchContentValidator.Validate(content);
-                if (!validationResult.IsValid)
-                {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("搜尋車隊結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.InputError,
-                        Content = errorMessgae
-                    };
-                }
-
-                #endregion 驗證資料
-
                 IEnumerable<TeamDao> teamDaos = await this.teamRepository.Search(content.SearchKey).ConfigureAwait(false);
                 return new ResponseResult()
                 {
                     Result = true,
-                    ResultCode = (int)ResponseResultType.Success,
+                    ResultCode = StatusCodes.Status200OK,
                     Content = this.mapper.Map<IEnumerable<TeamSearchView>>(teamDaos)
                 };
             }
@@ -1050,8 +1014,8 @@ namespace DataInfo.Service.Managers.Team
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }
@@ -1067,24 +1031,6 @@ namespace DataInfo.Service.Managers.Team
         {
             try
             {
-                #region 驗證資料
-
-                TeamUpdateViceLeaderContentValidator contentValidator = new TeamUpdateViceLeaderContentValidator();
-                ValidationResult validationResult = contentValidator.Validate(content);
-                if (!validationResult.IsValid)
-                {
-                    string errorMessgae = validationResult.Errors[0].ErrorMessage;
-                    this.logger.LogWarn("更新車隊副隊長結果", $"Result: 驗證失敗({errorMessgae}) MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} Action: {action}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = (int)ResponseResultType.DenyAccess,
-                        Content = errorMessgae
-                    };
-                }
-
-                #endregion 驗證資料
-
                 #region 發送【更新副隊長】指令至後端
 
                 TeamUpdateViceLeaderRequest request = this.mapper.Map<TeamUpdateViceLeaderRequest>(content);
@@ -1098,32 +1044,32 @@ namespace DataInfo.Service.Managers.Team
                         return new ResponseResult()
                         {
                             Result = true,
-                            ResultCode = (int)ResponseResultType.Success,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Success
+                            ResultCode = StatusCodes.Status200OK,
+                            ResultMessage = ResponseSuccessMessageType.UpdateSuccess.ToString()
                         };
 
                     case (int)ChangeLeaderResultType.Fail:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.UpdateFail,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
                         };
 
                     case (int)ChangeLeaderResultType.AuthorityNotEnough:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.DenyAccess,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.TeamAuthorityNotEnough.ToString()
                         };
 
                     default:
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = (int)ResponseResultType.UnknownError,
-                            Content = MessageHelper.Message.ResponseMessage.Update.Fail
+                            ResultCode = StatusCodes.Status502BadGateway,
+                            ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                         };
                 }
 
@@ -1135,8 +1081,8 @@ namespace DataInfo.Service.Managers.Team
                 return new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Update.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 };
             }
         }

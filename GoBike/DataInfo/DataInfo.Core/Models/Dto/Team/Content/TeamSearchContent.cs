@@ -1,4 +1,5 @@
 ﻿using DataInfo.Core.Applibs;
+using DataInfo.Core.Models.Enum;
 using FluentValidation;
 
 namespace DataInfo.Core.Models.Dto.Team.Content
@@ -24,10 +25,16 @@ namespace DataInfo.Core.Models.Dto.Team.Content
         /// </summary>
         public TeamSearchContentValidator()
         {
-            ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure;
+            this.CascadeMode = CascadeMode.StopOnFirstFailure;
             RuleFor(content => content.SearchKey)
-            .NotNull().WithMessage(MessageHelper.Message.ResponseMessage.Team.SearchKeyEmpty)
-            .NotEmpty().WithMessage(MessageHelper.Message.ResponseMessage.Team.SearchKeyEmpty);
+              .NotNull().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.SearchKeyEmpty}";
+              })
+              .NotEmpty().WithMessage(content =>
+              {
+                  return $"{ResponseErrorMessageType.SearchKeyEmpty}";
+              });
         }
     }
 }

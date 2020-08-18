@@ -6,6 +6,7 @@ using DataInfo.Core.Models.Enum;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Team;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using NLog;
@@ -54,17 +55,17 @@ namespace DataInfo.Api.Controllers.Team
             try
             {
                 this.logger.LogInfo("會員請求取消加入車隊活動", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await teamActivityService.JoinOrLeave(memberID, content, ActionType.Delete).ConfigureAwait(false);
-                return Ok(responseResult);
+                ResponseResult responseResult = await teamActivityService.JoinOrLeave(content, memberID, ActionType.Delete).ConfigureAwait(false);
+                return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求取消加入車隊活動發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
-                return Ok(new ResponseResult()
+                return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 });
             }
         }
@@ -81,17 +82,17 @@ namespace DataInfo.Api.Controllers.Team
             try
             {
                 this.logger.LogInfo("會員請求加入車隊活動", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await teamActivityService.JoinOrLeave(memberID, content, ActionType.Add).ConfigureAwait(false);
-                return Ok(responseResult);
+                ResponseResult responseResult = await teamActivityService.JoinOrLeave(content, memberID, ActionType.Add).ConfigureAwait(false);
+                return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求加入車隊活動發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
-                return Ok(new ResponseResult()
+                return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 });
             }
         }

@@ -72,7 +72,7 @@ namespace DataInfo.Core.Models.Dto.Team.Content
             RuleFor(content => content.TeamInfo)
               .Must(info =>
               {
-                  return string.IsNullOrEmpty(info) || info.Length <= AppSettingHelper.Appsetting.Rule.TeamNameLength;
+                  return string.IsNullOrEmpty(info) || info.Length <= AppSettingHelper.Appsetting.Rule.TeamInfoLength;
               }).WithMessage(content =>
               {
                   return $"{ResponseErrorMessageType.ExceedMaxTeamInfo}|TeamInfo: {content.TeamInfo}";

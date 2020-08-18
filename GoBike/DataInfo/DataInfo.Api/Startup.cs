@@ -92,7 +92,6 @@ namespace DataInfo.Api
         private void ConfigurationHandler()
         {
             AppSettingHelper.Appsetting = Configuration.Get<AppSettingHelper>();
-            MessageHelper.Message = Configuration.Get<MessageHelper>();
         }
 
         /// <summary>
@@ -160,10 +159,13 @@ namespace DataInfo.Api
 
             services.AddTransient<IValidator<TeamContent>, TeamContentValidator>();
             services.AddTransient<IValidator<TeamCreateContent>, TeamCreateContentValidator>();
+            services.AddTransient<IValidator<TeamSearchContent>, TeamSearchContentValidator>();
             services.AddTransient<IValidator<TeamKickContent>, TeamKickContentValidator>();
             services.AddTransient<IValidator<TeamBrowseContent>, TeamBrowseContentValidator>();
             services.AddTransient<IValidator<TeamChangeLeaderContent>, TeamChangeLeaderContentValidator>();
+            services.AddTransient<IValidator<TeamUpdateViceLeaderContent>, TeamUpdateViceLeaderContentValidator>();
             services.AddTransient<IValidator<TeamAddActivityContent>, TeamAddActivityContentValidator>();
+            services.AddTransient<IValidator<TeamActivityContent>, TeamActivityContentValidator>();
             services.AddTransient<IValidator<TeamActivityDetailContent>, TeamActivityDetailContentValidator>();
             services.AddTransient<IValidator<TeamApplyJoinContent>, TeamApplyJoinContentValidator>();
             services.AddTransient<IValidator<TeamResponseApplyJoinContent>, TeamResponseApplyJoinContentValidator>();

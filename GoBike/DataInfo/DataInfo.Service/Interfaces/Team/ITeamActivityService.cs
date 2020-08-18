@@ -52,10 +52,10 @@ namespace DataInfo.Service.Interfaces.Team
         /// <summary>
         /// 加入或離開車隊活動
         /// </summary>
-        /// <param name="memberID">memberID</param>
         /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
         /// <param name="action">action</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> JoinOrLeave(string memberID, TeamActivityContent content, ActionType action);
+        Task<ResponseResult> JoinOrLeave(TeamActivityContent content, string memberID, ActionType action);
     }
 }

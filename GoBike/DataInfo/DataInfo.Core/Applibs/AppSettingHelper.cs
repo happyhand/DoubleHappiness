@@ -548,6 +548,11 @@ namespace DataInfo.Core.Applibs
             public int TakeBrowseCount { get; set; }
 
             /// <summary>
+            /// Gets or sets TeamInfoLength
+            /// </summary>
+            public int TeamInfoLength { get; set; }
+
+            /// <summary>
             /// Gets or sets TeamNameLength
             /// </summary>
             public int TeamNameLength { get; set; }

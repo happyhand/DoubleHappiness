@@ -1,12 +1,12 @@
-﻿using DataInfo.Core.Applibs;
-using DataInfo.Core.Extensions;
+﻿using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dto.Response;
 using DataInfo.Core.Models.Dto.Team.Content;
+using DataInfo.Core.Models.Enum;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Team;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Threading.Tasks;
@@ -55,16 +55,16 @@ namespace DataInfo.Api.Controllers.Team
                 this.logger.LogInfo("會員請求取得車隊訊息", $"MemberID: {memberID} TeamID: {teamID}", null);
                 TeamContent content = new TeamContent() { TeamID = teamID };
                 ResponseResult responseResult = await teamService.GetMessage(content, memberID).ConfigureAwait(false);
-                return Ok(responseResult);
+                return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求取得車隊訊息發生錯誤", $"MemberID: {memberID} TeamID: {teamID}", ex);
-                return Ok(new ResponseResult()
+                return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 });
             }
         }

@@ -1,9 +1,11 @@
 ﻿using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dto.Response;
+using DataInfo.Core.Models.Enum;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Team;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NLog;
 using System;
@@ -51,16 +53,16 @@ namespace DataInfo.Api.Controllers.Team
             {
                 this.logger.LogInfo("會員請求取得車隊下拉選單", $"MemberID: {memberID}", null);
                 ResponseResult responseResult = await teamService.GetDropMenu(memberID).ConfigureAwait(false);
-                return Ok(responseResult);
+                return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("會員請求取得車隊下拉選單發生錯誤", $"MemberID: {memberID}", ex);
-                return Ok(new ResponseResult()
+                return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,
-                    ResultCode = (int)ResponseResultType.UnknownError,
-                    Content = MessageHelper.Message.ResponseMessage.Get.Error
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
                 });
             }
         }
