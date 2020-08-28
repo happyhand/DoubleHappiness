@@ -10,6 +10,14 @@ namespace DataInfo.Repository.Interfaces.Ride
     public interface IRideRepository
     {
         /// <summary>
+        /// 取得指定騎乘記錄
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="rideID">rideID</param>
+        /// <returns>RideDao</returns>
+        Task<RideDao> Get(string memberID, string rideID);
+
+        /// <summary>
         /// 取得騎乘記錄列表
         /// </summary>
         /// <param name="memberID">memberID</param>

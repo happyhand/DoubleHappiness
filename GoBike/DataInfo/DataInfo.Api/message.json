@@ -1,103 +1,164 @@
 {
-    "ResponseMessage": {
-        "Member": {
-            "MemberIDEmpty": "會員編號無效.",
-            "MemberNotExist": "會員資料不存在.",
-            "MemberHasBindMobile": "會員已綁定手機.",
-            "EmailEmpty": "信箱無效.",
-            "EmailNotExist": "查無以此信箱註冊的會員.",
-            "EmailFormatError": "信箱格式錯誤.",
-            "PasswordEmpty": "密碼無效.",
-            "PasswordFormatError": "密碼格式錯誤.",
-            "PasswordNotMatch": "未輸入相同密碼.",
-            "PasswordFail": "密碼錯誤.",
-            "MobileEmpty": "手機號碼無效.",
-            "MobileFormatError": "手機號碼格式錯誤.",
-            "MobileBind": "該手機已被綁定.",
-            "SearchEmpty": "未提供搜尋內容.",
-            "CountyEmpty": "未設定所在地.",
-            "BirthdayError": "生日日期設定錯誤."
-        },
-        "Update": {
-            "Success": "更新資料成功.",
-            "Fail": "更新資料失敗.",
-            "Error": "更新資料發生錯誤."
-        },
-        "Login": {
-            "Success": "登入成功.",
-            "Fail": "登入失敗.",
-            "Error": "登入發生錯誤."
-        },
-        "Register": {
-            "Success": "註冊成功.",
-            "Fail": "註冊失敗.",
-            "Error": "註冊發生錯誤.",
-            "EmailExist": "此信箱已經被註冊."
-        },
-        "Add": {
-            "Success": "建立資料成功.",
-            "Fail": "建立資料失敗.",
-            "Error": "建立資料發生錯誤."
-        },
-        "Get": {
-            "Success": "取得資料成功.",
-            "Fail": "取得資料失敗.",
-            "Error": "取得資料發生錯誤."
-        },
-        "VerifyCode": {
-            "MatchSuccess": "驗證成功.",
-            "MatchFail": "驗證失敗.",
-            "SendVerifyCodeSuccess": "已發送驗證碼.",
-            "SendVerifyCodeFail": "請求驗證碼失敗.",
-            "SendVerifyCodeError": "請求驗證碼發生錯誤.",
-            "VerifyCodeEmpty": "驗證碼無效."
-        },
-        "Interactive": {
-            "TargetError": "互動對象無效."
-        },
-        "Ride": {
-            "AltitudeEmpty": "爬升高度無效.",
-            "CountyEmpty": "未設定騎乘市區.",
-            "DistanceEmpty": "騎乘距離無效.",
-            "LevelEmpty": "未設定騎乘等級.",
-            "PhotoEmpty": "騎乘封面無效.",
-            "RouteEmpty": "無騎乘路徑內容資料.",
-            "TimeEmpty": "騎乘時間無效."
-        },
-        "smtp": {
-            "SendEmailFail": "發送郵件失敗."
-        },
-        "Upload": {
-            "PhotoFail": "上傳圖片失敗.",
-            "AvatarFail": "上傳頭像失敗.",
-            "FrontCoverFail": "上傳封面失敗.",
-            "HomePhotoFail": "上傳首頁圖片失敗."
-        },
-        "Team": {
-            "TeamIDEmpty": "車隊編號無效.",
-            "AvatarEmpty": "車隊頭像無效.",
-            "FrontCoverEmpty": "車隊封面無效.",
-            "CountyEmpty": "未設定車隊所在地.",
-            "ExamineStatusEmpty": "車隊審核狀態無效.",
-            "SearchKeyEmpty": "車隊搜尋關鍵字無效.",
-            "SearchStatusEmpty": "車隊搜尋狀態無效.",
-            "ResponseStatusEmpty": "回覆狀態無效.",
-            "TeamInfoEmpty": "車隊簡介無效.",
-            "TeamNameEmpty": "車隊名稱無效.",
-            "TeamAuthorityNotEnough": "權限不足.",
-            "ActivityIDEmpty": "車隊活動編號無效.",
-            "ActivityNotExist": "車隊活動資料不存在.",
-            "ActivityDateEmpty": "未設定活動日期.",
-            "ActivityDateError": "活動日期設定錯誤.",
-            "ActivityMeetTimeEmpty": "未設定活動集合時間.",
-            "ActivityMeetTimeError": "活動集合時間設定錯誤.",
-            "ActivityPhotoEmpty": "未設定活動圖片.",
-            "ActivityAltitudeEmpty": "未設定活動最高海拔.",
-            "ActivityDistanceEmpty": "未設定活動總距離.",
-            "ActivityTitleEmpty": "未設定活動標題.",
-            "BulletinIDEmpty": "車隊公告編號無效.",
-            "BulletinContentEmpty": "無車隊公告內容.",
-            "BulletinDayEmpty": "未設定車隊公告天數."
-        }
+    "ResponseErrorMessageType": {
+        "SystemError": "系統忙碌中，請稍後再試",
+
+        "MemberIDEmpty": "無會員資料，請重新操作",
+
+        "EmailEmpty": "請輸入電子郵件",
+
+        "EmailFormatError": "電子郵件格式不正確，請重新輸入",
+
+        "EmailRepeat": "此電子郵件已註冊，請重新輸入",
+
+        "EmailOrPasswordNotMatch": "電子郵件與密碼不符合，請重新輸入",
+
+        "EmailNotExist": "電子郵件不存在，請重新輸入",
+
+        "PasswordEmpty": "請輸入密碼",
+
+        "PasswordFormatError": "密碼格式不符，請輸入6-12碼英數混和",
+
+        "NewPasswordEmpty": "請輸入新密碼",
+
+        "NewPasswordFormatError": "新密碼格式不符，請輸入6-12碼英數混和",
+
+        "ConfirmPasswordEmpty": "請輸入確認密碼",
+
+        "ConfirmPasswordNotMatch": "確認密碼不符合，請重新輸入",
+
+        "OldPasswordError": "密碼錯誤，請重新輸入",
+
+        "MobileEmpty": "請輸入手機號碼",
+
+        "MobileFormatError": "手機號碼格式不正確，請重新輸入",
+
+        "MobileRepeat": "手機號碼已被綁定，請勿重複綁定",
+
+        "VerifyCodeEmpty": "請輸入驗證碼",
+
+        "VerifyCodeFormatError": "驗證碼格式不符，請輸入8碼英數混和",
+
+        "RegisterFail": "系統拒絕註冊，請稍後再試",
+
+        "LoginFail": "系統拒絕登入，請稍後再試",
+
+        "CreateFail": "資料建立失敗，請稍後再試",
+
+        "RepeatFail": "資料重複，請重新操作",
+
+        "UpdateFail": "資料更新失敗，請稍後再試",
+
+        "GetFail": "無法取得資料，請稍後再試",
+
+        "VerifyCodeFail": "驗證碼驗證失敗，請重新輸入",
+
+        "UploadPhotoFail": "上傳圖像失敗，請稍後再試",
+
+        "UploadAvatarFail": "上傳頭像失敗，請稍後再試",
+
+        "UploadFrontCoverFail": "上傳封面失敗，請稍後再試",
+
+        "UploadHomePhotoFail": "上傳首頁圖像失敗，請稍後再試",
+
+        "BirthdayFormatError": "生日日期設定錯誤，請重新輸入",
+
+        "SearchKeyEmpty": "請輸入搜尋關鍵字",
+
+        "TeamAuthorityNotEnough": "車隊權限不足",
+
+        "TargetSelfError": "無法對會員本身操作，請稍後再試",
+
+        "RideTimeEmpty": "未輸入騎乘時間，請重新輸入",
+
+        "RideDistanceEmpty": "未輸入騎乘距離，請重新輸入",
+
+        "RideAltitudeEmpty": "未輸入海拔高度，請重新輸入",
+
+        "RideCountyEmpty": "未輸入騎乘市區，請重新輸入",
+
+        "RideLevelEmpty": "未輸入騎乘等級，請重新輸入",
+
+        "RideRouteEmpty": "未輸入騎乘路徑資料，請重新輸入",
+
+        "RidePhotoEmpty": "未設定騎乘封面，請重新上傳",
+
+        "TeamIDEmpty": "無車隊資料，請重新操作",
+
+        "ActIDEmpty": "無車隊活動資料，請重新操作",
+
+        "BulletinIDEmpty": "無車隊公告資料，請重新操作",
+
+        "TeamNameEmpty": "未輸入車隊名稱，請重新輸入",
+
+        "CountyEmpty": "未輸入所在地，請重新輸入",
+
+        "ExamineStatusEmpty": "未設定加入車隊是否需先審核，請重新輸入",
+
+        "SearchStatusEmpty": "未設定是否開放搜尋，請重新輸入",
+
+        "ReplyFail": "回覆失敗，請重新操作",
+
+        "ApplyFail": "申請失敗，請重新操作",
+
+        "NotifyFail": "通知失敗，請重新操作",
+
+        "CoordinateEmpty": "無座標資料，請重新操作",
+
+        "ExceedMaxPeople": "超出最大人數，請重新操作",
+
+        "ExceedMaxNickname": "暱稱超出最大字數，請重新輸入",
+
+        "ExceedMaxTeamName": "車隊名稱超出最大字數，請重新輸入",
+
+        "ExceedMaxTeamInfo": "車隊簡介超出最大字數，請重新輸入",
+
+        "DisbandFail": "車隊解散失敗，請重新操作",
+
+        "KickFail": "踢離車隊隊員失敗，請重新操作",
+
+        "ChangeLeaderFail": "移交隊長失敗，請重新操作",
+
+        "TeamActivityActDateEmpty": "未輸入車隊活動日期，請重新輸入",
+
+        "TeamActivityActDateFail": "車隊活動日期設定錯誤，請重新輸入",
+
+        "TeamActivityMeetTimeEmpty": "未輸入車隊活動集合時間，請重新輸入",
+
+        "TeamActivityMeetTimeFail": "車隊活動集合時間設定錯誤，請重新輸入",
+
+        "TeamActivityMaxAltitudeEmpty": "未輸入車隊活動最高海拔，請重新輸入",
+
+        "TeamActivityMaxAltitudeFail": "車隊活動最高海拔設定錯誤，請重新輸入",
+
+        "TeamActivityTotalDistanceEmpty": "未輸入車隊活動總距離，請重新輸入",
+
+        "TeamActivityTotalDistanceFail": "車隊活動總距離設定錯誤，請重新輸入",
+
+        "TeamActivityTitleEmpty": "未輸入車隊活動標題，請重新輸入",
+
+        "BulletinContentEmpty": "未輸入車隊公告內容，請重新輸入",
+
+        "BulletinDayEmpty": "未設定車隊公告天數，請重新輸入"
+    },
+    "ResponseSuccessMessageType": {
+        "SendVerifierCodeSuccess": "已發送驗證碼至您的信箱，請於 5 分鐘內檢視並輸入驗證碼",
+
+        "CreateSuccess": "資料建立成功",
+
+        "UpdateSuccess": "資料更新成功",
+
+        "UpdatePasswordSuccess": "密碼更新成功，請重新登入",
+
+        "ReplySuccess": "回覆成功",
+
+        "ApplySuccess": "申請成功",
+
+        "NotifySuccess": "通知成功",
+
+        "DisbandSuccess": "車隊解散成功",
+
+        "KickSuccess": "踢離車隊隊員成功",
+
+        "ChangeLeaderSuccess": "移交隊長成功"
     }
 }

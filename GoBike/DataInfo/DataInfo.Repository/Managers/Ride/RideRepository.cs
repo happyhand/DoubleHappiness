@@ -40,6 +40,30 @@ namespace DataInfo.Repository.Managers.Ride
         }
 
         /// <summary>
+        /// 取得指定騎乘記錄
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="rideID">rideID</param>
+        /// <returns>RideDao</returns>
+        public async Task<RideDao> Get(string memberID, string rideID)
+        {
+            try
+            {
+                RideRecord rideRecord = await this.Db.Queryable<RideRecord>()
+                                                         .Where(data => data.MemberID.Equals(memberID))
+                                                         .Where(data => data.RideID.Equals(rideID))
+                                                         .FirstAsync().ConfigureAwait(false);
+
+                return this.mapper.Map<RideDao>(rideRecord);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得指定騎乘記錄發生錯誤", $"RideID: {rideID}", ex);
+                return null;
+            }
+        }
+
+        /// <summary>
         /// 取得騎乘記錄列表
         /// </summary>
         /// <param name="memberID">memberID</param>

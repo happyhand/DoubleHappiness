@@ -36,7 +36,7 @@ namespace DataInfo.Service.Managers.Common
                 UploadImageRequest request = new UploadImageRequest()
                 {
                     ImgBase64s = imgBase64s,
-                    Path = AppSettingHelper.Appsetting.UploadServer.Member.Path
+                    Path = path
                 };
 
                 HttpResponseMessage httpResponseMessage = await Utility.ApiPost(AppSettingHelper.Appsetting.UploadServer.Domain, AppSettingHelper.Appsetting.UploadServer.Api, JsonConvert.SerializeObject(request));
@@ -50,7 +50,7 @@ namespace DataInfo.Service.Managers.Common
                 IEnumerable<string> imgUris = JsonConvert.DeserializeObject<IEnumerable<string>>(dataJson);
                 if (isIgnoreUri)
                 {
-                    imgUris = imgUris.Select(uri => uri.Replace(AppSettingHelper.Appsetting.UploadServer.Member.Path, string.Empty));
+                    imgUris = imgUris.Select(uri => uri.Replace(path, string.Empty));
                 }
 
                 return imgUris;

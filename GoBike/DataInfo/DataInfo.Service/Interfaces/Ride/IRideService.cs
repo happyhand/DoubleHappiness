@@ -26,6 +26,14 @@ namespace DataInfo.Service.Interfaces.Ride
         Task<ResponseResult> GetFriendWeekRank(string memberID);
 
         /// <summary>
+        /// 取得騎乘明細記錄
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="rideID">rideID</param>
+        /// <returns>ResponseResult</returns>
+        Task<ResponseResult> GetRideDetailRecord(string memberID, string rideID);
+
+        /// <summary>
         /// 取得組隊隊員列表
         /// </summary>
         /// <param name="memberID">memberID</param>
@@ -48,6 +56,13 @@ namespace DataInfo.Service.Interfaces.Ride
         Task<ResponseResult> ReplyRideGroup(ReplyRideGroupContent content, string memberID);
 
         /// <summary>
+        /// 發送組隊騎乘通知
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>ResponseResult</returns>
+        Task<ResponseResult> SendNotify(string memberID);
+
+        /// <summary>
         /// 更新組隊騎乘
         /// </summary>
         /// <param name="content">content</param>
@@ -63,12 +78,5 @@ namespace DataInfo.Service.Interfaces.Ride
         /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>
         Task<ResponseResult> UpdateRideGroupCoordinate(UpdateRideGroupCoordinateContent content, string memberID);
-
-        /// <summary>
-        /// 發送組隊騎乘通知
-        /// </summary>
-        /// <param name="memberID">memberID</param>
-        /// <returns>ResponseResult</returns>
-        Task<ResponseResult> SendNotify(string memberID);
     }
 }

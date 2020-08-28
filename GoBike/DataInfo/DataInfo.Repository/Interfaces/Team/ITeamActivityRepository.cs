@@ -25,7 +25,7 @@ namespace DataInfo.Repository.Interfaces.Team
         Task<IEnumerable<TeamActivityDao>> Get(string memberID);
 
         /// <summary>
-        /// 取得車隊活動資料
+        /// 取得指定車隊活動資料
         /// </summary>
         /// <param name="memberID">memberID</param>
         /// <param name="teamID">teamID</param>

@@ -37,6 +37,7 @@ namespace DataInfo.AutoMapperProfiles
             #region Dao To View
 
             CreateMap<RideDao, RideSimpleRecordView>();
+            CreateMap<RideDao, RideDetailRecordView>();
 
             #endregion Dao To View
         }

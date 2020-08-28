@@ -288,6 +288,46 @@ namespace DataInfo.Service.Managers.Ride
         }
 
         /// <summary>
+        /// 取得騎乘明細記錄
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="rideID">rideID</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> GetRideDetailRecord(string memberID, string rideID)
+        {
+            try
+            {
+                RideDao rideDao = await this.rideRepository.Get(memberID, rideID).ConfigureAwait(false);
+                if (rideDao == null)
+                {
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = StatusCodes.Status409Conflict,
+                        ResultMessage = ResponseErrorMessageType.GetFail.ToString()
+                    };
+                }
+
+                return new ResponseResult()
+                {
+                    Result = true,
+                    ResultCode = StatusCodes.Status200OK,
+                    Content = this.mapper.Map<RideDetailRecordView>(rideDao)
+                };
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得騎乘明細記錄發生錯誤", $"MemberID: {memberID} RideID: {rideID}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                };
+            }
+        }
+
+        /// <summary>
         /// 取得組隊隊員列表
         /// </summary>
         /// <param name="memberID">memberID</param>

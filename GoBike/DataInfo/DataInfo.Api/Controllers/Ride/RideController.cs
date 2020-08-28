@@ -68,6 +68,33 @@ namespace DataInfo.Api.Controllers.Ride
         }
 
         /// <summary>
+        /// 騎乘功能 - 取得騎乘明細記錄
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="rideID">rideID</param>
+        /// <returns>IActionResult</returns>
+        [HttpGet("{memberID}/{rideID}")]
+        public async Task<IActionResult> Get(string memberID, string rideID)
+        {
+            try
+            {
+                this.logger.LogInfo("會員請求取得騎乘明細記錄", $"MemberID: {memberID} RideID: {rideID}", null);
+                ResponseResult responseResult = await this.rideService.GetRideDetailRecord(memberID, rideID).ConfigureAwait(false);
+                return this.ResponseHandler(responseResult);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("會員請求取得騎乘明細記錄發生錯誤", $"MemberID: {memberID} RideID: {rideID}", ex);
+                return this.ResponseHandler(new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                });
+            }
+        }
+
+        /// <summary>
         /// 騎乘功能 - 取得騎乘記錄
         /// </summary>
         /// <returns>IActionResult</returns>
