@@ -46,15 +46,21 @@ namespace DataInfo.Api.Controllers.Team
         /// <summary>
         /// 刪除車隊副隊長
         /// </summary>
-        /// <param name="content">content</param>
+        /// <param name="teamID">teamID</param>
+        /// <param name="targetID">targetID</param>
         /// <returns>IActionResult</returns>
-        [HttpDelete]
-        public async Task<IActionResult> Delete(TeamUpdateViceLeaderContent content)
+        [HttpDelete("{teamID}/{targetID}")]
+        public async Task<IActionResult> Delete(string teamID, string targetID)
         {
             string memberID = this.GetMemberID();
+            TeamUpdateViceLeaderContent content = new TeamUpdateViceLeaderContent()
+            {
+                TeamID = teamID,
+                MemberID = targetID
+            };
             try
             {
-                this.logger.LogInfo("會員請求刪除車隊副隊長", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                this.logger.LogInfo("會員請求刪除車隊副隊長", $"MemberID: {memberID} teamID: {JsonConvert.SerializeObject(content)}", null);
                 ResponseResult responseResult = await teamService.UpdateViceLeader(content, memberID, ActionType.Delete).ConfigureAwait(false);
                 return this.ResponseHandler(responseResult);
             }
