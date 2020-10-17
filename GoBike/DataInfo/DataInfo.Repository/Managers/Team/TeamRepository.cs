@@ -58,11 +58,14 @@ namespace DataInfo.Repository.Managers.Team
         {
             try
             {
-                IEnumerable<TeamData> teamDatas = await this.Db.Queryable<TeamData>()
-                                              .Where(data => teamIDs.Contains(data.TeamID))
-                                              .ToListAsync().ConfigureAwait(false);
+                using (SqlSugarClient db = this.NewDB)
+                {
+                    IEnumerable<TeamData> teamDatas = await db.Queryable<TeamData>()
+                                                   .Where(data => teamIDs.Contains(data.TeamID))
+                                                   .ToListAsync().ConfigureAwait(false);
 
-                return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);
+                    return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);
+                }
             }
             catch (Exception ex)
             {
@@ -80,11 +83,14 @@ namespace DataInfo.Repository.Managers.Team
         {
             try
             {
-                TeamData teamData = await this.Db.Queryable<TeamData>()
-                                              .Where(data => data.TeamID.Equals(teamID))
-                                              .FirstAsync().ConfigureAwait(false);
+                using (SqlSugarClient db = this.NewDB)
+                {
+                    TeamData teamData = await db.Queryable<TeamData>()
+                                             .Where(data => data.TeamID.Equals(teamID))
+                                             .FirstAsync().ConfigureAwait(false);
 
-                return this.mapper.Map<TeamDao>(teamData);
+                    return this.mapper.Map<TeamDao>(teamData);
+                }
             }
             catch (Exception ex)
             {
@@ -103,14 +109,17 @@ namespace DataInfo.Repository.Managers.Team
         {
             try
             {
-                ISugarQueryable<UserAccount, UserInfo> query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID))
+                using (SqlSugarClient db = this.NewDB)
+                {
+                    ISugarQueryable<UserAccount, UserInfo> query = db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID))
                         .Where((ua, ui) => SqlFunc.Subqueryable<TeamData>()
                         .Where(td => td.TeamID.Equals(teamID))
                         .Where(td => td.Leader.Equals(memberID) || td.TeamViceLeaderIDs.Contains(memberID) || td.TeamMemberIDs.Contains(memberID))
                         .Where(td => td.Leader.Equals(ua.MemberID) || td.TeamViceLeaderIDs.Contains(ua.MemberID) || td.TeamMemberIDs.Contains(ua.MemberID))
                         .Any());
 
-                return await this.memberRepository.TransformMemberDao(query).ConfigureAwait(false);
+                    return await this.memberRepository.TransformMemberDao(query).ConfigureAwait(false);
+                }
             }
             catch (Exception ex)
             {
@@ -129,14 +138,17 @@ namespace DataInfo.Repository.Managers.Team
         {
             try
             {
-                ISugarQueryable<UserAccount, UserInfo> query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID))
+                using (SqlSugarClient db = this.NewDB)
+                {
+                    ISugarQueryable<UserAccount, UserInfo> query = db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID))
                         .Where((ua, ui) => SqlFunc.Subqueryable<TeamData>()
                         .Where(td => td.TeamID.Equals(teamID))
                         .Where(td => td.Leader.Equals(memberID) || td.TeamViceLeaderIDs.Contains(memberID))
                         .Where(td => td.ApplyJoinList.Contains(ua.MemberID))
                         .Any());
 
-                return await this.memberRepository.TransformMemberDao(query).ConfigureAwait(false);
+                    return await this.memberRepository.TransformMemberDao(query).ConfigureAwait(false);
+                }
             }
             catch (Exception ex)
             {
@@ -155,16 +167,19 @@ namespace DataInfo.Repository.Managers.Team
         {
             try
             {
-                int takeBrowseCount = AppSettingHelper.Appsetting.Rule.TakeBrowseCount;
-                IEnumerable<TeamData> teamDatas = await this.Db.Queryable<TeamData>()
-                                              .Where(data => data.County.Equals(county))
-                                              .Where(data => !data.Leader.Equals(memberID))
-                                              .Where(data => !data.TeamViceLeaderIDs.Contains(memberID))
-                                              .Where(data => !data.TeamMemberIDs.Contains(memberID))
-                                              .Take(takeBrowseCount)
-                                              .ToListAsync().ConfigureAwait(false);
+                using (SqlSugarClient db = this.NewDB)
+                {
+                    int takeBrowseCount = AppSettingHelper.Appsetting.Rule.TakeBrowseCount;
+                    IEnumerable<TeamData> teamDatas = await db.Queryable<TeamData>()
+                                                  .Where(data => data.County.Equals(county))
+                                                  .Where(data => !data.Leader.Equals(memberID))
+                                                  .Where(data => !data.TeamViceLeaderIDs.Contains(memberID))
+                                                  .Where(data => !data.TeamMemberIDs.Contains(memberID))
+                                                  .Take(takeBrowseCount)
+                                                  .ToListAsync().ConfigureAwait(false);
 
-                return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);
+                    return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);
+                }
             }
             catch (Exception ex)
             {
@@ -185,7 +200,9 @@ namespace DataInfo.Repository.Managers.Team
             DateTime expiredDate = DateTime.UtcNow.AddDays(daysOfNewCreation * -1);
             try
             {
-                IEnumerable<TeamData> teamDatas = await this.Db.Queryable<TeamData>()
+                using (SqlSugarClient db = this.NewDB)
+                {
+                    IEnumerable<TeamData> teamDatas = await db.Queryable<TeamData>()
                                               .Where(data => Convert.ToDateTime(data).Ticks - expiredDate.Ticks > 0)
                                               .Where(data => !data.Leader.Equals(memberID))
                                               .Where(data => !data.TeamViceLeaderIDs.Contains(memberID))
@@ -193,7 +210,8 @@ namespace DataInfo.Repository.Managers.Team
                                               .Take(takeBrowseCount)
                                               .ToListAsync().ConfigureAwait(false);
 
-                return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);
+                    return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);
+                }
             }
             catch (Exception ex)
             {
@@ -211,20 +229,23 @@ namespace DataInfo.Repository.Managers.Team
         {
             try
             {
-                int takeBrowseCount = AppSettingHelper.Appsetting.Rule.TakeBrowseCount;
-                //// TODO 待確認推薦標準
-                IEnumerable<TeamData> teamDatas = await this.Db.Queryable<TeamData>()
-                                              //.Where(data => (data.TeamViceLeaderIDs.Count() + data.TeamMemberIDs.Count()) >= 50) //// 無法使用 JSON ... 等其他 Function
-                                              .Where(data => !data.Leader.Equals(memberID))
-                                              .Where(data => !data.TeamViceLeaderIDs.Contains(memberID))
-                                              .Where(data => !data.TeamMemberIDs.Contains(memberID))
-                                              .Take(takeBrowseCount)
-                                              .ToListAsync().ConfigureAwait(false);
+                using (SqlSugarClient db = this.NewDB)
+                {
+                    int takeBrowseCount = AppSettingHelper.Appsetting.Rule.TakeBrowseCount;
+                    //// TODO 待確認推薦標準
+                    IEnumerable<TeamData> teamDatas = await db.Queryable<TeamData>()
+                                                  //.Where(data => (data.TeamViceLeaderIDs.Count() + data.TeamMemberIDs.Count()) >= 50) //// 無法使用 JSON ... 等其他 Function
+                                                  .Where(data => !data.Leader.Equals(memberID))
+                                                  .Where(data => !data.TeamViceLeaderIDs.Contains(memberID))
+                                                  .Where(data => !data.TeamMemberIDs.Contains(memberID))
+                                                  .Take(takeBrowseCount)
+                                                  .ToListAsync().ConfigureAwait(false);
 
-                teamDatas = teamDatas.Where(data => (JsonConvert.DeserializeObject<IEnumerable<string>>(data.TeamViceLeaderIDs).Count()
-                                                    + JsonConvert.DeserializeObject<IEnumerable<string>>(data.TeamMemberIDs).Count())
-                                                    >= 50);
-                return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);
+                    teamDatas = teamDatas.Where(data => (JsonConvert.DeserializeObject<IEnumerable<string>>(data.TeamViceLeaderIDs).Count()
+                                                        + JsonConvert.DeserializeObject<IEnumerable<string>>(data.TeamMemberIDs).Count())
+                                                        >= 50);
+                    return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);
+                }
             }
             catch (Exception ex)
             {
@@ -242,11 +263,14 @@ namespace DataInfo.Repository.Managers.Team
         {
             try
             {
-                IEnumerable<TeamData> teamDatas = await this.Db.Queryable<UserInfo, TeamData>((ui, td) => ui.TeamList.Contains(td.TeamID))
+                using (SqlSugarClient db = this.NewDB)
+                {
+                    IEnumerable<TeamData> teamDatas = await db.Queryable<UserInfo, TeamData>((ui, td) => ui.TeamList.Contains(td.TeamID))
                                                                .Where(ui => ui.MemberID.Equals(memberID))
                                                                .Select((ui, td) => td)
                                                                .ToListAsync().ConfigureAwait(false);
-                return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);
+                    return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);
+                }
             }
             catch (Exception ex)
             {
@@ -264,11 +288,14 @@ namespace DataInfo.Repository.Managers.Team
         {
             try
             {
-                IEnumerable<TeamData> teamDatas = await this.Db.Queryable<TeamData>()
+                using (SqlSugarClient db = this.NewDB)
+                {
+                    IEnumerable<TeamData> teamDatas = await db.Queryable<TeamData>()
                                               .Where(data => data.ApplyJoinList.Contains(memberID))
                                               .ToListAsync().ConfigureAwait(false);
 
-                return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);
+                    return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);
+                }
             }
             catch (Exception ex)
             {
@@ -286,11 +313,14 @@ namespace DataInfo.Repository.Managers.Team
         {
             try
             {
-                IEnumerable<TeamData> teamDatas = await this.Db.Queryable<TeamData>()
+                using (SqlSugarClient db = this.NewDB)
+                {
+                    IEnumerable<TeamData> teamDatas = await db.Queryable<TeamData>()
                                            .Where(data => data.TeamName.Contains(key))
                                            .ToListAsync().ConfigureAwait(false);
 
-                return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);
+                    return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);
+                }
             }
             catch (Exception ex)
             {

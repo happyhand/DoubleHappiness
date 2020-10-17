@@ -30,11 +30,14 @@ namespace DataInfo.Repository.Managers.Interactive
         {
             try
             {
-                return await this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => new object[] {
+                using (SqlSugarClient db = this.NewDB)
+                {
+                    return await db.Queryable<UserAccount, UserInfo>((ua, ui) => new object[] {
                         JoinType.Left,ua.MemberID.Equals(ui.MemberID)})
                          .Where((ua, ui) => !ua.MemberID.Equals(memberID))
                          .Where((ua, ui) => ui.FriendList.Contains(memberID))
                          .Select(ua => ua.MemberID).ToListAsync().ConfigureAwait(false);
+                }
             }
             catch (Exception ex)
             {
@@ -52,11 +55,14 @@ namespace DataInfo.Repository.Managers.Interactive
         {
             try
             {
-                string blackListDataJson = await this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => new object[] {
+                using (SqlSugarClient db = this.NewDB)
+                {
+                    string blackListDataJson = await db.Queryable<UserAccount, UserInfo>((ua, ui) => new object[] {
                         JoinType.Left,ua.MemberID.Equals(ui.MemberID)})
                          .Where((ua, ui) => ua.MemberID.Equals(memberID))
                          .Select((ua, ui) => ui.BlackList).FirstAsync().ConfigureAwait(false);
-                return JsonConvert.DeserializeObject<IEnumerable<string>>(blackListDataJson);
+                    return JsonConvert.DeserializeObject<IEnumerable<string>>(blackListDataJson);
+                }
             }
             catch (Exception ex)
             {
@@ -74,11 +80,14 @@ namespace DataInfo.Repository.Managers.Interactive
         {
             try
             {
-                string friendListDataJson = await this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => new object[] {
+                using (SqlSugarClient db = this.NewDB)
+                {
+                    string friendListDataJson = await db.Queryable<UserAccount, UserInfo>((ua, ui) => new object[] {
                         JoinType.Left,ua.MemberID.Equals(ui.MemberID)})
                          .Where((ua, ui) => ua.MemberID.Equals(memberID))
                          .Select((ua, ui) => ui.FriendList).FirstAsync().ConfigureAwait(false);
-                return JsonConvert.DeserializeObject<IEnumerable<string>>(friendListDataJson);
+                    return JsonConvert.DeserializeObject<IEnumerable<string>>(friendListDataJson);
+                }
             }
             catch (Exception ex)
             {

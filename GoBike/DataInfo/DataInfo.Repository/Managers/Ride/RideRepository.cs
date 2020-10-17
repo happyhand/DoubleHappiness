@@ -49,12 +49,15 @@ namespace DataInfo.Repository.Managers.Ride
         {
             try
             {
-                RideRecord rideRecord = await this.Db.Queryable<RideRecord>()
+                using (SqlSugarClient db = this.NewDB)
+                {
+                    RideRecord rideRecord = await db.Queryable<RideRecord>()
                                                          .Where(data => data.MemberID.Equals(memberID))
                                                          .Where(data => data.RideID.Equals(rideID))
                                                          .FirstAsync().ConfigureAwait(false);
 
-                return this.mapper.Map<RideDao>(rideRecord);
+                    return this.mapper.Map<RideDao>(rideRecord);
+                }
             }
             catch (Exception ex)
             {
@@ -72,11 +75,14 @@ namespace DataInfo.Repository.Managers.Ride
         {
             try
             {
-                IEnumerable<RideRecord> rideRecords = await this.Db.Queryable<RideRecord>()
+                using (SqlSugarClient db = this.NewDB)
+                {
+                    IEnumerable<RideRecord> rideRecords = await db.Queryable<RideRecord>()
                                                          .Where(data => data.MemberID.Equals(memberID))
                                                          .ToListAsync().ConfigureAwait(false);
 
-                return this.mapper.Map<IEnumerable<RideDao>>(rideRecords);
+                    return this.mapper.Map<IEnumerable<RideDao>>(rideRecords);
+                }
             }
             catch (Exception ex)
             {
@@ -127,23 +133,26 @@ namespace DataInfo.Repository.Managers.Ride
             DateTime nowDate = DateTime.UtcNow;
             try
             {
-                string weekFirstDay = Utility.GetWeekFirstDay(nowDate);
-                string weekLastDay = Utility.GetWeekLastDay(nowDate);
-                WeekRideData weekRideData = await this.Db.Queryable<WeekRideData>()
-                                                         .Where(data => data.MemberID.Equals(memberID))
-                                                         .Where(data => data.WeekFirstDay.Equals(weekFirstDay) && data.WeekLastDay.Equals(weekLastDay))
-                                                         .FirstAsync().ConfigureAwait(false);
-                if (weekRideData == null)
+                using (SqlSugarClient db = this.NewDB)
                 {
-                    this.logger.LogWarn("取得週里程失敗，無騎乘資料", $"MemberID: {memberID} NowDate: {nowDate}", null);
-                    return null;
-                }
+                    string weekFirstDay = Utility.GetWeekFirstDay(nowDate);
+                    string weekLastDay = Utility.GetWeekLastDay(nowDate);
+                    WeekRideData weekRideData = await db.Queryable<WeekRideData>()
+                                                             .Where(data => data.MemberID.Equals(memberID))
+                                                             .Where(data => data.WeekFirstDay.Equals(weekFirstDay) && data.WeekLastDay.Equals(weekLastDay))
+                                                             .FirstAsync().ConfigureAwait(false);
+                    if (weekRideData == null)
+                    {
+                        this.logger.LogWarn("取得週里程失敗，無騎乘資料", $"MemberID: {memberID} NowDate: {nowDate}", null);
+                        return null;
+                    }
 
-                return new RideDistanceDao()
-                {
-                    MemberID = weekRideData.MemberID,
-                    WeekDistance = weekRideData.WeekDistance
-                };
+                    return new RideDistanceDao()
+                    {
+                        MemberID = weekRideData.MemberID,
+                        WeekDistance = weekRideData.WeekDistance
+                    };
+                }
             }
             catch (Exception ex)
             {
@@ -162,18 +171,21 @@ namespace DataInfo.Repository.Managers.Ride
             DateTime nowDate = DateTime.UtcNow;
             try
             {
-                string weekFirstDay = Utility.GetWeekFirstDay(nowDate);
-                string weekLastDay = Utility.GetWeekLastDay(nowDate);
-                IEnumerable<WeekRideData> weekRideDatas = await this.Db.Queryable<WeekRideData>()
-                                                         .Where(data => memberIDs.Contains(data.MemberID))
-                                                         .Where(data => data.WeekFirstDay.Equals(weekFirstDay) && data.WeekLastDay.Equals(weekLastDay))
-                                                         .ToListAsync().ConfigureAwait(false);
-
-                return weekRideDatas.Select(data => new RideDistanceDao()
+                using (SqlSugarClient db = this.NewDB)
                 {
-                    MemberID = data.MemberID,
-                    WeekDistance = data.WeekDistance
-                });
+                    string weekFirstDay = Utility.GetWeekFirstDay(nowDate);
+                    string weekLastDay = Utility.GetWeekLastDay(nowDate);
+                    IEnumerable<WeekRideData> weekRideDatas = await db.Queryable<WeekRideData>()
+                                                             .Where(data => memberIDs.Contains(data.MemberID))
+                                                             .Where(data => data.WeekFirstDay.Equals(weekFirstDay) && data.WeekLastDay.Equals(weekLastDay))
+                                                             .ToListAsync().ConfigureAwait(false);
+
+                    return weekRideDatas.Select(data => new RideDistanceDao()
+                    {
+                        MemberID = data.MemberID,
+                        WeekDistance = data.WeekDistance
+                    });
+                }
             }
             catch (Exception ex)
             {

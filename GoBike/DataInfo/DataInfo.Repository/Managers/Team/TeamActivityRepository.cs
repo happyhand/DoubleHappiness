@@ -61,12 +61,15 @@ namespace DataInfo.Repository.Managers.Team
         {
             try
             {
-                ISugarQueryable<TeamData, TeamActivity, UserInfo> query = this.Db.Queryable<TeamData, TeamActivity, UserInfo>(
+                using (SqlSugarClient db = this.NewDB)
+                {
+                    ISugarQueryable<TeamData, TeamActivity, UserInfo> query = db.Queryable<TeamData, TeamActivity, UserInfo>(
                                                           (td, ta, ui) => ta.TeamID.Equals(td.TeamID) && ta.MemberID.Equals(ui.MemberID))
                                                           .Where((td, ta, ui) => td.TeamID.Equals(teamID))
                                                           .Where((td, ta, ui) => td.Leader.Equals(memberID) || td.TeamViceLeaderIDs.Contains(memberID) || td.TeamMemberIDs.Contains(memberID));
 
-                return (await this.TransformTeamActivityDao(query).ConfigureAwait(false));
+                    return (await this.TransformTeamActivityDao(query).ConfigureAwait(false));
+                }
             }
             catch (Exception ex)
             {
@@ -84,11 +87,14 @@ namespace DataInfo.Repository.Managers.Team
         {
             try
             {
-                ISugarQueryable<TeamData, TeamActivity, UserInfo> query = this.Db.Queryable<TeamData, TeamActivity, UserInfo>(
+                using (SqlSugarClient db = this.NewDB)
+                {
+                    ISugarQueryable<TeamData, TeamActivity, UserInfo> query = db.Queryable<TeamData, TeamActivity, UserInfo>(
                                                           (td, ta, ui) => ta.TeamID.Equals(td.TeamID) && ta.MemberID.Equals(ui.MemberID))
                                                           .Where((td, ta, ui) => ta.MemberList.Contains(memberID));
 
-                return (await this.TransformTeamActivityDao(query).ConfigureAwait(false));
+                    return (await this.TransformTeamActivityDao(query).ConfigureAwait(false));
+                }
             }
             catch (Exception ex)
             {
@@ -108,13 +114,16 @@ namespace DataInfo.Repository.Managers.Team
         {
             try
             {
-                ISugarQueryable<TeamData, TeamActivity, UserInfo> query = this.Db.Queryable<TeamData, TeamActivity, UserInfo>(
+                using (SqlSugarClient db = this.NewDB)
+                {
+                    ISugarQueryable<TeamData, TeamActivity, UserInfo> query = db.Queryable<TeamData, TeamActivity, UserInfo>(
                                                           (td, ta, ui) => ta.TeamID.Equals(td.TeamID) && ta.MemberID.Equals(ui.MemberID))
                                                           .Where((td, ta, ui) => ta.ActID.Equals(actID))
                                                           .Where((td, ta, ui) => td.TeamID.Equals(teamID))
                                                           .Where((td, ta) => td.Leader.Equals(memberID) || td.TeamViceLeaderIDs.Contains(memberID) || td.TeamMemberIDs.Contains(memberID));
 
-                return (await this.TransformTeamActivityDao(query).ConfigureAwait(false)).FirstOrDefault();
+                    return (await this.TransformTeamActivityDao(query).ConfigureAwait(false)).FirstOrDefault();
+                }
             }
             catch (Exception ex)
             {

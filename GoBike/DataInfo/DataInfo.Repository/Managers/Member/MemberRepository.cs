@@ -97,12 +97,15 @@ namespace DataInfo.Repository.Managers.Member
         {
             try
             {
-                //// TODO 待確認是否要啟用 "是否可被搜尋" 功能
-                ISugarQueryable<UserAccount, UserInfo> query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID))
+                using (SqlSugarClient db = this.NewDB)
+                {
+                    //// TODO 待確認是否要啟用 "是否可被搜尋" 功能
+                    ISugarQueryable<UserAccount, UserInfo> query = db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID))
                            .Where(ua => memberIDs.Contains(ua.MemberID))
                            .Where(ua => ignoreMemberIDs == null || !ignoreMemberIDs.Contains(ua.MemberID));
 
-                return await this.TransformMemberDao(query).ConfigureAwait(false);
+                    return await this.TransformMemberDao(query).ConfigureAwait(false);
+                }
             }
             catch (Exception ex)
             {
@@ -133,20 +136,23 @@ namespace DataInfo.Repository.Managers.Member
         {
             try
             {
-                //// TODO 待確認是否要啟用 "是否可被搜尋" 功能
-                //// 目前只開放 Email 跟 Nickname 提供搜尋
-                ISugarQueryable<UserAccount, UserInfo> query = this.Db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID));
-                if (isFuzzy)
+                using (SqlSugarClient db = this.NewDB)
                 {
-                    query = query.Where((ua, ui) => ua.Email.Contains(key) || (!string.IsNullOrEmpty(ui.NickName) && ui.NickName.Contains(key)));
-                }
-                else
-                {
-                    query = query.Where((ua, ui) => ua.Email.Equals(key) || (!string.IsNullOrEmpty(ui.NickName) && ui.NickName.Equals(key)));
-                }
+                    //// TODO 待確認是否要啟用 "是否可被搜尋" 功能
+                    //// 目前只開放 Email 跟 Nickname 提供搜尋
+                    ISugarQueryable<UserAccount, UserInfo> query = db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID));
+                    if (isFuzzy)
+                    {
+                        query = query.Where((ua, ui) => ua.Email.Contains(key) || (!string.IsNullOrEmpty(ui.NickName) && ui.NickName.Contains(key)));
+                    }
+                    else
+                    {
+                        query = query.Where((ua, ui) => ua.Email.Equals(key) || (!string.IsNullOrEmpty(ui.NickName) && ui.NickName.Equals(key)));
+                    }
 
-                query = query.Where(ua => ignoreMemberIDs == null || !ignoreMemberIDs.Contains(ua.MemberID));
-                return await this.TransformMemberDao(query).ConfigureAwait(false);
+                    query = query.Where(ua => ignoreMemberIDs == null || !ignoreMemberIDs.Contains(ua.MemberID));
+                    return await this.TransformMemberDao(query).ConfigureAwait(false);
+                }
             }
             catch (Exception ex)
             {

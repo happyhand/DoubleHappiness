@@ -55,11 +55,14 @@ namespace DataInfo.Repository.Managers.Team
         {
             try
             {
-                ISugarQueryable<TeamData, TeamBulletin, UserInfo> query = this.Db.Queryable<TeamData, TeamBulletin, UserInfo>(
+                using (SqlSugarClient db = this.NewDB)
+                {
+                    ISugarQueryable<TeamData, TeamBulletin, UserInfo> query = db.Queryable<TeamData, TeamBulletin, UserInfo>(
                                                            (td, tb, ui) => tb.TeamID.Equals(teamID) && tb.TeamID.Equals(td.TeamID) && tb.MemberID.Equals(ui.MemberID))
                                                            .Where((td, tb, ui) => td.Leader.Equals(memberID) || td.TeamViceLeaderIDs.Contains(memberID) || td.TeamMemberIDs.Contains(memberID));
 
-                return (await this.TransformTeamBulletinDao(query).ConfigureAwait(false));
+                    return (await this.TransformTeamBulletinDao(query).ConfigureAwait(false));
+                }
             }
             catch (Exception ex)
             {
