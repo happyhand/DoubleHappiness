@@ -5,6 +5,7 @@ using DataInfo.Core.Models.Dao.Member;
 using DataInfo.Core.Models.Dao.Member.Table;
 using DataInfo.Core.Models.Dao.Team;
 using DataInfo.Core.Models.Dao.Team.Table;
+using DataInfo.Core.Models.Enum;
 using DataInfo.Repository.Interfaces.Member;
 using DataInfo.Repository.Interfaces.Team;
 using DataInfo.Repository.Managers.Base;
@@ -171,6 +172,7 @@ namespace DataInfo.Repository.Managers.Team
                 {
                     int takeBrowseCount = AppSettingHelper.Appsetting.Rule.TakeBrowseCount;
                     IEnumerable<TeamData> teamDatas = await db.Queryable<TeamData>()
+                                                  .Where(data => data.SearchStatus == (int)TeamSearchStatusType.Open)
                                                   .Where(data => data.County.Equals(county))
                                                   .Where(data => !data.Leader.Equals(memberID))
                                                   .Where(data => !data.TeamViceLeaderIDs.Contains(memberID))
@@ -203,6 +205,7 @@ namespace DataInfo.Repository.Managers.Team
                 using (SqlSugarClient db = this.NewDB)
                 {
                     IEnumerable<TeamData> teamDatas = await db.Queryable<TeamData>()
+                                              .Where(data => data.SearchStatus == (int)TeamSearchStatusType.Open)
                                               .Where(data => Convert.ToDateTime(data).Ticks - expiredDate.Ticks > 0)
                                               .Where(data => !data.Leader.Equals(memberID))
                                               .Where(data => !data.TeamViceLeaderIDs.Contains(memberID))
@@ -234,6 +237,7 @@ namespace DataInfo.Repository.Managers.Team
                     int takeBrowseCount = AppSettingHelper.Appsetting.Rule.TakeBrowseCount;
                     //// TODO 待確認推薦標準
                     IEnumerable<TeamData> teamDatas = await db.Queryable<TeamData>()
+                                                  .Where(data => data.SearchStatus == (int)TeamSearchStatusType.Open)
                                                   //.Where(data => (data.TeamViceLeaderIDs.Count() + data.TeamMemberIDs.Count()) >= 50) //// 無法使用 JSON ... 等其他 Function
                                                   .Where(data => !data.Leader.Equals(memberID))
                                                   .Where(data => !data.TeamViceLeaderIDs.Contains(memberID))
@@ -317,6 +321,7 @@ namespace DataInfo.Repository.Managers.Team
                 {
                     IEnumerable<TeamData> teamDatas = await db.Queryable<TeamData>()
                                            .Where(data => data.TeamName.Contains(key))
+                                           .Where(data => data.SearchStatus == (int)TeamSearchStatusType.Open)
                                            .ToListAsync().ConfigureAwait(false);
 
                     return this.mapper.Map<IEnumerable<TeamDao>>(teamDatas);

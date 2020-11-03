@@ -742,8 +742,13 @@ namespace DataInfo.Service.Managers.Team
                 Task<IEnumerable<TeamBulletinDao>> teamBulletinDaos = this.teamBulletinRepository.Get(memberID, content.TeamID);
                 Task<IEnumerable<MemberDao>> memberOfApplyJoinList = this.teamRepository.GetMemberOfApplyJoin(memberID, content.TeamID);
                 Task<IEnumerable<MemberDao>> memberOfTeamList = this.teamRepository.GetMemberList(memberID, content.TeamID);
-
-                IEnumerable<TeamBullentiListView> teamBullentiListViews = this.mapper.Map<IEnumerable<TeamBullentiListView>>(await teamBulletinDaos.ConfigureAwait(false));
+                IEnumerable<TeamBulletinDao> filterTeamBulletinDaos = (await teamBulletinDaos.ConfigureAwait(false)).Where(dao =>
+                {
+                    DateTime createDate = Convert.ToDateTime(dao.CreateDate);
+                    DateTime expirationDate = createDate.AddDays(dao.Day);
+                    return expirationDate >= DateTime.UtcNow;
+                }).OrderByDescending(dao => dao.CreateDate);
+                IEnumerable<TeamBullentiListView> teamBullentiListViews = this.mapper.Map<IEnumerable<TeamBullentiListView>>(filterTeamBulletinDaos);
                 IEnumerable<MemberSimpleInfoView> applyJoinViews = this.mapper.Map<IEnumerable<MemberSimpleInfoView>>(await memberOfApplyJoinList.ConfigureAwait(false));
                 IEnumerable<MemberSimpleInfoView> teamMemberViews = this.mapper.Map<IEnumerable<MemberSimpleInfoView>>(await memberOfTeamList.ConfigureAwait(false));
 
