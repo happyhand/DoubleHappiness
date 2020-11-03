@@ -386,6 +386,7 @@ namespace DataInfo.Service.Managers.Ride
                 if (rideSimpleRecordViews == null)
                 {
                     IEnumerable<RideDao> rideDaos = await this.rideRepository.GetRecordList(memberID).ConfigureAwait(false);
+                    rideDaos.OrderByDescending(dao => dao.CreateDate);
                     rideSimpleRecordViews = this.mapper.Map<IEnumerable<RideSimpleRecordView>>(rideDaos);
                     //this.redisRepository.SetCache(AppSettingHelper.Appsetting.Redis.RideDB, cacheKey, JsonConvert.SerializeObject(rideSimpleRecordViews), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
                 }
