@@ -1,27 +1,21 @@
 <template>
-  <b-container fluid class="sign-in-content">
-    <b-row align-h="center">
-      <b-col sm="3">
+  <div class="container-fluid sign-in-content">
+    <div class="row justify-content-md-center">
+      <div class="col-sm-4">
         <SignInModule />
-      </b-col>
-    </b-row>
-  </b-container>
+      </div>
+    </div>
+  </div>
 </template>
 
-<script>
-import Vue from "vue";
-import Component from "vue-class-component";
-import { Module } from "@vue-ioc/core";
+<script lang="ts">
 import SignInModule from "@/components/auth/SignInModule.vue";
-import { ApiService } from "../../service/api-service";
+import { Vue, Options } from "vue-class-component";
 
-@Module({
-  providers: [ApiService]
-})
-@Component({
+@Options({
   components: {
-    SignInModule
-  }
+    SignInModule,
+  },
 })
 export default class SignIn extends Vue {}
 </script>
