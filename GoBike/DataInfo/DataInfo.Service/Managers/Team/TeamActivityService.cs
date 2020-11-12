@@ -417,7 +417,9 @@ namespace DataInfo.Service.Managers.Team
                 #region 取得資料
 
                 IEnumerable<TeamActivityDao> teamActivityDaos = await this.teamActivityRepository.Get(memberID, content.TeamID).ConfigureAwait(false);
-                IEnumerable<TeamActivityListView> teamActivityListViews = teamActivityDaos.Select(dao =>
+                IEnumerable<TeamActivityListView> teamActivityListViews = teamActivityDaos
+                .Where(dao => Convert.ToDateTime($"{dao.ActDate} {dao.MeetTime}") >= DateTime.UtcNow)
+                .Select(dao =>
                 {
                     TeamActivityListView teamActivityListView = this.mapper.Map<TeamActivityListView>(dao);
                     teamActivityListView.HasJoin = dao.MemberList.Contains(memberID) ? (int)JoinStatusType.Join : (int)JoinStatusType.None;

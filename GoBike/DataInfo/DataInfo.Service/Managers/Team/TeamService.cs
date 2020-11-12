@@ -747,7 +747,7 @@ namespace DataInfo.Service.Managers.Team
                     DateTime createDate = Convert.ToDateTime(dao.CreateDate);
                     DateTime expirationDate = createDate.AddDays(dao.Day);
                     return expirationDate >= DateTime.UtcNow;
-                }).OrderByDescending(dao => dao.CreateDate);
+                }).OrderByDescending(dao => Convert.ToDateTime(dao.CreateDate));
                 IEnumerable<TeamBullentiListView> teamBullentiListViews = this.mapper.Map<IEnumerable<TeamBullentiListView>>(filterTeamBulletinDaos);
                 IEnumerable<MemberSimpleInfoView> applyJoinViews = this.mapper.Map<IEnumerable<MemberSimpleInfoView>>(await memberOfApplyJoinList.ConfigureAwait(false));
                 IEnumerable<MemberSimpleInfoView> teamMemberViews = this.mapper.Map<IEnumerable<MemberSimpleInfoView>>(await memberOfTeamList.ConfigureAwait(false));

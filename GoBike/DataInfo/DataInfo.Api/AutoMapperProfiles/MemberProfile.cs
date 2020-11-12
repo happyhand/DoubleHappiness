@@ -33,13 +33,17 @@ namespace DataInfo.AutoMapperProfiles
 
             #region Dao To View
 
-            CreateMap<MemberDao, MemberSimpleInfoView>();
+            CreateMap<MemberDao, MemberSimpleInfoView>()
+             .ForMember(view => view.Nickname, options => options.MapFrom(dao => string.IsNullOrEmpty(dao.Nickname) ? dao.MemberID : dao.Nickname));
             CreateMap<MemberDao, MemberDetailInfoView>()
-             .ForMember(view => view.HasMobile, options => options.MapFrom(dao => string.IsNullOrEmpty(dao.Mobile) ? (int)BindMobileStatusType.None : (int)BindMobileStatusType.Bind));
+             .ForMember(view => view.HasMobile, options => options.MapFrom(dao => string.IsNullOrEmpty(dao.Mobile) ? (int)BindMobileStatusType.None : (int)BindMobileStatusType.Bind))
+             .ForMember(view => view.Nickname, options => options.MapFrom(dao => string.IsNullOrEmpty(dao.Nickname) ? dao.MemberID : dao.Nickname));
 
-            CreateMap<MemberDao, MemberHomeInfoView>();
+            CreateMap<MemberDao, MemberHomeInfoView>()
+             .ForMember(view => view.Nickname, options => options.MapFrom(dao => string.IsNullOrEmpty(dao.Nickname) ? dao.MemberID : dao.Nickname));
             CreateMap<MemberDao, MemberCardInfoView>()
-             .ForMember(view => view.HasTeam, options => options.MapFrom(dao => dao.TeamList.Any() ? (int)JoinStatusType.Join : (int)JoinStatusType.None));
+             .ForMember(view => view.HasTeam, options => options.MapFrom(dao => dao.TeamList.Any() ? (int)JoinStatusType.Join : (int)JoinStatusType.None))
+             .ForMember(view => view.Nickname, options => options.MapFrom(dao => string.IsNullOrEmpty(dao.Nickname) ? dao.MemberID : dao.Nickname));
 
             #endregion Dao To View
         }
