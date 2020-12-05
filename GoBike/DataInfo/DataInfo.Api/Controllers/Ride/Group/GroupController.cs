@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using NLog;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace DataInfo.Api.Controllers.Ride
@@ -40,6 +41,33 @@ namespace DataInfo.Api.Controllers.Ride
         public GroupController(IJwtService jwtService, IRideService rideService) : base(jwtService)
         {
             this.rideService = rideService;
+        }
+
+        /// <summary>
+        /// 組隊騎乘功能 - 刪除組隊騎乘
+        /// </summary>
+        /// <returns>IActionResult</returns>
+        [HttpDelete]
+        public async Task<IActionResult> Delete()
+        {
+            string memberID = this.GetMemberID();
+            try
+            {
+                this.logger.LogInfo("會員請求刪除組隊騎乘", $"MemberID: {memberID}", null);
+                UpdateRideGroupContent content = new UpdateRideGroupContent() { MemberIDs = new List<string>() };
+                ResponseResult responseResult = await rideService.UpdateRideGroup(content, memberID, ActionType.Delete).ConfigureAwait(false);
+                return this.ResponseHandler(responseResult);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("會員請求刪除組隊騎乘發生錯誤", $"MemberID: {memberID}", ex);
+                return this.ResponseHandler(new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                });
+            }
         }
 
         /// <summary>

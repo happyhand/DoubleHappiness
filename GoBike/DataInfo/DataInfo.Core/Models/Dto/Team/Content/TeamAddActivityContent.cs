@@ -92,33 +92,33 @@ namespace DataInfo.Core.Models.Dto.Team.Content
                   return $"{ResponseErrorMessageType.TeamActivityMeetTimeFail}|MeetTime: {content.MeetTime}";
               });
 
-            RuleFor(content => content.MaxAltitude)
-              .NotNull().WithMessage(content =>
-              {
-                  return $"{ResponseErrorMessageType.TeamActivityMaxAltitudeEmpty}";
-              })
-              .NotEmpty().WithMessage(content =>
-              {
-                  return $"{ResponseErrorMessageType.TeamActivityMaxAltitudeEmpty}";
-              })
-              .GreaterThan(default(float)).WithMessage(content =>
-              {
-                  return $"{ResponseErrorMessageType.TeamActivityMaxAltitudeFail}|MaxAltitude: {content.MaxAltitude}";
-              });
+            //RuleFor(content => content.MaxAltitude)
+            //  .NotNull().WithMessage(content =>
+            //  {
+            //      return $"{ResponseErrorMessageType.TeamActivityMaxAltitudeEmpty}";
+            //  })
+            //  .NotEmpty().WithMessage(content =>
+            //  {
+            //      return $"{ResponseErrorMessageType.TeamActivityMaxAltitudeEmpty}";
+            //  })
+            //  .GreaterThan(default(float)).WithMessage(content =>
+            //  {
+            //      return $"{ResponseErrorMessageType.TeamActivityMaxAltitudeFail}|MaxAltitude: {content.MaxAltitude}";
+            //  });
 
-            RuleFor(content => content.TotalDistance)
-              .NotNull().WithMessage(content =>
-              {
-                  return $"{ResponseErrorMessageType.TeamActivityTotalDistanceEmpty}";
-              })
-              .NotEmpty().WithMessage(content =>
-              {
-                  return $"{ResponseErrorMessageType.TeamActivityTotalDistanceEmpty}";
-              })
-              .GreaterThan(default(float)).WithMessage(content =>
-              {
-                  return $"{ResponseErrorMessageType.TeamActivityTotalDistanceFail}|TotalDistance: {content.TotalDistance}";
-              });
+            //RuleFor(content => content.TotalDistance)
+            //  .NotNull().WithMessage(content =>
+            //  {
+            //      return $"{ResponseErrorMessageType.TeamActivityTotalDistanceEmpty}";
+            //  })
+            //  .NotEmpty().WithMessage(content =>
+            //  {
+            //      return $"{ResponseErrorMessageType.TeamActivityTotalDistanceEmpty}";
+            //  })
+            //  .GreaterThan(default(float)).WithMessage(content =>
+            //  {
+            //      return $"{ResponseErrorMessageType.TeamActivityTotalDistanceFail}|TotalDistance: {content.TotalDistance}";
+            //  });
 
             RuleFor(content => content.Title)
               .NotNull().WithMessage(content =>

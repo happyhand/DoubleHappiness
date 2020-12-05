@@ -4,34 +4,34 @@ using FluentValidation;
 namespace DataInfo.Core.Models.Dto.Ride.Content
 {
     /// <summary>
-    /// 回覆組隊騎乘內容
+    /// 組隊騎乘通知內容
     /// </summary>
-    public class ReplyRideGroupContent
+    public class RideGroupNotifyContent
     {
         /// <summary>
         /// Gets or sets 回覆類別
         /// </summary>
-        public int Reply { get; set; }
+        public int Action { get; set; }
     }
 
     /// <summary>
-    /// 驗證回覆組隊騎乘內容
+    /// 驗證組隊騎乘通知內容
     /// </summary>
-    public class ReplyRideGroupContentValidator : AbstractValidator<ReplyRideGroupContent>
+    public class RideGroupNotifyContentValidator : AbstractValidator<RideGroupNotifyContent>
     {
         /// <summary>
         /// 建構式
         /// </summary>
-        public ReplyRideGroupContentValidator()
+        public RideGroupNotifyContentValidator()
         {
             this.CascadeMode = CascadeMode.StopOnFirstFailure;
-            RuleFor(content => content.Reply)
-              .Must(reply =>
+            RuleFor(content => content.Action)
+              .Must(action =>
               {
-                  return reply != (int)RideReplytGroupType.None;
+                  return action != (int)ActionType.None;
               }).WithMessage(content =>
               {
-                  return $"{ResponseErrorMessageType.ReplyFail}|Reply: {content.Reply}";
+                  return $"{ResponseErrorMessageType.NotifyFail}|Action: {content.Action}";
               });
         }
     }

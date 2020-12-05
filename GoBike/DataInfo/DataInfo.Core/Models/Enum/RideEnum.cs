@@ -18,6 +18,11 @@
         /// <summary>
         /// 允許
         /// </summary>
-        Allow = 1
+        Allow = 1,
+
+        /// <summary>
+        /// 離開
+        /// </summary>
+        Leave = 2
     }
 }

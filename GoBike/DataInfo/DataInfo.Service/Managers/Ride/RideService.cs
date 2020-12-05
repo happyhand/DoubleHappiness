@@ -346,8 +346,9 @@ namespace DataInfo.Service.Managers.Ride
                     RideGroupDao rideGroupDao = await this.redisRepository.GetCache<RideGroupDao>(redisDB, rideGroupMemberDao.RideGroupKey).ConfigureAwait(false);
                     if (rideGroupDao != null)
                     {
-                        IEnumerable<MemberDao> memberDaos = await this.memberRepository.Get(rideGroupDao.MemberList, null).ConfigureAwait(false);
-                        Dictionary<string, RideGroupMemberDao> rideGroupMemberDaoMap = await this.redisRepository.GetCache<RideGroupMemberDao>(redisDB, rideGroupDao.MemberList.Select(id => $"{groupMemberCacheKey}_{id}")).ConfigureAwait(false);
+                        IEnumerable<string> allRideMembers = (new string[] { rideGroupDao.Leader }).Concat(rideGroupDao.MemberList);
+                        IEnumerable<MemberDao> memberDaos = await this.memberRepository.Get(allRideMembers, null).ConfigureAwait(false);
+                        Dictionary<string, RideGroupMemberDao> rideGroupMemberDaoMap = await this.redisRepository.GetCache<RideGroupMemberDao>(redisDB, allRideMembers.Select(id => $"{groupMemberCacheKey}_{id}")).ConfigureAwait(false);
                         rideGroupMemberViews = memberDaos.Select(memberDao => this.TransformRideGroupMemberView(memberDao, rideGroupMemberDaoMap)).Where(view => view != null).ToList();
                     }
                 }
@@ -356,7 +357,11 @@ namespace DataInfo.Service.Managers.Ride
                 {
                     Result = true,
                     ResultCode = StatusCodes.Status200OK,
-                    Content = rideGroupMemberViews
+                    Content = new RideGroupMemberListView()
+                    {
+                        Leader = rideGroupMemberViews.FirstOrDefault(),
+                        MemberList = rideGroupMemberViews.Skip(1)
+                    }
                 };
             }
             catch (Exception ex)
@@ -425,7 +430,7 @@ namespace DataInfo.Service.Managers.Ride
                 ReplyRideGroupRequest request = new ReplyRideGroupRequest()
                 {
                     MemberID = memberID,
-                    Action = (int)content.Reply,
+                    Action = content.Reply,
                 };
                 CommandData<ReplyRideGroupResponse> response = await this.serverService.DoAction<ReplyRideGroupResponse>((int)RideCommandIDType.ReplyRideGroup, CommandType.Ride, request).ConfigureAwait(false);
                 this.logger.LogInfo("回覆組隊騎乘結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)}", null);
@@ -475,8 +480,9 @@ namespace DataInfo.Service.Managers.Ride
         /// 發送組隊騎乘通知
         /// </summary>
         /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> SendNotify(string memberID)
+        public async Task<ResponseResult> SendNotify(string memberID, RideGroupNotifyContent content)
         {
             try
             {
@@ -484,9 +490,10 @@ namespace DataInfo.Service.Managers.Ride
 
                 RideGroupNotifyRequest request = new RideGroupNotifyRequest()
                 {
-                    MemberID = memberID
+                    MemberID = memberID,
+                    Action = content.Action
                 };
-                CommandData<RideGroupNotifyResponse> response = await this.serverService.DoAction<RideGroupNotifyResponse>((int)RideCommandIDType.UpdateCoordinate, CommandType.Ride, request).ConfigureAwait(false);
+                CommandData<RideGroupNotifyResponse> response = await this.serverService.DoAction<RideGroupNotifyResponse>((int)RideCommandIDType.NotifyRideGroupMember, CommandType.Ride, request).ConfigureAwait(false);
                 this.logger.LogInfo("發送組隊騎乘通知結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)}", null);
 
                 switch (response.Data.Result)
@@ -520,7 +527,7 @@ namespace DataInfo.Service.Managers.Ride
             }
             catch (Exception ex)
             {
-                this.logger.LogError("發送組隊騎乘通知發生錯誤", $"MemberID: {memberID}", ex);
+                this.logger.LogError("發送組隊騎乘通知發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
                 return new ResponseResult()
                 {
                     Result = false,
@@ -625,11 +632,29 @@ namespace DataInfo.Service.Managers.Ride
                 switch (response.Data.Result)
                 {
                     case (int)UpdateCoordinateResultType.Success:
+                        List<RideGroupMemberView> rideGroupMemberViews = new List<RideGroupMemberView>();
+                        int redisDB = AppSettingHelper.Appsetting.Redis.ServerDB;
+                        string groupMemberCacheKey = AppSettingHelper.Appsetting.Redis.Flag.GroupMember;
+                        string cacheKey = $"{groupMemberCacheKey}_{memberID}";
+                        RideGroupMemberDao rideGroupMemberDao = await this.redisRepository.GetCache<RideGroupMemberDao>(redisDB, cacheKey).ConfigureAwait(false);
+                        if (rideGroupMemberDao != null)
+                        {
+                            RideGroupDao rideGroupDao = await this.redisRepository.GetCache<RideGroupDao>(redisDB, rideGroupMemberDao.RideGroupKey).ConfigureAwait(false);
+                            if (rideGroupDao != null)
+                            {
+                                IEnumerable<string> allRideMembers = (new string[] { rideGroupDao.Leader }).Concat(rideGroupDao.MemberList);
+                                IEnumerable<MemberDao> memberDaos = await this.memberRepository.Get(allRideMembers, null).ConfigureAwait(false);
+                                Dictionary<string, RideGroupMemberDao> rideGroupMemberDaoMap = await this.redisRepository.GetCache<RideGroupMemberDao>(redisDB, allRideMembers.Select(id => $"{groupMemberCacheKey}_{id}")).ConfigureAwait(false);
+                                rideGroupMemberViews = memberDaos.Select(memberDao => this.TransformRideGroupMemberView(memberDao, rideGroupMemberDaoMap)).Where(view => view != null).ToList();
+                            }
+                        }
+
                         return new ResponseResult()
                         {
                             Result = true,
                             ResultCode = StatusCodes.Status200OK,
-                            ResultMessage = ResponseSuccessMessageType.UpdateSuccess.ToString()
+                            ResultMessage = ResponseSuccessMessageType.UpdateSuccess.ToString(),
+                            Content = rideGroupMemberViews
                         };
 
                     case (int)UpdateCoordinateResultType.Fail:

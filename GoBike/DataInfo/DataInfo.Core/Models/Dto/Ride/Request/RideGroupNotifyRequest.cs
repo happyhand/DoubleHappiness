@@ -8,6 +8,11 @@ namespace DataInfo.Core.Models.Dto.Ride.Request
     public class RideGroupNotifyRequest
     {
         /// <summary>
+        /// Gets or sets 請求動作
+        /// </summary>
+        public int Action { get; set; }
+
+        /// <summary>
         /// Gets or sets 會員 ID
         /// </summary>
         public string MemberID { get; set; }

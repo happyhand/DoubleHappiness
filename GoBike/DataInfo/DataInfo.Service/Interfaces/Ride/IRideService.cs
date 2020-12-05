@@ -59,8 +59,9 @@ namespace DataInfo.Service.Interfaces.Ride
         /// 發送組隊騎乘通知
         /// </summary>
         /// <param name="memberID">memberID</param>
+        /// <param name="content">content</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> SendNotify(string memberID);
+        Task<ResponseResult> SendNotify(string memberID, RideGroupNotifyContent content);
 
         /// <summary>
         /// 更新組隊騎乘
