@@ -36,27 +36,26 @@ func (promise *Promise) Done() (interface{}, error) {
 // Then :: Promise 執行延續
 func (promise *Promise) Then(successFunc SuccessFunc, errorFunc ErrorFunc) *Promise {
 	newPromise := &Promise{done: make(chan struct{})}
-		response, err := promise.Done()
-		defer close(newPromise.done)
-		if err != nil {
-			if errorFunc != nil {
-				newPromise.response = errorFunc(err)
-			} else {
-				newPromise.err = err
-			}
+	response, err := promise.Done()
+	defer close(newPromise.done)
+	if err != nil {
+		if errorFunc != nil {
+			newPromise.response = errorFunc(err)
 		} else {
-			if successFunc != nil {
-				newPromise.response, newPromise.err = successFunc(response)
-			} else {
-				newPromise.response = response
-			}
+			newPromise.err = err
 		}
-	}()
+	} else {
+		if successFunc != nil {
+			newPromise.response, newPromise.err = successFunc(response)
+		} else {
+			newPromise.response = response
+		}
+	}
 
 	return newPromise
 }
 
 // Catch :: 捕捉 Promise 例外
-func (promise *Promise) Catch(errorHandler ErrorHandler) *Promise {
-	return promise.Then(nil, errorHandler)
+func (promise *Promise) Catch(errorFunc ErrorFunc) *Promise {
+	return promise.Then(nil, errorFunc)
 }

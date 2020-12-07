@@ -9,6 +9,8 @@ type ResponseMessage struct {
 }
 
 const (
+	// InputInvalid :: Api Response Message - 無效的請求內容
+	InputInvalid string = "InputInvalid"
 	// SystemError :: Api Response Message - 系統錯誤
 	SystemError string = "SystemError"
 )

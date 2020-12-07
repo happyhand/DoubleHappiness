@@ -15,14 +15,21 @@ func init() {
 }
 
 // RequestHandler :: Api 請求處理器
-func RequestHandler(request *http.Request, data interface{}) error {
+func RequestHandler(request *http.Request, data interface{}) apiModel.ResponseMessage {
+	defer request.Body.Close()
+	// 處理 request.Body
 	body, err := ioutil.ReadAll(io.LimitReader(request.Body, 1024)) //io.LimitReader限制大小
-	if err == nil {
-		json.Unmarshal(body, &data)
+	if err != nil {
+		return GenerateErrorResonse(http.StatusBadRequest, apiModel.InputInvalid)
 	}
 
-	defer request.Body.Close()
-	return err
+	// 處理請求資料 json 轉換
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		return GenerateErrorResonse(http.StatusBadRequest, apiModel.InputInvalid)
+	}
+
+	return apiModel.ResponseMessage{Result: true}
 }
 
 // ResponseHandler :: Api 回應處理器
