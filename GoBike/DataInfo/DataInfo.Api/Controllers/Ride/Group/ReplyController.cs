@@ -43,33 +43,6 @@ namespace DataInfo.Api.Controllers.Ride
         }
 
         /// <summary>
-        /// 離開組隊騎乘
-        /// </summary>
-        /// <returns>IActionResult</returns>
-        [HttpDelete]
-        public async Task<IActionResult> Delete()
-        {
-            string memberID = this.GetMemberID();
-            ReplyRideGroupContent content = new ReplyRideGroupContent() { Reply = (int)RideReplytGroupType.Leave };
-            try
-            {
-                this.logger.LogInfo("會員請求離開組隊騎乘", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await rideService.ReplyRideGroup(content, memberID).ConfigureAwait(false);
-                return this.ResponseHandler(responseResult);
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("會員請求離開組隊騎乘發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
-                return this.ResponseHandler(new ResponseResult()
-                {
-                    Result = false,
-                    ResultCode = StatusCodes.Status500InternalServerError,
-                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
-                });
-            }
-        }
-
-        /// <summary>
         /// 回覆組隊騎乘
         /// </summary>
         /// <param name="content">content</param>

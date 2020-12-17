@@ -595,10 +595,11 @@ namespace DataInfo.Service.Managers.Team
                         };
                     }
 
-                    Task<IEnumerable<TeamDao>> joinTeamDaosTask = this.teamRepository.Get(memberDao.TeamList);
-                    Task<IEnumerable<TeamDao>> applyTeamDaosTask = this.teamRepository.GetTeamOfApplyJoin(memberID);
-                    IEnumerable<TeamDropMenuView> joinTeamDropMenuViews = this.mapper.Map<IEnumerable<TeamDropMenuView>>(await joinTeamDaosTask.ConfigureAwait(false));
-                    IEnumerable<TeamDropMenuView> applyTeamDropMenuViews = this.mapper.Map<IEnumerable<TeamDropMenuView>>(await applyTeamDaosTask.ConfigureAwait(false));
+                    IEnumerable<TeamDao> joinTeamDaos = await this.teamRepository.Get(memberDao.TeamList).ConfigureAwait(false);
+                    joinTeamDaos = joinTeamDaos.OrderByDescending(dao => dao.Leader.Equals(memberID));
+                    IEnumerable<TeamDao> applyTeamDaos = await this.teamRepository.GetTeamOfApplyJoin(memberID).ConfigureAwait(false);
+                    IEnumerable<TeamDropMenuView> joinTeamDropMenuViews = this.mapper.Map<IEnumerable<TeamDropMenuView>>(joinTeamDaos);
+                    IEnumerable<TeamDropMenuView> applyTeamDropMenuViews = this.mapper.Map<IEnumerable<TeamDropMenuView>>(applyTeamDaos);
                     foreach (TeamDropMenuView joinTeamDropMenuView in joinTeamDropMenuViews)
                     {
                         string messageLatestTimeCacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Team}-{joinTeamDropMenuView.TeamID}-{AppSettingHelper.Appsetting.Redis.SubFlag.MessageLatestTime}";

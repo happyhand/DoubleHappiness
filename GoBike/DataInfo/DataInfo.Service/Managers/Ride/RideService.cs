@@ -347,9 +347,12 @@ namespace DataInfo.Service.Managers.Ride
                     if (rideGroupDao != null)
                     {
                         IEnumerable<string> allRideMembers = (new string[] { rideGroupDao.Leader }).Concat(rideGroupDao.MemberList);
-                        IEnumerable<MemberDao> memberDaos = await this.memberRepository.Get(allRideMembers, null).ConfigureAwait(false);
-                        Dictionary<string, RideGroupMemberDao> rideGroupMemberDaoMap = await this.redisRepository.GetCache<RideGroupMemberDao>(redisDB, allRideMembers.Select(id => $"{groupMemberCacheKey}_{id}")).ConfigureAwait(false);
-                        rideGroupMemberViews = memberDaos.Select(memberDao => this.TransformRideGroupMemberView(memberDao, rideGroupMemberDaoMap)).Where(view => view != null).ToList();
+                        if (allRideMembers.Contains(memberID))
+                        {
+                            IEnumerable<MemberDao> memberDaos = await this.memberRepository.Get(allRideMembers, null).ConfigureAwait(false);
+                            Dictionary<string, RideGroupMemberDao> rideGroupMemberDaoMap = await this.redisRepository.GetCache<RideGroupMemberDao>(redisDB, allRideMembers.Select(id => $"{groupMemberCacheKey}_{id}")).ConfigureAwait(false);
+                            rideGroupMemberViews = memberDaos.Select(memberDao => this.TransformRideGroupMemberView(memberDao, rideGroupMemberDaoMap)).Where(view => view != null).ToList();
+                        }
                     }
                 }
 
