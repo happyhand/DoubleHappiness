@@ -694,7 +694,7 @@ namespace DataInfo.Service.Managers.Team
                         {
                             Avatar = memberDao.Avatar,
                             MemberID = memberDao.MemberID,
-                            Nickname = memberDao.Nickname,
+                            Nickname = string.IsNullOrEmpty(memberDao.Nickname) ? memberDao.MemberID : memberDao.Nickname,
                             Role = (int)this.GetTeamRole(memberDao.MemberID, teamDao)
                         };
                         teamMemberView.OnlineType = role.Equals(TeamRoleType.None) ? (int)OnlineStatusType.None : await this.memberRepository.GetOnlineType(memberDao.MemberID).ConfigureAwait(false);
