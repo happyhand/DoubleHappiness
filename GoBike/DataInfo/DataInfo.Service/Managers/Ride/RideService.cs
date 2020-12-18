@@ -690,5 +690,67 @@ namespace DataInfo.Service.Managers.Ride
                 };
             }
         }
+
+        /// <summary>
+        /// 更新組隊騎乘邀請
+        /// </summary>
+        /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> UpdateRideGroupInvite(UpdateRideGroupContent content, string memberID)
+        {
+            try
+            {
+                #region 發送【更新邀請列表】指令至後端
+
+                UpdateInviteListRequest request = new UpdateInviteListRequest()
+                {
+                    MemberID = memberID,
+                    Action = (int)ActionType.Add,
+                    UpdateList = JsonConvert.SerializeObject(content.MemberIDs)
+                };
+                CommandData<UpdateInviteListResponse> response = await this.serverService.DoAction<UpdateInviteListResponse>((int)RideCommandIDType.UpdateInviteList, CommandType.Ride, request).ConfigureAwait(false);
+                this.logger.LogInfo("更新組隊騎乘邀請結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)}", null);
+
+                switch (response.Data.Result)
+                {
+                    case (int)UpdateInviteListResultType.Success:
+                        return new ResponseResult()
+                        {
+                            Result = true,
+                            ResultCode = StatusCodes.Status200OK,
+                            ResultMessage = ResponseSuccessMessageType.UpdateSuccess.ToString()
+                        };
+
+                    case (int)UpdateInviteListResultType.Fail:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
+                        };
+
+                    default:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = StatusCodes.Status502BadGateway,
+                            ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                        };
+                }
+
+                #endregion 發送【更新邀請列表】指令至後端
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("更新組隊騎乘邀請發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                };
+            }
+        }
     }
 }

@@ -216,38 +216,6 @@
     }
 
     /// <summary>
-    /// 回覆組隊騎乘結果類別資料
-    /// </summary>
-    public enum ReplyRideGroupResultType
-    {
-        /// <summary>
-        /// 回覆失敗
-        /// </summary>
-        Fail = 0,
-
-        /// <summary>
-        /// 回覆成功
-        /// </summary>
-        Success = 1
-    }
-
-    /// <summary>
-    /// 更新座標結果類別資料
-    /// </summary>
-    public enum UpdateCoordinateResultType
-    {
-        /// <summary>
-        /// 更新失敗
-        /// </summary>
-        Fail = 0,
-
-        /// <summary>
-        /// 更新成功
-        /// </summary>
-        Success = 1
-    }
-
-    /// <summary>
     /// 通知隊友結果類別資料
     /// </summary>
     public enum NotifyRideGroupMemberResultType
@@ -259,6 +227,22 @@
 
         /// <summary>
         /// 通知成功
+        /// </summary>
+        Success = 1
+    }
+
+    /// <summary>
+    /// 回覆組隊騎乘結果類別資料
+    /// </summary>
+    public enum ReplyRideGroupResultType
+    {
+        /// <summary>
+        /// 回覆失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 回覆成功
         /// </summary>
         Success = 1
     }
@@ -279,19 +263,56 @@
         UpdateRideGroup = 1002,
 
         /// <summary>
+        /// 更新邀請列表
+        /// </summary>
+        UpdateInviteList = 1003,
+
+        /// <summary>
         /// 回覆組隊騎乘
         /// </summary>
-        ReplyRideGroup = 1003,
+        ReplyRideGroup = 1004,
 
         /// <summary>
         /// 更新座標
         /// </summary>
-        UpdateCoordinate = 1004,
+        UpdateCoordinate = 1005,
 
         /// <summary>
         /// 通知隊友
         /// </summary>
-        NotifyRideGroupMember = 1005
+        NotifyRideGroupMember = 1006
+    }
+
+    /// <summary>
+    /// 更新座標結果類別資料
+    /// </summary>
+    public enum UpdateCoordinateResultType
+    {
+        /// <summary>
+        /// 更新失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 更新成功
+        /// </summary>
+        Success = 1
+    }
+
+    /// <summary>
+    /// 更新邀請列表結果類別資料
+    /// </summary>
+    public enum UpdateInviteListResultType
+    {
+        /// <summary>
+        /// 更新失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 更新成功
+        /// </summary>
+        Success = 1
     }
 
     /// <summary>
@@ -420,6 +441,27 @@
     }
 
     /// <summary>
+    /// 踢離車隊成員結果類別資料
+    /// </summary>
+    public enum KickTeamMemberResultType
+    {
+        /// <summary>
+        /// 踢離失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 踢離成功
+        /// </summary>
+        Success = 1,
+
+        /// <summary>
+        /// 權限不足
+        /// </summary>
+        AuthorityNotEnough = 2,
+    }
+
+    /// <summary>
     /// 車隊後端封包編號類別資料
     /// </summary>
     public enum TeamCommandIDType
@@ -520,27 +562,6 @@
         /// 更新成功
         /// </summary>
         Success = 1,
-    }
-
-    /// <summary>
-    /// 踢離車隊成員結果類別資料
-    /// </summary>
-    public enum KickTeamMemberResultType
-    {
-        /// <summary>
-        /// 踢離失敗
-        /// </summary>
-        Fail = 0,
-
-        /// <summary>
-        /// 踢離成功
-        /// </summary>
-        Success = 1,
-
-        /// <summary>
-        /// 權限不足
-        /// </summary>
-        AuthorityNotEnough = 2,
     }
 
     /// <summary>

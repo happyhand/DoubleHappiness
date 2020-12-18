@@ -97,7 +97,34 @@ namespace DataInfo.Api.Controllers.Ride
         }
 
         /// <summary>
-        /// 組隊騎乘功能 - 組隊騎乘
+        /// 組隊騎乘功能 - 更新組隊騎乘邀請
+        /// </summary>
+        /// <param name="content">content</param>
+        /// <returns>IActionResult</returns>
+        [HttpPatch]
+        public async Task<IActionResult> Patch(UpdateRideGroupContent content)
+        {
+            string memberID = this.GetMemberID();
+            try
+            {
+                this.logger.LogInfo("會員請求更新組隊騎乘邀請", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                ResponseResult responseResult = await rideService.UpdateRideGroup(content, memberID, ActionType.Add).ConfigureAwait(false);
+                return this.ResponseHandler(responseResult);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("會員請求更新組隊騎乘邀請發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                return this.ResponseHandler(new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                });
+            }
+        }
+
+        /// <summary>
+        /// 組隊騎乘功能 - 建立組隊騎乘
         /// </summary>
         /// <param name="content">content</param>
         /// <returns>IActionResult</returns>
@@ -107,13 +134,13 @@ namespace DataInfo.Api.Controllers.Ride
             string memberID = this.GetMemberID();
             try
             {
-                this.logger.LogInfo("會員請求組隊騎乘", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
+                this.logger.LogInfo("會員請求建立組隊騎乘", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
                 ResponseResult responseResult = await rideService.UpdateRideGroup(content, memberID, ActionType.Add).ConfigureAwait(false);
                 return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員請求組隊騎乘發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                this.logger.LogError("會員請求建立組隊騎乘發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
                 return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,
