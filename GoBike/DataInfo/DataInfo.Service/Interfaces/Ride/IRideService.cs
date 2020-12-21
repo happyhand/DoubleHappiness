@@ -79,5 +79,13 @@ namespace DataInfo.Service.Interfaces.Ride
         /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>
         Task<ResponseResult> UpdateRideGroupCoordinate(UpdateRideGroupCoordinateContent content, string memberID);
+
+        /// <summary>
+        /// 更新組隊騎乘邀請
+        /// </summary>
+        /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
+        /// <returns>ResponseResult</returns>
+        Task<ResponseResult> UpdateRideGroupInvite(UpdateRideGroupContent content, string memberID);
     }
 }

@@ -108,7 +108,7 @@ namespace DataInfo.Api.Controllers.Ride
             try
             {
                 this.logger.LogInfo("會員請求更新組隊騎乘邀請", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await rideService.UpdateRideGroup(content, memberID, ActionType.Add).ConfigureAwait(false);
+                ResponseResult responseResult = await rideService.UpdateRideGroupInvite(content, memberID).ConfigureAwait(false);
                 return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
