@@ -379,12 +379,14 @@ namespace DataInfo.Service.Managers.Team
             try
             {
                 IEnumerable<TeamActivityDao> teamActivityDaos = await this.teamActivityRepository.Get(memberID).ConfigureAwait(false);
-                IEnumerable<TeamActivityListView> teamActivityListViews = teamActivityDaos.Select(dao =>
-                {
-                    TeamActivityListView teamActivityListView = this.mapper.Map<TeamActivityListView>(dao);
-                    teamActivityListView.HasJoin = dao.MemberList.Contains(memberID) ? (int)JoinStatusType.Join : (int)JoinStatusType.None;
-                    return teamActivityListView;
-                });
+                IEnumerable<TeamActivityListView> teamActivityListViews = teamActivityDaos
+                                                                          .Where(dao => Convert.ToDateTime($"{dao.ActDate} {dao.MeetTime}") >= DateTime.UtcNow)
+                                                                          .Select(dao =>
+                                                                          {
+                                                                              TeamActivityListView teamActivityListView = this.mapper.Map<TeamActivityListView>(dao);
+                                                                              teamActivityListView.HasJoin = dao.MemberList.Contains(memberID) ? (int)JoinStatusType.Join : (int)JoinStatusType.None;
+                                                                              return teamActivityListView;
+                                                                          });
                 return new ResponseResult()
                 {
                     Result = true,
