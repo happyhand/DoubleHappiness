@@ -45,21 +45,31 @@ namespace DataInfo.Api.Controllers.Interactive
         /// <summary>
         /// 會員黑名單 - 移除黑名單
         /// </summary>
-        /// <param name="content">content</param>
+        /// <param name="targetID">targetID</param>
         /// <returns>IActionResult</returns>
-        [HttpDelete]
-        public async Task<IActionResult> Delete(InteractiveContent content)
+        [HttpDelete("{memberID}")]
+        public async Task<IActionResult> Delete(string targetID)
         {
             string memberID = this.GetMemberID();
             try
             {
-                this.logger.LogInfo("會員請求移除黑名單", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await this.InteractiveService.UpdateInteractive(content, memberID, InteractiveType.Black, ActionType.Delete).ConfigureAwait(false);
+                this.logger.LogInfo("會員請求移除黑名單", $"MemberID: {memberID} TargetID: {targetID}", null);
+                if (string.IsNullOrEmpty(targetID))
+                {
+                    return this.ResponseHandler(new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = StatusCodes.Status400BadRequest,
+                        ResultMessage = ResponseErrorMessageType.MemberIDEmpty.ToString()
+                    });
+                }
+
+                ResponseResult responseResult = await this.InteractiveService.UpdateInteractive(new InteractiveContent() { MemberID = targetID }, memberID, InteractiveType.Black, ActionType.Delete).ConfigureAwait(false);
                 return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員請求移除黑名單發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                this.logger.LogError("會員請求移除黑名單發生錯誤", $"MemberID: {memberID} TargetID: {targetID}", ex);
                 return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,

@@ -46,21 +46,32 @@ namespace DataInfo.Api.Controllers.Team
         /// <summary>
         /// 取消加入車隊活動
         /// </summary>
-        /// <param name="content">content</param>
+        /// <param name="teamID">teamID</param>
+        /// <param name="actID">actID</param>
         /// <returns>IActionResult</returns>
-        [HttpDelete]
-        public async Task<IActionResult> Delete(TeamActivityContent content)
+        [HttpDelete("{teamID}/{actID}")]
+        public async Task<IActionResult> Delete(string teamID, string actID)
         {
             string memberID = this.GetMemberID();
             try
             {
-                this.logger.LogInfo("會員請求取消加入車隊活動", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await teamActivityService.JoinOrLeave(content, memberID, ActionType.Delete).ConfigureAwait(false);
+                this.logger.LogInfo("會員請求取消加入車隊活動", $"MemberID: {memberID} TeamID: {teamID} ActID: {actID}", null);
+                if (string.IsNullOrEmpty(teamID) || string.IsNullOrEmpty(actID))
+                {
+                    return this.ResponseHandler(new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = StatusCodes.Status400BadRequest,
+                        ResultMessage = string.IsNullOrEmpty(teamID) ? ResponseErrorMessageType.TeamIDEmpty.ToString() : ResponseErrorMessageType.ActIDEmpty.ToString()
+                    });
+                }
+
+                ResponseResult responseResult = await teamActivityService.JoinOrLeave(new TeamActivityContent() { TeamID = teamID, ActID = actID }, memberID, ActionType.Delete).ConfigureAwait(false);
                 return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員請求取消加入車隊活動發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                this.logger.LogError("會員請求取消加入車隊活動發生錯誤", $"MemberID: {memberID} TeamID: {teamID} ActID: {actID}", ex);
                 return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,

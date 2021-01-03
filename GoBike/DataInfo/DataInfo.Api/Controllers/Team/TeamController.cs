@@ -45,21 +45,31 @@ namespace DataInfo.Api.Controllers.Team
         /// <summary>
         /// 車隊功能 - 解散車隊
         /// </summary>
-        /// <param name="content">content</param>
+        /// <param name="teamID">teamID</param>
         /// <returns>IActionResult</returns>
-        [HttpDelete]
-        public async Task<IActionResult> Delete(TeamContent content)
+        [HttpDelete("{teamID}")]
+        public async Task<IActionResult> Delete(string teamID)
         {
             string memberID = this.GetMemberID();
             try
             {
-                this.logger.LogInfo("會員請求解散車隊", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await teamService.Disband(content, memberID).ConfigureAwait(false);
+                this.logger.LogInfo("會員請求解散車隊", $"MemberID: {memberID} TeamID: {teamID}", null);
+                if (string.IsNullOrEmpty(teamID))
+                {
+                    return this.ResponseHandler(new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = StatusCodes.Status400BadRequest,
+                        ResultMessage = ResponseErrorMessageType.TeamIDEmpty.ToString()
+                    });
+                }
+
+                ResponseResult responseResult = await teamService.Disband(new TeamContent() { TeamID = teamID }, memberID).ConfigureAwait(false);
                 return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員請求解散車隊發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                this.logger.LogError("會員請求解散車隊發生錯誤", $"MemberID: {memberID} TeamID: {teamID}", ex);
                 return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,

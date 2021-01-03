@@ -46,21 +46,31 @@ namespace DataInfo.Api.Controllers.Team
         /// <summary>
         /// 取消申請加入車隊
         /// </summary>
-        /// <param name="content">content</param>
+        /// <param name="teamID">teamID</param>
         /// <returns>IActionResult</returns>
-        [HttpDelete]
-        public async Task<IActionResult> Delete(TeamApplyJoinContent content)
+        [HttpDelete("{teamID}")]
+        public async Task<IActionResult> Delete(string teamID)
         {
             string memberID = this.GetMemberID();
             try
             {
-                this.logger.LogInfo("會員請求取消申請加入車隊", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", null);
-                ResponseResult responseResult = await teamInteractiveService.CancelApplyJoinTeam(content, memberID).ConfigureAwait(false);
+                this.logger.LogInfo("會員請求取消申請加入車隊", $"TeamID: {teamID} MemberID: {memberID}", null);
+                if (string.IsNullOrEmpty(teamID))
+                {
+                    return this.ResponseHandler(new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = StatusCodes.Status400BadRequest,
+                        ResultMessage = ResponseErrorMessageType.TeamIDEmpty.ToString()
+                    });
+                }
+
+                ResponseResult responseResult = await teamInteractiveService.CancelApplyJoinTeam(new TeamApplyJoinContent() { TeamID = teamID }, memberID).ConfigureAwait(false);
                 return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員請求取消申請加入車隊發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                this.logger.LogError("會員請求取消申請加入車隊發生錯誤", $"TeamID: {teamID} MemberID: {memberID}", ex);
                 return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,
