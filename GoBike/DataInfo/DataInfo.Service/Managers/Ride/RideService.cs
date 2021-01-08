@@ -340,12 +340,14 @@ namespace DataInfo.Service.Managers.Ride
                 int redisDB = AppSettingHelper.Appsetting.Redis.ServerDB;
                 string groupMemberCacheKey = AppSettingHelper.Appsetting.Redis.Flag.GroupMember;
                 string cacheKey = $"{groupMemberCacheKey}_{memberID}";
+                string leader = null;
                 RideGroupMemberDao rideGroupMemberDao = await this.redisRepository.GetCache<RideGroupMemberDao>(redisDB, cacheKey).ConfigureAwait(false);
                 if (rideGroupMemberDao != null)
                 {
                     RideGroupDao rideGroupDao = await this.redisRepository.GetCache<RideGroupDao>(redisDB, rideGroupMemberDao.RideGroupKey).ConfigureAwait(false);
                     if (rideGroupDao != null)
                     {
+                        leader = rideGroupDao.Leader;
                         IEnumerable<string> allRideMembers = (new string[] { rideGroupDao.Leader }).Concat(rideGroupDao.MemberList);
                         if (allRideMembers.Contains(memberID))
                         {
@@ -362,8 +364,8 @@ namespace DataInfo.Service.Managers.Ride
                     ResultCode = StatusCodes.Status200OK,
                     Content = new RideGroupMemberListView()
                     {
-                        Leader = rideGroupMemberViews.FirstOrDefault(),
-                        MemberList = rideGroupMemberViews.Skip(1)
+                        Leader = rideGroupMemberViews.Where(view => !string.IsNullOrEmpty(leader) && view.MemberID.Equals(leader)).FirstOrDefault(),
+                        MemberList = rideGroupMemberViews.Where(view => !view.MemberID.Equals(leader))
                     }
                 };
             }
