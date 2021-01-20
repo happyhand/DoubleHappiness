@@ -13,6 +13,11 @@ namespace DataInfo.Core.Models.Dto.Ride.View
         public float Altitude { get; set; }
 
         /// <summary>
+        /// Gets or sets 居住地
+        /// </summary>
+        public int County { get; set; }
+
+        /// <summary>
         /// Gets or sets 建立日期
         /// </summary>
         public string CreateDate { get; set; }
@@ -21,6 +26,11 @@ namespace DataInfo.Core.Models.Dto.Ride.View
         /// Gets or sets 騎乘距離
         /// </summary>
         public float Distance { get; set; }
+
+        /// <summary>
+        /// Gets or sets 等級
+        /// </summary>
+        public int Level { get; set; }
 
         /// <summary>
         /// Gets or sets 騎乘 ID
