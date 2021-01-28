@@ -44,6 +44,34 @@ namespace DataInfo.Api.Controllers.Team
         }
 
         /// <summary>
+        /// 刪除車隊活動
+        /// </summary>
+        /// <param name="teamID">teamID</param>
+        /// <param name="actID">actID</param>
+        /// <returns>IActionResult</returns>
+        [HttpDelete("{teamID}/{actID}")]
+        public async Task<IActionResult> Delete(string teamID, string actID)
+        {
+            string memberID = this.GetMemberID();
+            try
+            {
+                this.logger.LogInfo("會員請求刪除車隊活動", $"MemberID: {memberID} TeamID: {teamID} ActID: {actID}", null);
+                ResponseResult responseResult = await this.teamActivityService.Delete(memberID, teamID, actID).ConfigureAwait(false);
+                return this.ResponseHandler(responseResult);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("會員請求刪除車隊活動發生錯誤", $"MemberID: {memberID} TeamID: {teamID} ActID: {actID}", ex);
+                return this.ResponseHandler(new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                });
+            }
+        }
+
+        /// <summary>
         /// 取得會員已參加的車隊活動列表
         /// </summary>
         /// <returns>IActionResult</returns>

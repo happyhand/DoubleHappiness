@@ -587,7 +587,7 @@ namespace DataInfo.Service.Managers.Ride
                         {
                             Result = false,
                             ResultCode = StatusCodes.Status409Conflict,
-                            ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
+                            ResultMessage = ResponseErrorMessageType.RepeatFail.ToString()
                         };
 
                     default:

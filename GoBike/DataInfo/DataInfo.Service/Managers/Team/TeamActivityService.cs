@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using DataInfo.Core.Extensions;
+using DataInfo.Core.Models.Dao.Member;
 using DataInfo.Core.Models.Dao.Team;
+using DataInfo.Core.Models.Dto.Member.View;
 using DataInfo.Core.Models.Dto.Response;
 using DataInfo.Core.Models.Dto.Server;
 using DataInfo.Core.Models.Dto.Team.Content;
@@ -9,6 +11,7 @@ using DataInfo.Core.Models.Dto.Team.Request;
 using DataInfo.Core.Models.Dto.Team.Response;
 using DataInfo.Core.Models.Dto.Team.View;
 using DataInfo.Core.Models.Enum;
+using DataInfo.Repository.Interfaces.Member;
 using DataInfo.Repository.Interfaces.Team;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Server;
@@ -39,6 +42,11 @@ namespace DataInfo.Service.Managers.Team
         private readonly IMapper mapper;
 
         /// <summary>
+        /// memberRepository
+        /// </summary>
+        private readonly IMemberRepository memberRepository;
+
+        /// <summary>
         /// serverService
         /// </summary>
         private readonly IServerService serverService;
@@ -59,12 +67,14 @@ namespace DataInfo.Service.Managers.Team
         /// <param name="mapper">mapper</param>
         /// <param name="uploadService">uploadService</param>
         /// <param name="serverService">serverService</param>
+        /// <param name="memberRepository">memberRepository</param>
         /// <param name="teamActivityRepository">teamActivityRepository</param>
-        public TeamActivityService(IMapper mapper, IUploadService uploadService, IServerService serverService, ITeamActivityRepository teamActivityRepository)
+        public TeamActivityService(IMapper mapper, IUploadService uploadService, IServerService serverService, IMemberRepository memberRepository, ITeamActivityRepository teamActivityRepository)
         {
             this.mapper = mapper;
             this.uploadService = uploadService;
             this.serverService = serverService;
+            this.memberRepository = memberRepository;
             this.teamActivityRepository = teamActivityRepository;
         }
 
@@ -240,6 +250,70 @@ namespace DataInfo.Service.Managers.Team
         }
 
         /// <summary>
+        /// 刪除車隊活動
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="teamID">teamID</param>
+        /// <param name="actID">actID</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> Delete(string memberID, string teamID, string actID)
+        {
+            try
+            {
+                #region 發送【更新活動】指令至後端
+
+                TeamUpdateActivityRequest request = new TeamUpdateActivityRequest()
+                {
+                    ActID = actID,
+                    TeamID = teamID,
+                    MemberID = memberID,
+                    Action = (int)ActionType.Delete
+                };
+
+                CommandData<TeamUpdateActivityResponse> response = await this.serverService.DoAction<TeamUpdateActivityResponse>((int)TeamCommandIDType.UpdateActivity, CommandType.Team, request).ConfigureAwait(false);
+                this.logger.LogInfo("刪除車隊活動結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)} MemberID: {memberID} TeamID: {teamID} ActID: {actID}", null);
+                switch (response.Data.Result)
+                {
+                    case (int)UpdateActivityResultType.Success:
+                        return new ResponseResult()
+                        {
+                            Result = true,
+                            ResultCode = StatusCodes.Status200OK,
+                            ResultMessage = ResponseSuccessMessageType.CreateSuccess.ToString()
+                        };
+
+                    case (int)UpdateActivityResultType.Fail:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.CreateFail.ToString()
+                        };
+
+                    default:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = StatusCodes.Status502BadGateway,
+                            ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                        };
+                }
+
+                #endregion 發送【更新活動】指令至後端
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("刪除車隊活動發生錯誤", $"MemberID: {memberID} TeamID: {teamID} ActID: {actID}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                };
+            }
+        }
+
+        /// <summary>
         /// 更新車隊活動資料
         /// </summary>
         /// <param name="memberID">memberID</param>
@@ -344,7 +418,22 @@ namespace DataInfo.Service.Managers.Team
                     };
                 }
 
+                IEnumerable<MemberDao> teamMemberDaos = await this.memberRepository.Get(teamActivityDao.MemberList, null).ConfigureAwait(false);
+                List<MemberSimpleInfoView> memberSimpleInfoViews = new List<MemberSimpleInfoView>();
+                foreach (MemberDao memberDao in teamMemberDaos)
+                {
+                    MemberSimpleInfoView memberSimpleInfoView = new MemberSimpleInfoView()
+                    {
+                        Avatar = memberDao.Avatar,
+                        MemberID = memberDao.MemberID,
+                        Nickname = string.IsNullOrEmpty(memberDao.Nickname) ? memberDao.MemberID : memberDao.Nickname,
+                    };
+                    memberSimpleInfoView.OnlineType = await this.memberRepository.GetOnlineType(memberDao.MemberID).ConfigureAwait(false);
+                    memberSimpleInfoViews.Add(memberSimpleInfoView);
+                }
+
                 TeamActivityDetailView teamActivityDetailView = this.mapper.Map<TeamActivityDetailView>(teamActivityDao);
+                teamActivityDetailView.ActMemberList = memberSimpleInfoViews;
                 teamActivityDetailView.ActionStatus = teamActivityDao.FounderID.Equals(memberID) ?
                                                       (int)ActivityActionStatusType.Delete : teamActivityDao.MemberList.Contains(memberID) ?
                                                       (int)ActivityActionStatusType.Cancel : (int)JoinStatusType.Join;

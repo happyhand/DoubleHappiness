@@ -1,4 +1,5 @@
-﻿using DataInfo.Core.Models.Dto.Team.View.data;
+﻿using DataInfo.Core.Models.Dto.Member.View;
+using DataInfo.Core.Models.Dto.Team.View.data;
 using System.Collections.Generic;
 
 namespace DataInfo.Core.Models.Dto.Team.View
@@ -22,6 +23,11 @@ namespace DataInfo.Core.Models.Dto.Team.View
         /// Gets or sets 活動動作狀態
         /// </summary>
         public int ActionStatus { get; set; }
+
+        /// <summary>
+        /// Gets or sets 活動成員列表
+        /// </summary>
+        public IEnumerable<MemberSimpleInfoView> ActMemberList { get; set; }
 
         /// <summary>
         /// Gets or sets 路線描述
