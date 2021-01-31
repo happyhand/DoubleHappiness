@@ -50,7 +50,7 @@ namespace DataInfo.Api.Controllers.Member
             string memberID = this.GetMemberID();
             try
             {
-                ResponseResult responseResult = await this.memberService.KeepOnline(memberID).ConfigureAwait(false);
+                ResponseResult responseResult = this.memberService.KeepOnline(memberID);
                 return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)

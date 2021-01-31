@@ -19,7 +19,7 @@ namespace DataInfo.Service.Interfaces.Member
         /// </summary>
         /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> KeepOnline(string memberID);
+        ResponseResult KeepOnline(string memberID);
 
         /// <summary>
         /// 會員登入

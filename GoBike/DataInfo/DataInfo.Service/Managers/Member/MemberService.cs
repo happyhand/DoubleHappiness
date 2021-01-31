@@ -126,22 +126,12 @@ namespace DataInfo.Service.Managers.Member
         /// </summary>
         /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> KeepOnline(string memberID)
+        public ResponseResult KeepOnline(string memberID)
         {
             try
             {
-                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Member}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.LastLogin}";
-                bool result = await this.redisRepository.UpdateCacheExpire(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey, TimeSpan.FromMinutes(AppSettingHelper.Appsetting.KeepOnlineTime)).ConfigureAwait(false);
-                if (!result)
-                {
-                    this.logger.LogWarn("會員保持在線失敗，無法更新 Redis", $"CacheKey: {cacheKey}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = StatusCodes.Status500InternalServerError,
-                        ResultMessage = ResponseErrorMessageType.SystemError.ToString()
-                    };
-                }
+                this.UpdateLastLoginDate(memberID);
+
                 return new ResponseResult()
                 {
                     Result = true,
