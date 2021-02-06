@@ -91,39 +91,39 @@ namespace DataInfo.Core.Models.Dto.Ride.Content
                   return $"{ResponseErrorMessageType.RideTimeEmpty}|Time: {content.Time}";
               });
 
-            RuleFor(content => content.Distance)
-              .NotNull().WithMessage(content =>
-              {
-                  return $"{ResponseErrorMessageType.RideDistanceEmpty}";
-              })
-              .NotEmpty().WithMessage(content =>
-              {
-                  return $"{ResponseErrorMessageType.RideDistanceEmpty}";
-              })
-              .Must(distance =>
-              {
-                  return decimal.TryParse(distance, out decimal value) && value > 0;
-              }).WithMessage(content =>
-              {
-                  return $"{ResponseErrorMessageType.RideDistanceEmpty}|Distance: {content.Distance}";
-              });
+            //RuleFor(content => content.Distance)
+            //  .NotNull().WithMessage(content =>
+            //  {
+            //      return $"{ResponseErrorMessageType.RideDistanceEmpty}";
+            //  })
+            //  .NotEmpty().WithMessage(content =>
+            //  {
+            //      return $"{ResponseErrorMessageType.RideDistanceEmpty}";
+            //  })
+            //  .Must(distance =>
+            //  {
+            //      return decimal.TryParse(distance, out decimal value) && value > 0;
+            //  }).WithMessage(content =>
+            //  {
+            //      return $"{ResponseErrorMessageType.RideDistanceEmpty}|Distance: {content.Distance}";
+            //  });
 
-            RuleFor(content => content.Altitude)
-              .NotNull().WithMessage(content =>
-              {
-                  return $"{ResponseErrorMessageType.RideAltitudeEmpty}";
-              })
-              .NotEmpty().WithMessage(content =>
-              {
-                  return $"{ResponseErrorMessageType.RideAltitudeEmpty}";
-              })
-              .Must(altitude =>
-              {
-                  return decimal.TryParse(altitude, out decimal value) && value > 0;
-              }).WithMessage(content =>
-              {
-                  return $"{ResponseErrorMessageType.RideAltitudeEmpty}|Altitude: {content.Altitude}";
-              });
+            //RuleFor(content => content.Altitude)
+            //  .NotNull().WithMessage(content =>
+            //  {
+            //      return $"{ResponseErrorMessageType.RideAltitudeEmpty}";
+            //  })
+            //  .NotEmpty().WithMessage(content =>
+            //  {
+            //      return $"{ResponseErrorMessageType.RideAltitudeEmpty}";
+            //  })
+            //  .Must(altitude =>
+            //  {
+            //      return decimal.TryParse(altitude, out decimal value) && value > 0;
+            //  }).WithMessage(content =>
+            //  {
+            //      return $"{ResponseErrorMessageType.RideAltitudeEmpty}|Altitude: {content.Altitude}";
+            //  });
 
             RuleFor(content => content.County)
               .Must(county =>
