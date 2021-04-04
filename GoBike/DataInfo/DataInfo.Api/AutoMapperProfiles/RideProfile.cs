@@ -6,6 +6,7 @@ using DataInfo.Core.Models.Dto.Ride.Request;
 using DataInfo.Core.Models.Dto.Ride.View;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 
 namespace DataInfo.AutoMapperProfiles
 {
@@ -37,7 +38,9 @@ namespace DataInfo.AutoMapperProfiles
             #region Dao To View
 
             CreateMap<RideDao, RideSimpleRecordView>();
-            CreateMap<RideDao, RideDetailRecordView>();
+            CreateMap<RideDao, RideDetailRecordView>()
+                .ForMember(view => view.Route, options => options.MapFrom(dao => JsonConvert.DeserializeObject<IEnumerable<IEnumerable<string>>>(dao.Route)))
+                .ForMember(view => view.ShareContent, options => options.MapFrom(dao => JsonConvert.DeserializeObject<IEnumerable<IEnumerable<string>>>(dao.ShareContent)));
 
             #endregion Dao To View
         }

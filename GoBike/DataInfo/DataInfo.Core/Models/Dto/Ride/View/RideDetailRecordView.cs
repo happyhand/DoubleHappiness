@@ -1,4 +1,6 @@
-﻿namespace DataInfo.Core.Models.Dto.Ride.View
+﻿using System.Collections.Generic;
+
+namespace DataInfo.Core.Models.Dto.Ride.View
 {
     /// <summary>
     /// 騎乘明細記錄可視資料
@@ -48,12 +50,12 @@
         /// <summary>
         /// Gets or sets 騎乘路線
         /// </summary>
-        public string Route { get; set; }
+        public IEnumerable<IEnumerable<string>> Route { get; set; }
 
         /// <summary>
         /// Gets or sets 分享內容
         /// </summary>
-        public string ShareContent { get; set; }
+        public IEnumerable<IEnumerable<string>> ShareContent { get; set; }
 
         /// <summary>
         /// Gets or sets 分享類型
