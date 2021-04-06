@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using DataInfo.Core.Applibs;
 using DataInfo.Core.Models.Dao.Team;
 using DataInfo.Core.Models.Dao.Team.Table;
 using DataInfo.Core.Models.Dto.Team.Content;
@@ -53,16 +54,40 @@ namespace DataInfo.AutoMapperProfiles
 
             #region Dao To View
 
-            CreateMap<TeamDao, TeamDropMenuView>();
-            CreateMap<TeamDao, TeamInfoView>();
-            CreateMap<TeamDao, TeamSettingView>();
-            CreateMap<TeamDao, TeamSearchView>();
-            CreateMap<TeamActivityDao, TeamActivityListView>();
+            CreateMap<TeamDao, TeamDropMenuView>()
+                .ForMember(view => view.Avatar, options => options.MapFrom(dao => Utility.GetTeamImageCdn(dao.Avatar)));
+            CreateMap<TeamDao, TeamInfoView>()
+                .ForMember(view => view.Avatar, options => options.MapFrom(dao => Utility.GetTeamImageCdn(dao.Avatar)))
+                .ForMember(view => view.FrontCover, options => options.MapFrom(dao => Utility.GetTeamImageCdn(dao.FrontCover)));
+            CreateMap<TeamDao, TeamSettingView>()
+                .ForMember(view => view.Avatar, options => options.MapFrom(dao => Utility.GetTeamImageCdn(dao.Avatar)));
+            CreateMap<TeamDao, TeamSearchView>()
+                .ForMember(view => view.Avatar, options => options.MapFrom(dao => Utility.GetTeamImageCdn(dao.Avatar)));
+            CreateMap<TeamActivityDao, TeamActivityListView>()
+                .ForMember(view => view.FounderAvatar, options => options.MapFrom(dao => Utility.GetMemberImageCdn(dao.FounderAvatar)));
             CreateMap<TeamActivityDao, TeamActivityDetailView>()
-                .ForMember(view => view.Routes, options => options.MapFrom(dao => JsonConvert.DeserializeObject<IEnumerable<RouteView>>(dao.Route)));
-            CreateMap<TeamBulletinDao, TeamBullentiListView>();
+                .ForMember(view => view.FounderAvatar, options => options.MapFrom(dao => Utility.GetMemberImageCdn(dao.FounderAvatar)))
+                .ForMember(view => view.Routes, options => options.MapFrom(dao => this.RouteHandler(dao.Route)));
+            CreateMap<TeamBulletinDao, TeamBullentiListView>()
+                .ForMember(view => view.Avatar, options => options.MapFrom(dao => Utility.GetMemberImageCdn(dao.Avatar)));
 
             #endregion Dao To View
+        }
+
+        /// <summary>
+        /// 路線資料可視資料處理
+        /// </summary>
+        /// <param name="data">data</param>
+        /// <returns>string list</returns>
+        private IEnumerable<RouteView> RouteHandler(string data)
+        {
+            IEnumerable<RouteView> route = JsonConvert.DeserializeObject<IEnumerable<RouteView>>(data);
+            foreach (RouteView view in route)
+            {
+                view.Photo = Utility.GetTeamActivityImageCdn(view.Photo);
+            }
+
+            return route;
         }
     }
 }

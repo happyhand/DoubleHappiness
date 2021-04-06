@@ -205,6 +205,16 @@ namespace DataInfo.Core.Applibs
         }
 
         /// <summary>
+        /// Nickname 格式驗證
+        /// </summary>
+        /// <param name="length">length</param>
+        /// <returns>bool</returns>
+        public static bool ValidateNickname(string nickname, int length)
+        {
+            return Regex.IsMatch(nickname, @"^\S{1," + $"{length}" + "}$", RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250));
+        }
+
+        /// <summary>
         /// Password 格式驗證
         /// </summary>
         /// <param name="password">password</param>
@@ -214,16 +224,6 @@ namespace DataInfo.Core.Applibs
             return Regex.IsMatch(password,
                 @"^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z0-9]{6,12}$",
                 RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250));
-        }
-
-        /// <summary>
-        /// Nickname 格式驗證
-        /// </summary>
-        /// <param name="length">length</param>
-        /// <returns>bool</returns>
-        public static bool ValidateNickname(string nickname, int length)
-        {
-            return Regex.IsMatch(nickname, @"^\S{1," + $"{length}" + "}$", RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250));
         }
 
         #endregion 驗證功能
@@ -258,5 +258,65 @@ namespace DataInfo.Core.Applibs
         }
 
         #endregion 取得週日期
+
+        #region 取得圖片 CDN 路徑
+
+        /// <summary>
+        /// 取得會員圖片 CDN 路徑
+        /// </summary>
+        /// <returns></returns>
+        public static string GetMemberImageCdn(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return "";
+            }
+
+            return $"{AppSettingHelper.Appsetting.CdnServer.Domain}{AppSettingHelper.Appsetting.UploadServer.Member.Path}{path}";
+        }
+
+        /// <summary>
+        /// 取得騎乘圖片 CDN 路徑
+        /// </summary>
+        /// <returns></returns>
+        public static string GetRideImageCdn(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return "";
+            }
+
+            return $"{AppSettingHelper.Appsetting.CdnServer.Domain}{AppSettingHelper.Appsetting.UploadServer.Ride.Path}{path}";
+        }
+
+        /// <summary>
+        /// 取得車隊活動圖片 CDN 路徑
+        /// </summary>
+        /// <returns></returns>
+        public static string GetTeamActivityImageCdn(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return "";
+            }
+
+            return $"{AppSettingHelper.Appsetting.CdnServer.Domain}{AppSettingHelper.Appsetting.UploadServer.TeamActivity.Path}{path}";
+        }
+
+        /// <summary>
+        /// 取得車隊圖片 CDN 路徑
+        /// </summary>
+        /// <returns></returns>
+        public static string GetTeamImageCdn(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return "";
+            }
+
+            return $"{AppSettingHelper.Appsetting.CdnServer.Domain}{AppSettingHelper.Appsetting.UploadServer.Team.Path}{path}";
+        }
+
+        #endregion 取得圖片 CDN 路徑
     }
 }

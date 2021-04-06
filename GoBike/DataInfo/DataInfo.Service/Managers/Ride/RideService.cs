@@ -109,7 +109,7 @@ namespace DataInfo.Service.Managers.Ride
 
             RideGroupMemberView view = new RideGroupMemberView()
             {
-                Avatar = memberDao.Avatar,
+                Avatar = Utility.GetMemberImageCdn(memberDao.Avatar),
                 MemberID = memberDao.MemberID,
                 Nickname = memberDao.Nickname,
                 CoordinateX = rideGroupMemberDao.CoordinateX,
@@ -252,7 +252,7 @@ namespace DataInfo.Service.Managers.Ride
                         rideDistanceMap.TryGetValue(data.MemberID, out RideDistanceDao rideDistanceDao);
                         RideFriendWeekRankView rideFriendWeekRankView = new RideFriendWeekRankView()
                         {
-                            Avatar = data.Avatar,
+                            Avatar = Utility.GetMemberImageCdn(data.Avatar),
                             Nickname = data.Nickname,
                             MemberID = data.MemberID
                         };

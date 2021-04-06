@@ -140,6 +140,26 @@ namespace DataInfo.Core.Applibs
 
         #endregion Smtp Server 設定資料
 
+        #region Cdn Server 設定資料
+
+        /// <summary>
+        /// Gets or sets CdnServer
+        /// </summary>
+        public CdnServerSetting CdnServer { get; set; }
+
+        /// <summary>
+        /// CdnServerSetting
+        /// </summary>
+        public class CdnServerSetting
+        {
+            /// <summary>
+            /// Gets or sets Domain
+            /// </summary>
+            public string Domain { get; set; }
+        }
+
+        #endregion Cdn Server 設定資料
+
         #region JWT 設定資料
 
         /// <summary>

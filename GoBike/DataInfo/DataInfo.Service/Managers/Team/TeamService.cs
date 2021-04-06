@@ -692,7 +692,7 @@ namespace DataInfo.Service.Managers.Team
                     {
                         TeamMemberView teamMemberView = new TeamMemberView()
                         {
-                            Avatar = memberDao.Avatar,
+                            Avatar = Utility.GetMemberImageCdn(memberDao.Avatar),
                             MemberID = memberDao.MemberID,
                             Nickname = string.IsNullOrEmpty(memberDao.Nickname) ? memberDao.MemberID : memberDao.Nickname,
                             Role = (int)this.GetTeamRole(memberDao.MemberID, teamDao)

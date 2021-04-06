@@ -33,7 +33,7 @@ namespace DataInfo.Api.Controllers.Common
                 {
                     Result = true,
                     ResultCode = StatusCodes.Status200OK,
-                    Content = "1.0.0.45" //// 大版本、Hotfix、Bug、develop
+                    Content = "1.0.0.46" //// 大版本、Hotfix、Bug、develop
                 });
             }
             catch (Exception ex)

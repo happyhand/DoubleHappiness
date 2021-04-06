@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using DataInfo.Core.Applibs;
 using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dao.Member;
 using DataInfo.Core.Models.Dao.Team;
@@ -424,7 +425,7 @@ namespace DataInfo.Service.Managers.Team
                 {
                     MemberSimpleInfoView memberSimpleInfoView = new MemberSimpleInfoView()
                     {
-                        Avatar = memberDao.Avatar,
+                        Avatar = Utility.GetMemberImageCdn(memberDao.Avatar),
                         MemberID = memberDao.MemberID,
                         Nickname = string.IsNullOrEmpty(memberDao.Nickname) ? memberDao.MemberID : memberDao.Nickname,
                     };

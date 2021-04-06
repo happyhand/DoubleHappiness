@@ -8,12 +8,12 @@ namespace DataInfo.Core.Models.Dto.Ride.View
     public class RideGroupMemberListView
     {
         /// <summary>
-        /// Gets or sets 頭像路徑
+        /// Gets or sets 組隊隊長
         /// </summary>
         public RideGroupMemberView Leader { get; set; }
 
         /// <summary>
-        /// Gets or sets 座標-X
+        /// Gets or sets 騎乘成員列表
         /// </summary>
         public IEnumerable<RideGroupMemberView> MemberList { get; set; }
     }

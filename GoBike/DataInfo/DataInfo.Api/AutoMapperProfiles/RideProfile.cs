@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using DataInfo.Core.Applibs;
 using DataInfo.Core.Models.Dao.Ride;
 using DataInfo.Core.Models.Dao.Ride.Table;
 using DataInfo.Core.Models.Dto.Ride.Content;
@@ -7,6 +8,7 @@ using DataInfo.Core.Models.Dto.Ride.View;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DataInfo.AutoMapperProfiles
 {
@@ -39,10 +41,27 @@ namespace DataInfo.AutoMapperProfiles
 
             CreateMap<RideDao, RideSimpleRecordView>();
             CreateMap<RideDao, RideDetailRecordView>()
+                .ForMember(view => view.Photo, options => options.MapFrom(dao => Utility.GetRideImageCdn(dao.Photo)))
                 .ForMember(view => view.Route, options => options.MapFrom(dao => JsonConvert.DeserializeObject<IEnumerable<IEnumerable<string>>>(dao.Route)))
-                .ForMember(view => view.ShareContent, options => options.MapFrom(dao => JsonConvert.DeserializeObject<IEnumerable<IEnumerable<string>>>(dao.ShareContent)));
+                .ForMember(view => view.ShareContent, options => options.MapFrom(dao => this.ShareContentHandler(dao.ShareContent)));
 
             #endregion Dao To View
+        }
+
+        /// <summary>
+        /// 騎乘分享內容處理
+        /// </summary>
+        /// <param name="data">data</param>
+        /// <returns>string list</returns>
+        private IEnumerable<IEnumerable<string>> ShareContentHandler(string data)
+        {
+            List<List<string>> shareContent = JsonConvert.DeserializeObject<List<List<string>>>(data);
+            foreach (List<string> content in shareContent)
+            {
+                content[1] = Utility.GetRideImageCdn(content[1]);
+            }
+
+            return shareContent;
         }
     }
 }

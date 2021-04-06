@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using DataInfo.Core.Applibs;
 using DataInfo.Core.Models.Dao.Member;
 using DataInfo.Core.Models.Dto.Member.Content;
 using DataInfo.Core.Models.Dto.Member.Request;
@@ -34,15 +35,21 @@ namespace DataInfo.AutoMapperProfiles
             #region Dao To View
 
             CreateMap<MemberDao, MemberSimpleInfoView>()
+             .ForMember(view => view.Avatar, options => options.MapFrom(dao => Utility.GetMemberImageCdn(dao.Avatar)))
              .ForMember(view => view.Nickname, options => options.MapFrom(dao => string.IsNullOrEmpty(dao.Nickname) ? dao.MemberID : dao.Nickname));
             CreateMap<MemberDao, MemberDetailInfoView>()
              .ForMember(view => view.HasMobile, options => options.MapFrom(dao => string.IsNullOrEmpty(dao.Mobile) ? (int)BindMobileStatusType.None : (int)BindMobileStatusType.Bind))
+             .ForMember(view => view.FrontCover, options => options.MapFrom(dao => Utility.GetMemberImageCdn(dao.FrontCover)))
              .ForMember(view => view.Nickname, options => options.MapFrom(dao => string.IsNullOrEmpty(dao.Nickname) ? dao.MemberID : dao.Nickname));
 
             CreateMap<MemberDao, MemberHomeInfoView>()
+             .ForMember(view => view.Avatar, options => options.MapFrom(dao => Utility.GetMemberImageCdn(dao.Avatar)))
+             .ForMember(view => view.Photo, options => options.MapFrom(dao => Utility.GetMemberImageCdn(dao.Photo)))
              .ForMember(view => view.Nickname, options => options.MapFrom(dao => string.IsNullOrEmpty(dao.Nickname) ? dao.MemberID : dao.Nickname));
             CreateMap<MemberDao, MemberCardInfoView>()
              .ForMember(view => view.HasTeam, options => options.MapFrom(dao => dao.TeamList.Any() ? (int)JoinStatusType.Join : (int)JoinStatusType.None))
+             .ForMember(view => view.Avatar, options => options.MapFrom(dao => Utility.GetMemberImageCdn(dao.Avatar)))
+             .ForMember(view => view.FrontCover, options => options.MapFrom(dao => Utility.GetMemberImageCdn(dao.FrontCover)))
              .ForMember(view => view.Nickname, options => options.MapFrom(dao => string.IsNullOrEmpty(dao.Nickname) ? dao.MemberID : dao.Nickname));
 
             #endregion Dao To View
