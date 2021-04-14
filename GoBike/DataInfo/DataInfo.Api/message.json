@@ -4,6 +4,8 @@
 
         "MemberIDEmpty": "無會員資料，請重新操作",
 
+        "TokenEmpty": "請輸入 Token",
+
         "EmailEmpty": "請輸入電子郵件",
 
         "EmailFormatError": "電子郵件格式不正確，請重新輸入",

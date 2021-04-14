@@ -10,14 +10,9 @@ namespace DataInfo.Core.Models.Dto.Member.Content
     public class MemberLoginContent
     {
         /// <summary>
-        /// Gets or sets Email
+        /// Gets or sets Token
         /// </summary>
-        public string Email { get; set; }
-
-        /// <summary>
-        /// Gets or sets Password
-        /// </summary>
-        public string Password { get; set; }
+        public string Token { get; set; }
     }
 
     /// <summary>
@@ -31,31 +26,14 @@ namespace DataInfo.Core.Models.Dto.Member.Content
         public MemberLoginContentValidator()
         {
             this.CascadeMode = CascadeMode.StopOnFirstFailure;
-            RuleFor(content => content.Email)
+            RuleFor(content => content.Token)
               .NotNull().WithMessage(content =>
               {
-                  return $"{ResponseErrorMessageType.EmailEmpty}";
+                  return $"{ResponseErrorMessageType.TokenEmpty}";
               })
               .NotEmpty().WithMessage(content =>
               {
-                  return $"{ResponseErrorMessageType.EmailEmpty}";
-              })
-              .EmailAddress().WithMessage(content =>
-              {
-                  return $"{ResponseErrorMessageType.EmailFormatError}|Email: {content.Email}";
-              });
-            RuleFor(content => content.Password)
-              .NotNull().WithMessage(content =>
-              {
-                  return $"{ResponseErrorMessageType.PasswordEmpty}";
-              })
-              .NotEmpty().WithMessage(content =>
-              {
-                  return $"{ResponseErrorMessageType.PasswordEmpty}";
-              })
-              .Must(password => { return Utility.ValidatePassword(password); }).WithMessage(content =>
-              {
-                  return $"{ResponseErrorMessageType.PasswordFormatError}|Password: {content.Password}";
+                  return $"{ResponseErrorMessageType.TokenEmpty}";
               });
         }
     }

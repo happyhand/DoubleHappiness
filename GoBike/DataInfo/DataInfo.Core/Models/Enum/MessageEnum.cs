@@ -16,6 +16,11 @@
         MemberIDEmpty,
 
         /// <summary>
+        /// 請輸入 Token
+        /// </summary>
+        TokenEmpty,
+
+        /// <summary>
         /// 請輸入電子郵件
         /// </summary>
         EmailEmpty,

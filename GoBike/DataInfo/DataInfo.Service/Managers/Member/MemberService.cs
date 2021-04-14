@@ -162,6 +162,7 @@ namespace DataInfo.Service.Managers.Member
                 #region 發送【使用者登入】指令至後端
 
                 MemberLoginRequest request = this.mapper.Map<MemberLoginRequest>(content);
+                request.LoginSource = 0;
                 CommandData<MemberLoginResponse> response = await this.serverService.DoAction<MemberLoginResponse>((int)UserCommandIDType.UserLogin, CommandType.User, request).ConfigureAwait(false);
                 this.logger.LogInfo("會員登入結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)}", null);
                 switch (response.Data.Result)

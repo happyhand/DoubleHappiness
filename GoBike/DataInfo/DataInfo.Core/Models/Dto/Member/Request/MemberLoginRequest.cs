@@ -6,13 +6,13 @@
     public class MemberLoginRequest
     {
         /// <summary>
-        /// Gets or sets 信箱
+        /// Gets or sets 註冊來源
         /// </summary>
-        public string Email { get; set; }
+        public string LoginSource { get; set; }
 
         /// <summary>
-        /// Gets or sets 密碼
+        /// Gets or sets Token
         /// </summary>
-        public string Password { get; set; }
+        public string Token { get; set; }
     }
 }
