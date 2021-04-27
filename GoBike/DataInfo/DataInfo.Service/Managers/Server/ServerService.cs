@@ -92,6 +92,10 @@ namespace DataInfo.Service.Managers.Server
                         case CommandType.Team:
                             connectionStrings = AppSettingHelper.Appsetting.CommandServer.Team.ConnectionStrings;
                             break;
+
+                        case CommandType.Post:
+                            connectionStrings = AppSettingHelper.Appsetting.CommandServer.Post.ConnectionStrings;
+                            break;
                     }
 
                     //// 連線後端

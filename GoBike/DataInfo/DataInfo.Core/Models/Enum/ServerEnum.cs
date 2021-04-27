@@ -23,7 +23,12 @@
         /// <summary>
         /// 車隊
         /// </summary>
-        Team = 3
+        Team = 3,
+
+        /// <summary>
+        /// 貼文
+        /// </summary>
+        Post = 4,
     }
 
     #region 會員
@@ -644,4 +649,119 @@
     }
 
     #endregion 車隊
+
+    #region 貼文
+
+    /// <summary>
+    /// 新增點讚數結果類別資料
+    /// </summary>
+    public enum AddPraiseResultType
+    {
+        /// <summary>
+        /// 更新失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 更新成功
+        /// </summary>
+        Success = 1
+    }
+
+    /// <summary>
+    /// 建立貼文結果類別資料
+    /// </summary>
+    public enum CreateNewPostResultType
+    {
+        /// <summary>
+        /// 建立失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 建立成功
+        /// </summary>
+        Success = 1
+    }
+
+    /// <summary>
+    /// 刪除貼文結果類別資料
+    /// </summary>
+    public enum DeletePostResultType
+    {
+        /// <summary>
+        /// 刪除失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 刪除成功
+        /// </summary>
+        Success = 1
+    }
+
+    /// <summary>
+    /// 貼文後端封包編號類別資料
+    /// </summary>
+    public enum PostCommandIDType
+    {
+        /// <summary>
+        /// 建立貼文
+        /// </summary>
+        CreateNewPost = 1001,
+
+        /// <summary>
+        /// 更新貼文
+        /// </summary>
+        UpdatePost = 1002,
+
+        /// <summary>
+        /// 刪除貼文
+        /// </summary>
+        DeletePost = 1003,
+
+        /// <summary>
+        /// 新增點讚數
+        /// </summary>
+        AddLike = 1004,
+
+        /// <summary>
+        /// 減少點讚數
+        /// </summary>
+        ReduceLike = 1005,
+    }
+
+    /// <summary>
+    /// 減少點讚數結果類別資料
+    /// </summary>
+    public enum ReducePraiseResultType
+    {
+        /// <summary>
+        /// 更新失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 更新成功
+        /// </summary>
+        Success = 1
+    }
+
+    /// <summary>
+    /// 更新貼文結果類別資料
+    /// </summary>
+    public enum UpdatePostResultType
+    {
+        /// <summary>
+        /// 更新失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 更新成功
+        /// </summary>
+        Success = 1
+    }
+
+    #endregion 貼文
 }

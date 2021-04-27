@@ -193,7 +193,7 @@ namespace DataInfo.Service.Managers.Ride
                         {
                             Result = true,
                             ResultCode = StatusCodes.Status200OK,
-                            ResultMessage = ResponseSuccessMessageType.UpdateSuccess.ToString()
+                            ResultMessage = ResponseSuccessMessageType.CreateSuccess.ToString()
                         };
 
                     case (int)CreateRideRecordResultType.Fail:
@@ -201,7 +201,7 @@ namespace DataInfo.Service.Managers.Ride
                         {
                             Result = false,
                             ResultCode = StatusCodes.Status409Conflict,
-                            ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
+                            ResultMessage = ResponseErrorMessageType.CreateFail.ToString()
                         };
 
                     default:

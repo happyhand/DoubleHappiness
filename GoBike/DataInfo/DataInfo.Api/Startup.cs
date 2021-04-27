@@ -8,22 +8,26 @@ using DataInfo.Core.Models.Dto.Team.Content;
 using DataInfo.Repository.Interfaces.Common;
 using DataInfo.Repository.Interfaces.Interactive;
 using DataInfo.Repository.Interfaces.Member;
+using DataInfo.Repository.Interfaces.Post;
 using DataInfo.Repository.Interfaces.Ride;
 using DataInfo.Repository.Interfaces.Team;
 using DataInfo.Repository.Managers.Common;
 using DataInfo.Repository.Managers.Interactive;
 using DataInfo.Repository.Managers.Member;
+using DataInfo.Repository.Managers.Post;
 using DataInfo.Repository.Managers.Ride;
 using DataInfo.Repository.Managers.Team;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Interactive;
 using DataInfo.Service.Interfaces.Member;
+using DataInfo.Service.Interfaces.Post;
 using DataInfo.Service.Interfaces.Ride;
 using DataInfo.Service.Interfaces.Server;
 using DataInfo.Service.Interfaces.Team;
 using DataInfo.Service.Managers.Common;
 using DataInfo.Service.Managers.Interactive;
 using DataInfo.Service.Managers.Member;
+using DataInfo.Service.Managers.Post;
 using DataInfo.Service.Managers.Ride;
 using DataInfo.Service.Managers.Server;
 using DataInfo.Service.Managers.Team;
@@ -110,6 +114,7 @@ namespace DataInfo.Api
             services.AddSingleton<ITeamInteractiveService, TeamInteractiveService>();
             services.AddSingleton<ITeamActivityService, TeamActivityService>();
             services.AddSingleton<ITeamBulletinService, TeamBulletinService>();
+            services.AddSingleton<IPostService, PostService>();
             services.AddSingleton<IUploadService, UploadService>();
             services.AddSingleton<IVerifyCodeService, VerifyCodeService>();
             services.AddSingleton<IServerService, ServerService>();
@@ -124,6 +129,7 @@ namespace DataInfo.Api
             services.AddSingleton<ITeamRepository, TeamRepository>();
             services.AddSingleton<ITeamActivityRepository, TeamActivityRepository>();
             services.AddSingleton<ITeamBulletinRepository, TeamBulletinRepository>();
+            services.AddSingleton<IPostRepository, PostRepository>();
             services.AddSingleton<IRedisRepository, RedisRepository>();
 
             #endregion Repository

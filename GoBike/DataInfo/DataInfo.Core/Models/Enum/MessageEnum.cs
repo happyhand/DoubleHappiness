@@ -216,6 +216,11 @@
         TeamIDEmpty,
 
         /// <summary>
+        /// 無貼文資料，請重新操作
+        /// </summary>
+        PostIDEmpty,
+
+        /// <summary>
         /// 無車隊活動資料，請重新操作
         /// </summary>
         ActIDEmpty,

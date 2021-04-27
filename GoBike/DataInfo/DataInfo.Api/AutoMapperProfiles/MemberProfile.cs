@@ -39,6 +39,7 @@ namespace DataInfo.AutoMapperProfiles
              .ForMember(view => view.Nickname, options => options.MapFrom(dao => string.IsNullOrEmpty(dao.Nickname) ? dao.MemberID : dao.Nickname));
             CreateMap<MemberDao, MemberDetailInfoView>()
              .ForMember(view => view.HasMobile, options => options.MapFrom(dao => string.IsNullOrEmpty(dao.Mobile) ? (int)BindMobileStatusType.None : (int)BindMobileStatusType.Bind))
+             .ForMember(view => view.Avatar, options => options.MapFrom(dao => Utility.GetMemberImageCdn(dao.Avatar)))
              .ForMember(view => view.FrontCover, options => options.MapFrom(dao => Utility.GetMemberImageCdn(dao.FrontCover)))
              .ForMember(view => view.Nickname, options => options.MapFrom(dao => string.IsNullOrEmpty(dao.Nickname) ? dao.MemberID : dao.Nickname));
 

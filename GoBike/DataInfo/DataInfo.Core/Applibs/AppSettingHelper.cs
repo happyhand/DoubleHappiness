@@ -318,6 +318,21 @@ namespace DataInfo.Core.Applibs
             public string Member { get; set; }
 
             /// <summary>
+            /// Gets or sets PostInfo
+            /// </summary>
+            public string PostInfo { get; set; }
+
+            /// <summary>
+            /// Gets or sets PostList
+            /// </summary>
+            public string PostList { get; set; }
+
+            /// <summary>
+            /// Gets or sets PostShowList
+            /// </summary>
+            public string PostShowList { get; set; }
+
+            /// <summary>
             /// Gets or sets RideGroup
             /// </summary>
             public string RideGroup { get; set; }
@@ -362,6 +377,11 @@ namespace DataInfo.Core.Applibs
             /// Gets or sets MemberDB
             /// </summary>
             public int MemberDB { get; set; }
+
+            /// <summary>
+            /// Gets or sets PostDB
+            /// </summary>
+            public int PostDB { get; set; }
 
             /// <summary>
             /// Gets or sets RideDB
@@ -480,6 +500,11 @@ namespace DataInfo.Core.Applibs
         public class CommandServerSetting
         {
             /// <summary>
+            /// Gets or sets Post
+            /// </summary>
+            public PostServerSetting Post { get; set; }
+
+            /// <summary>
             /// Gets or sets Ride
             /// </summary>
             public RideServerSetting Ride { get; set; }
@@ -498,6 +523,17 @@ namespace DataInfo.Core.Applibs
             /// Gets or sets User
             /// </summary>
             public UserServerSetting User { get; set; }
+        }
+
+        /// <summary>
+        /// PostServerSetting
+        /// </summary>
+        public class PostServerSetting
+        {
+            /// <summary>
+            /// Gets or sets ConnectionStrings
+            /// </summary>
+            public string ConnectionStrings { get; set; }
         }
 
         /// <summary>
