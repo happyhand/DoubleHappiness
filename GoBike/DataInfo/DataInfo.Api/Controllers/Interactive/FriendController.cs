@@ -45,16 +45,16 @@ namespace DataInfo.Api.Controllers.Interactive
         /// <summary>
         /// 會員好友 - 移除好友
         /// </summary>
-        /// <param name="targetID">targetID</param>
+        /// <param name="memberID">memberID</param>
         /// <returns>IActionResult</returns>
         [HttpDelete("{memberID}")]
-        public async Task<IActionResult> Delete(string targetID)
+        public async Task<IActionResult> Delete(string memberID)
         {
-            string memberID = this.GetMemberID();
+            string userID = this.GetMemberID();
             try
             {
-                this.logger.LogInfo("會員請求移除好友", $"MemberID: {memberID} TargetID: {targetID}", null);
-                if (string.IsNullOrEmpty(targetID))
+                this.logger.LogInfo("會員請求移除好友", $"MemberID: {userID} TargetID: {memberID}", null);
+                if (string.IsNullOrEmpty(memberID))
                 {
                     return this.ResponseHandler(new ResponseResult()
                     {
@@ -64,12 +64,12 @@ namespace DataInfo.Api.Controllers.Interactive
                     });
                 }
 
-                ResponseResult responseResult = await this.InteractiveService.UpdateInteractive(new InteractiveContent() { MemberID = targetID }, memberID, InteractiveType.Friend, ActionType.Delete).ConfigureAwait(false);
+                ResponseResult responseResult = await this.InteractiveService.UpdateInteractive(new InteractiveContent() { MemberID = memberID }, userID, InteractiveType.Friend, ActionType.Delete).ConfigureAwait(false);
                 return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員請求移除好友發生錯誤", $"MemberID: {memberID} TargetID: {targetID}", ex);
+                this.logger.LogError("會員請求移除好友發生錯誤", $"MemberID: {userID} TargetID: {memberID}", ex);
                 return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,

@@ -46,5 +46,10 @@ namespace DataInfo.Core.Models.Dto.Post.View
         /// Gets or sets 照片
         /// </summary>
         public IEnumerable<string> Photo { get; set; }
+
+        /// <summary>
+        /// Gets or sets 貼文 ID
+        /// </summary>
+        public string PostID { get; set; }
     }
 }

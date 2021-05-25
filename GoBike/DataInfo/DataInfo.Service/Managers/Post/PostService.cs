@@ -372,7 +372,8 @@ namespace DataInfo.Service.Managers.Post
                         IsLike = likeList.Contains(memberID) ? 1 : 0,
                         MemberID = memberDao.MemberID,
                         Nickname = memberDao.Nickname,
-                        Photo = JsonConvert.DeserializeObject<IEnumerable<string>>(dao.Photo).Select(img => Utility.GetRideImageCdn(img)),
+                        Photo = dao.Photo == "null" ? new List<string>() : JsonConvert.DeserializeObject<IEnumerable<string>>(dao.Photo).Select(img => Utility.GetRideImageCdn(img)),
+                        PostID = dao.PostID
                     };
                 });
 
@@ -427,7 +428,8 @@ namespace DataInfo.Service.Managers.Post
                         IsLike = likeList.Contains(memberID) ? 1 : 0,
                         MemberID = memberDao.MemberID,
                         Nickname = memberDao.Nickname,
-                        Photo = JsonConvert.DeserializeObject<IEnumerable<string>>(dao.Photo).Select(img => Utility.GetRideImageCdn(img)),
+                        Photo = dao.Photo == "null" ? new List<string>() : JsonConvert.DeserializeObject<IEnumerable<string>>(dao.Photo).Select(img => Utility.GetRideImageCdn(img)),
+                        PostID = dao.PostID
                     };
                 });
 

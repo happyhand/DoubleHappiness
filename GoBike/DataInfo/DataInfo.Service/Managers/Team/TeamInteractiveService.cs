@@ -7,6 +7,7 @@ using DataInfo.Core.Models.Dto.Server;
 using DataInfo.Core.Models.Dto.Team.Content;
 using DataInfo.Core.Models.Dto.Team.Request;
 using DataInfo.Core.Models.Dto.Team.Response;
+using DataInfo.Core.Models.Dto.Team.View;
 using DataInfo.Core.Models.Enum;
 using DataInfo.Repository.Interfaces.Team;
 using DataInfo.Service.Interfaces.Server;
@@ -133,11 +134,12 @@ namespace DataInfo.Service.Managers.Team
                 switch (response.Data.Result)
                 {
                     case (int)UpdateApplyJoinListResultType.Success:
+                        TeamDao dao = await this.teamRepository.Get(content.TeamID).ConfigureAwait(false);
                         return new ResponseResult()
                         {
                             Result = true,
                             ResultCode = StatusCodes.Status200OK,
-                            ResultMessage = ResponseSuccessMessageType.ApplySuccess.ToString()
+                            Content = new TeamApplyJoinView() { ExamineStatus = dao.ExamineStatus }
                         };
 
                     case (int)UpdateApplyJoinListResultType.Fail:

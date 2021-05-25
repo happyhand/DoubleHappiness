@@ -31,5 +31,10 @@ namespace DataInfo.Core.Models.Dao.Post
         /// Gets or sets 照片
         /// </summary>
         public string Photo { get; set; }
+
+        /// <summary>
+        /// Gets or sets 貼文 ID
+        /// </summary>
+        public string PostID { get; set; }
     }
 }

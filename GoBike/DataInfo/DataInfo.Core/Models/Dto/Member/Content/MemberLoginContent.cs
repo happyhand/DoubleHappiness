@@ -39,11 +39,11 @@ namespace DataInfo.Core.Models.Dto.Member.Content
               .NotEmpty().WithMessage(content =>
               {
                   return $"{ResponseErrorMessageType.EmailEmpty}";
-              })
-              .EmailAddress().WithMessage(content =>
-              {
-                  return $"{ResponseErrorMessageType.EmailFormatError}|Email: {content.Email}";
               });
+            //.EmailAddress().WithMessage(content =>
+            //{
+            //    return $"{ResponseErrorMessageType.EmailFormatError}|Email: {content.Email}";
+            //});
             RuleFor(content => content.Password)
               .NotNull().WithMessage(content =>
               {
@@ -52,11 +52,11 @@ namespace DataInfo.Core.Models.Dto.Member.Content
               .NotEmpty().WithMessage(content =>
               {
                   return $"{ResponseErrorMessageType.PasswordEmpty}";
-              })
-              .Must(password => { return Utility.ValidatePassword(password); }).WithMessage(content =>
-              {
-                  return $"{ResponseErrorMessageType.PasswordFormatError}|Password: {content.Password}";
               });
+            //.Must(password => { return Utility.ValidatePassword(password); }).WithMessage(content =>
+            //{
+            //    return $"{ResponseErrorMessageType.PasswordFormatError}|Password: {content.Password}";
+            //});
         }
     }
 }

@@ -52,7 +52,14 @@ namespace DataInfo.Repository.Managers.Post
                 }
                 IEnumerable<string> cacheKeys = postIDs.Select(id => $"{AppSettingHelper.Appsetting.Redis.Flag.PostInfo}_{id}");
                 Dictionary<string, PostInfoDao> postInfoDaoMap = await this.redisRepository.GetCache<PostInfoDao>(AppSettingHelper.Appsetting.Redis.PostDB, cacheKeys).ConfigureAwait(false);
-                return postInfoDaoMap.Values;
+                IEnumerable<PostInfoDao> values = postInfoDaoMap.Keys.Select(key =>
+                {
+                    PostInfoDao dao = postInfoDaoMap[key];
+                    dao.PostID = key.Replace($"{AppSettingHelper.Appsetting.Redis.Flag.PostInfo}_", string.Empty);
+                    return dao;
+                });
+
+                return values;
             }
             catch (Exception ex)
             {
