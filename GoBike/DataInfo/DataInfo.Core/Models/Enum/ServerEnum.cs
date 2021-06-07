@@ -34,6 +34,22 @@
     #region 會員
 
     /// <summary>
+    /// 取得新增好友名單結果類別資料
+    /// </summary>
+    public enum GetNewFriendListResultType
+    {
+        /// <summary>
+        /// 取得失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 取得成功
+        /// </summary>
+        Success = 1,
+    }
+
+    /// <summary>
     /// 更新互動結果類別資料
     /// </summary>
     public enum UpdateInteractiveResultType
@@ -140,7 +156,12 @@
         /// <summary>
         /// 更新推播 Token
         /// </summary>
-        UpdateNotifyToken = 1007
+        UpdateNotifyToken = 1007,
+
+        /// <summary>
+        /// 取得新增好友名單
+        /// </summary>
+        GetNewFriendList = 1008
     }
 
     /// <summary>

@@ -133,38 +133,66 @@ namespace DataInfo.Service.Managers.Interactive
         {
             try
             {
-                string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Interactive}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.Friend}";
-                //List<IEnumerable<MemberSimpleInfoView>> memberSimpleInfoViews = await this.redisRepository.GetCache<List<IEnumerable<MemberSimpleInfoView>>>(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey).ConfigureAwait(false);
-                List<IEnumerable<MemberSimpleInfoView>> memberSimpleInfoViews = null;
-                if (memberSimpleInfoViews == null)
+                #region 發送【取得新增好友名單結果】指令至後端
+
+                GetNewFriendListRequest request = new GetNewFriendListRequest()
                 {
-                    Task<IEnumerable<string>> friendIDListTask = this.interactiveRepository.GetFriendList(memberID);
-                    Task<IEnumerable<string>> beFriendIDListTask = this.interactiveRepository.GetBeFriendList(memberID);
+                    MemberID = memberID
+                };
+                CommandData<GetNewFriendListResponse> response = await this.serverService.DoAction<GetNewFriendListResponse>((int)UserCommandIDType.GetNewFriendList, CommandType.User, request).ConfigureAwait(false);
 
-                    IEnumerable<string> friendIDList = await friendIDListTask.ConfigureAwait(false);
-                    IEnumerable<string> beFriendIDList = await beFriendIDListTask.ConfigureAwait(false);
-                    beFriendIDList = beFriendIDList.Where(id => !friendIDList.Contains(id));
+                this.logger.LogInfo("取得新增好友名單結果結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)}", null);
 
-                    Task<IEnumerable<MemberDao>> friendDaoListTask = this.memberRepository.Get(friendIDList, null);
-                    Task<IEnumerable<MemberDao>> beFriendDaoListTask = this.memberRepository.Get(beFriendIDList, null);
+                switch (response.Data.Result)
+                {
+                    case (int)GetNewFriendListResultType.Success:
 
-                    IEnumerable<MemberDao> friendDaoList = await friendDaoListTask.ConfigureAwait(false);
-                    IEnumerable<MemberDao> beFriendDaoList = await beFriendDaoListTask.ConfigureAwait(false);
+                        string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.Interactive}-{memberID}-{AppSettingHelper.Appsetting.Redis.SubFlag.Friend}";
+                        //List<IEnumerable<MemberSimpleInfoView>> memberSimpleInfoViews = await this.redisRepository.GetCache<List<IEnumerable<MemberSimpleInfoView>>>(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey).ConfigureAwait(false);
+                        List<IEnumerable<MemberSimpleInfoView>> memberSimpleInfoViews = null;
+                        if (memberSimpleInfoViews == null)
+                        {
+                            Task<IEnumerable<string>> friendIDListTask = this.interactiveRepository.GetFriendList(memberID);
+                            IEnumerable<string> friendIDList = await friendIDListTask.ConfigureAwait(false);
+                            Task<IEnumerable<MemberDao>> newFriendDaoListTask = this.memberRepository.Get(JsonConvert.DeserializeObject<IEnumerable<string>>(response.Data.FriendList), null);
+                            Task<IEnumerable<MemberDao>> friendDaoListTask = this.memberRepository.Get(friendIDList, null);
 
-                    memberSimpleInfoViews = new List<IEnumerable<MemberSimpleInfoView>>
-                    {
-                        await this.memberService.TransformMemberSimpleInfoView(friendDaoList).ConfigureAwait(false),
-                        await this.memberService.TransformMemberSimpleInfoView(beFriendDaoList).ConfigureAwait(false),
-                    };
-                    //this.redisRepository.SetCache(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey, JsonConvert.SerializeObject(memberSimpleInfoViews), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
+                            IEnumerable<MemberDao> newFriendDaoList = await newFriendDaoListTask.ConfigureAwait(false);
+                            IEnumerable<MemberDao> friendDaoList = await friendDaoListTask.ConfigureAwait(false);
+
+                            memberSimpleInfoViews = new List<IEnumerable<MemberSimpleInfoView>>
+                            {
+                                await this.memberService.TransformMemberSimpleInfoView(newFriendDaoList).ConfigureAwait(false),
+                                await this.memberService.TransformMemberSimpleInfoView(friendDaoList).ConfigureAwait(false),
+                            };
+                            //this.redisRepository.SetCache(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey, JsonConvert.SerializeObject(memberSimpleInfoViews), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
+                        }
+
+                        return new ResponseResult()
+                        {
+                            Result = true,
+                            ResultCode = StatusCodes.Status200OK,
+                            Content = memberSimpleInfoViews
+                        };
+
+                    case (int)GetNewFriendListResultType.Fail:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultMessage = ResponseErrorMessageType.CreateFail.ToString()
+                        };
+
+                    default:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = StatusCodes.Status502BadGateway,
+                            ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                        };
                 }
 
-                return new ResponseResult()
-                {
-                    Result = true,
-                    ResultCode = StatusCodes.Status200OK,
-                    Content = memberSimpleInfoViews
-                };
+                #endregion 發送【取得新增好友名單結果】指令至後端
             }
             catch (Exception ex)
             {

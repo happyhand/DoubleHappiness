@@ -367,7 +367,7 @@ namespace DataInfo.Service.Managers.Post
                     {
                         Avatar = Utility.GetMemberImageCdn(memberDao.Avatar),
                         Content = dao.Content,
-                        CreateDate = dao.Content,
+                        CreateDate = dao.CreateDate,
                         Like = likeList.Count(),
                         IsLike = likeList.Contains(memberID) ? 1 : 0,
                         MemberID = memberDao.MemberID,
@@ -423,7 +423,7 @@ namespace DataInfo.Service.Managers.Post
                     {
                         Avatar = Utility.GetMemberImageCdn(memberDao.Avatar),
                         Content = dao.Content,
-                        CreateDate = dao.Content,
+                        CreateDate = dao.CreateDate,
                         Like = likeList.Count(),
                         IsLike = likeList.Contains(memberID) ? 1 : 0,
                         MemberID = memberDao.MemberID,
