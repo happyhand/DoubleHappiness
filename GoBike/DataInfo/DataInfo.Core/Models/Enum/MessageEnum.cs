@@ -16,6 +16,11 @@
         MemberIDEmpty,
 
         /// <summary>
+        /// 請輸入 Token
+        /// </summary>
+        TokenEmpty,
+
+        /// <summary>
         /// 請輸入電子郵件
         /// </summary>
         EmailEmpty,
@@ -109,6 +114,11 @@
         /// 系統拒絕登入，請稍後再試
         /// </summary>
         LoginFail,
+
+        /// <summary>
+        /// 登入來源錯誤，請稍後再試
+        /// </summary>
+        LoginSourceFail,
 
         /// <summary>
         /// 資料建立失敗，請稍後再試

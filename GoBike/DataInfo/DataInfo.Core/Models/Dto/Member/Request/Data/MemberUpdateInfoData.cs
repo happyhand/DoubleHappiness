@@ -30,6 +30,11 @@ namespace DataInfo.Core.Models.Dto.Member.Request.Data
         public double BodyWeight { get; set; }
 
         /// <summary>
+        /// Gets or sets 信箱
+        /// </summary>
+        public string Email { get; set; }
+
+        /// <summary>
         /// Gets or sets 封面圖片
         /// </summary>
         public string FrontCover { get; set; }

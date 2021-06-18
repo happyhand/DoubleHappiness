@@ -234,81 +234,6 @@ namespace DataInfo.Service.Managers.Member
         }
 
         /// <summary>
-        /// 會員註冊
-        /// </summary>
-        /// <param name="content">content</param>
-        /// <param name="fbToken">fbToken</param>
-        /// <param name="googleToken">googleToken</param>
-        /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> Register(MemberRegisterContent content, string fbToken, string googleToken)
-        {
-            try
-            {
-                #region 發送【使用者註冊】指令至後端
-
-                MemberRegisterRequest request = new MemberRegisterRequest()
-                {
-                    Email = content.Email,
-                    Password = content.Password,
-                    CheckPassword = content.ConfirmPassword,
-                    FBToken = fbToken,
-                    GoogleToken = googleToken,
-                    RegisterSource = string.IsNullOrEmpty(fbToken) ? string.IsNullOrEmpty(googleToken) ? (int)RegisterSourceType.Normal : (int)RegisterSourceType.Google : (int)RegisterSourceType.FB
-                };
-
-                CommandData<MemberRegisterResponse> response = await this.serverService.DoAction<MemberRegisterResponse>((int)UserCommandIDType.UserRegistered, CommandType.User, request).ConfigureAwait(false);
-                this.logger.LogInfo("會員註冊結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)}", null);
-                switch (response.Data.Result)
-                {
-                    case (int)UserRegisteredResultType.Success:
-                        return new ResponseResult()
-                        {
-                            Result = true,
-                            ResultCode = StatusCodes.Status200OK
-                        };
-
-                    case (int)UserRegisteredResultType.Fail:
-                    case (int)UserRegisteredResultType.EmailError:
-                    case (int)UserRegisteredResultType.PasswordError:
-                        return new ResponseResult()
-                        {
-                            Result = false,
-                            ResultCode = StatusCodes.Status409Conflict,
-                            ResultMessage = ResponseErrorMessageType.RegisterFail.ToString()
-                        };
-
-                    case (int)UserRegisteredResultType.Repeat:
-                        return new ResponseResult()
-                        {
-                            Result = false,
-                            ResultCode = StatusCodes.Status409Conflict,
-                            ResultMessage = ResponseErrorMessageType.EmailRepeat.ToString()
-                        };
-
-                    default:
-                        return new ResponseResult()
-                        {
-                            Result = false,
-                            ResultCode = StatusCodes.Status502BadGateway,
-                            ResultMessage = ResponseErrorMessageType.SystemError.ToString()
-                        };
-                }
-
-                #endregion 發送【使用者註冊】指令至後端
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("會員註冊發生錯誤", $"Content: {JsonConvert.SerializeObject(content)} FbToken: {fbToken} GoogleToken: {googleToken}", ex);
-                return new ResponseResult()
-                {
-                    Result = false,
-                    ResultCode = StatusCodes.Status500InternalServerError,
-                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
-                };
-            }
-        }
-
-        /// <summary>
         /// 會員重新登入
         /// </summary>
         /// <param name="memberID">memberID</param>
@@ -453,6 +378,16 @@ namespace DataInfo.Service.Managers.Member
             if (content.BodyWeight > 0)
             {
                 memberUpdateInfoData.BodyWeight = content.BodyWeight;
+            }
+
+            if (!string.IsNullOrEmpty(content.Email))
+            {
+                if (!Utility.ValidateEmail(content.Email))
+                {
+                    return Tuple.Create<string, MemberEditInfoRequest>(ResponseErrorMessageType.EmailFormatError.ToString(), null);
+                }
+
+                memberUpdateInfoData.Email = content.Email;
             }
 
             if (content.Gender > (int)GenderType.None)
@@ -818,72 +753,6 @@ namespace DataInfo.Service.Managers.Member
         }
 
         /// <summary>
-        /// 重置會員密碼
-        /// </summary>
-        /// <param name="content">content</param>
-        /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> ResetPassword(MemberForgetPasswordContent content)
-        {
-            try
-            {
-                #region 驗證資料
-
-                ResponseResult validateVerifyCodeResult = await this.verifyCodeService.Validate(content.Email, content.VerifierCode, false).ConfigureAwait(false);
-                if (!validateVerifyCodeResult.Result)
-                {
-                    this.logger.LogWarn("重置會員密碼失敗，驗證碼錯誤", $"ResultCode: {validateVerifyCodeResult.ResultCode} ResultMessage: {validateVerifyCodeResult.ResultMessage} Content: {JsonConvert.SerializeObject(content)}", null);
-                    return validateVerifyCodeResult;
-                }
-
-                #endregion 驗證資料
-
-                #region 取得會員資料
-
-                MemberDao memberDao = await this.memberRepository.Get(content.Email, MemberSearchType.Email).ConfigureAwait(false);
-                if (memberDao == null)
-                {
-                    this.logger.LogWarn("重置會員密碼失敗，無會員資料", $"Content: {JsonConvert.SerializeObject(content)}", null);
-                    return new ResponseResult()
-                    {
-                        Result = false,
-                        ResultCode = StatusCodes.Status409Conflict,
-                        ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
-                    };
-                }
-
-                #endregion 取得會員資料
-
-                #region 更新密碼
-
-                MemberUpdatePasswordContent memberUpdatePasswordContent = this.mapper.Map<MemberUpdatePasswordContent>(content);
-                ResponseResult responseResult = await this.UpdatePassword(memberUpdatePasswordContent, memberDao.MemberID, true).ConfigureAwait(false);
-
-                #endregion 更新密碼
-
-                #region 刪除 Redis 驗證碼
-
-                if (responseResult.Result)
-                {
-                    this.verifyCodeService.Delete(content.VerifierCode);
-                }
-
-                #endregion 刪除 Redis 驗證碼
-
-                return responseResult;
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("重置會員密碼發生錯誤", $"Content: {JsonConvert.SerializeObject(content)}", ex);
-                return new ResponseResult()
-                {
-                    Result = false,
-                    ResultCode = StatusCodes.Status500InternalServerError,
-                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
-                };
-            }
-        }
-
-        /// <summary>
         /// 搜尋會員
         /// </summary>
         /// <param name="searchKey">searchKey</param>
@@ -1213,77 +1082,6 @@ namespace DataInfo.Service.Managers.Member
             catch (Exception ex)
             {
                 this.logger.LogError("會員更新推播 Token 發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
-                return new ResponseResult()
-                {
-                    Result = false,
-                    ResultCode = StatusCodes.Status500InternalServerError,
-                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
-                };
-            }
-        }
-
-        /// <summary>
-        /// 會員更新密碼
-        /// </summary>
-        /// <param name="content">content</param>
-        /// <param name="memberID">memberID</param>
-        /// <param name="isIgnoreOldPassword">isIgnoreOldPassword</param>
-        /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> UpdatePassword(MemberUpdatePasswordContent content, string memberID, bool isIgnoreOldPassword)
-        {
-            try
-            {
-                #region 發送【更新密碼】指令至後端
-
-                MemberUpdatePasswordRequest request = new MemberUpdatePasswordRequest()
-                {
-                    MemberID = memberID,
-                    Password = content.Password,
-                    NewPassword = content.NewPassword,
-                    Action = isIgnoreOldPassword ? (int)UpdatePasswordActionType.Forget : (int)UpdatePasswordActionType.Update
-                };
-                CommandData<MemberEditInfoResponse> response = await this.serverService.DoAction<MemberEditInfoResponse>((int)UserCommandIDType.UpdatePassword, CommandType.User, request).ConfigureAwait(false);
-                this.logger.LogInfo("會員更新密碼結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)}", null);
-                switch (response.Data.Result)
-                {
-                    case (int)UpdatePasswordResultType.Success:
-                        return new ResponseResult()
-                        {
-                            Result = true,
-                            ResultCode = StatusCodes.Status200OK,
-                            ResultMessage = ResponseSuccessMessageType.UpdatePasswordSuccess.ToString()
-                        };
-
-                    case (int)UpdatePasswordResultType.Fail:
-                        return new ResponseResult()
-                        {
-                            Result = false,
-                            ResultCode = StatusCodes.Status409Conflict,
-                            ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
-                        };
-
-                    case (int)UpdatePasswordResultType.OldPasswordError:
-                        return new ResponseResult()
-                        {
-                            Result = false,
-                            ResultCode = StatusCodes.Status409Conflict,
-                            ResultMessage = ResponseErrorMessageType.OldPasswordError.ToString()
-                        };
-
-                    default:
-                        return new ResponseResult()
-                        {
-                            Result = false,
-                            ResultCode = StatusCodes.Status502BadGateway,
-                            ResultMessage = ResponseErrorMessageType.SystemError.ToString()
-                        };
-                }
-
-                #endregion 發送【更新密碼】指令至後端
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError("會員更新密碼發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)} IsIgnoreOldPassword: {isIgnoreOldPassword}", ex);
                 return new ResponseResult()
                 {
                     Result = false,

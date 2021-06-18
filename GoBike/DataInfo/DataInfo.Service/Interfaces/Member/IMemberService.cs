@@ -29,15 +29,6 @@ namespace DataInfo.Service.Interfaces.Member
         Task<ResponseResult> Login(MemberLoginContent content);
 
         /// <summary>
-        /// 會員註冊
-        /// </summary>
-        /// <param name="content">content</param>
-        /// <param name="fbToken">fbToken</param>
-        /// <param name="googleToken">googleToken</param>
-        /// <returns>ResponseResult</returns>
-        Task<ResponseResult> Register(MemberRegisterContent content, string fbToken, string googleToken);
-
-        /// <summary>
         /// 會員重新登入
         /// </summary>
         /// <param name="memberID">memberID</param>
@@ -88,13 +79,6 @@ namespace DataInfo.Service.Interfaces.Member
         Task<ResponseResult> MobileBind(MemberMobileBindContent content, string memberID, string email);
 
         /// <summary>
-        /// 重置會員密碼
-        /// </summary>
-        /// <param name="content">content</param>
-        /// <returns>ResponseResult</returns>
-        Task<ResponseResult> ResetPassword(MemberForgetPasswordContent content);
-
-        /// <summary>
         /// 搜尋會員
         /// </summary>
         /// <param name="searchKey">searchKey</param>
@@ -140,15 +124,6 @@ namespace DataInfo.Service.Interfaces.Member
         /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>
         Task<ResponseResult> UpdateNotifyToken(MemberUpdateNotifyTokenContent content, string memberID);
-
-        /// <summary>
-        /// 會員更新密碼
-        /// </summary>
-        /// <param name="content">content</param>
-        /// <param name="memberID">memberID</param>
-        /// <param name="isIgnoreOldPassword">isIgnoreOldPassword</param>
-        /// <returns>ResponseResult</returns>
-        Task<ResponseResult> UpdatePassword(MemberUpdatePasswordContent content, string memberID, bool isIgnoreOldPassword);
 
         #endregion 會員資料
     }

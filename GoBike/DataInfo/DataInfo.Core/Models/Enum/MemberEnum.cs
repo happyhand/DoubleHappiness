@@ -79,6 +79,27 @@
     }
 
     /// <summary>
+    /// 會員登入來源類別資料
+    /// </summary>
+    public enum LoginSourceType
+    {
+        /// <summary>
+        /// 一般註冊
+        /// </summary>
+        Normal = 0,
+
+        /// <summary>
+        /// FB
+        /// </summary>
+        FB = 1,
+
+        /// <summary>
+        /// Google
+        /// </summary>
+        Google = 2
+    }
+
+    /// <summary>
     /// 會員註冊來源類別資料
     /// </summary>
     public enum RegisterSourceType

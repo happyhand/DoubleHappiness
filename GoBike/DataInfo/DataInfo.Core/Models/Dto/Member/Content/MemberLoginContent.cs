@@ -10,14 +10,29 @@ namespace DataInfo.Core.Models.Dto.Member.Content
     public class MemberLoginContent
     {
         /// <summary>
-        /// Gets or sets Email
+        /// Gets or sets 頭像路徑
+        /// </summary>
+        public string Avatar { get; set; }
+
+        /// <summary>
+        /// Gets or sets 信箱
         /// </summary>
         public string Email { get; set; }
 
         /// <summary>
-        /// Gets or sets Password
+        /// Gets or sets 登入來源
         /// </summary>
-        public string Password { get; set; }
+        public int LoginSource { get; set; }
+
+        /// <summary>
+        /// Gets or sets 暱稱
+        /// </summary>
+        public string NickName { get; set; }
+
+        /// <summary>
+        /// Gets or sets FireBase認證用的Token
+        /// </summary>
+        public string Token { get; set; }
     }
 
     /// <summary>
@@ -31,28 +46,45 @@ namespace DataInfo.Core.Models.Dto.Member.Content
         public MemberLoginContentValidator()
         {
             this.CascadeMode = CascadeMode.StopOnFirstFailure;
-            RuleFor(content => content.Email)
-              .NotNull().WithMessage(content =>
+            RuleFor(content => content.Token)
+                .NotNull().WithMessage(content =>
+                {
+                    return $"{ResponseErrorMessageType.TokenEmpty}";
+                })
+                .NotEmpty().WithMessage(content =>
+                {
+                    return $"{ResponseErrorMessageType.TokenEmpty}";
+                });
+            RuleFor(content => content.LoginSource)
+              .Must(loginSource =>
               {
-                  return $"{ResponseErrorMessageType.EmailEmpty}";
-              })
-              .NotEmpty().WithMessage(content =>
+                  return loginSource >= (int)LoginSourceType.Normal && loginSource <= (int)LoginSourceType.Google;
+              }).WithMessage(content =>
               {
-                  return $"{ResponseErrorMessageType.EmailEmpty}";
+                  return $"{ResponseErrorMessageType.LoginSourceFail}|LoginSource: {content.LoginSource}";
               });
+            //RuleFor(content => content.Email)
+            //  .NotNull().WithMessage(content =>
+            //  {
+            //      return $"{ResponseErrorMessageType.EmailEmpty}";
+            //  })
+            //  .NotEmpty().WithMessage(content =>
+            //  {
+            //      return $"{ResponseErrorMessageType.EmailEmpty}";
+            //  });
             //.EmailAddress().WithMessage(content =>
             //{
             //    return $"{ResponseErrorMessageType.EmailFormatError}|Email: {content.Email}";
             //});
-            RuleFor(content => content.Password)
-              .NotNull().WithMessage(content =>
-              {
-                  return $"{ResponseErrorMessageType.PasswordEmpty}";
-              })
-              .NotEmpty().WithMessage(content =>
-              {
-                  return $"{ResponseErrorMessageType.PasswordEmpty}";
-              });
+            //RuleFor(content => content.Password)
+            //  .NotNull().WithMessage(content =>
+            //  {
+            //      return $"{ResponseErrorMessageType.PasswordEmpty}";
+            //  })
+            //  .NotEmpty().WithMessage(content =>
+            //  {
+            //      return $"{ResponseErrorMessageType.PasswordEmpty}";
+            //  });
             //.Must(password => { return Utility.ValidatePassword(password); }).WithMessage(content =>
             //{
             //    return $"{ResponseErrorMessageType.PasswordFormatError}|Password: {content.Password}";

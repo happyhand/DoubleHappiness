@@ -124,44 +124,34 @@
     public enum UserCommandIDType
     {
         /// <summary>
-        /// 使用者註冊
-        /// </summary>
-        UserRegistered = 1001,
-
-        /// <summary>
         /// 使用者登入
         /// </summary>
-        UserLogin = 1002,
+        UserLogin = 1001,
 
         /// <summary>
         /// 更新使用者資訊
         /// </summary>
-        UpdateUserInfo = 1003,
-
-        /// <summary>
-        /// 更新密碼
-        /// </summary>
-        UpdatePassword = 1004,
+        UpdateUserInfo = 1002,
 
         /// <summary>
         /// 更新朋友列表
         /// </summary>
-        UpdateFriendList = 1005,
+        UpdateFriendList = 1003,
 
         /// <summary>
         /// 更新黑名單列表
         /// </summary>
-        UpdateBlackList = 1006,
+        UpdateBlackList = 1004,
 
         /// <summary>
         /// 更新推播 Token
         /// </summary>
-        UpdateNotifyToken = 1007,
+        UpdateNotifyToken = 1005,
 
         /// <summary>
         /// 取得新增好友名單
         /// </summary>
-        GetNewFriendList = 1008
+        GetNewFriendList = 1006
     }
 
     /// <summary>
