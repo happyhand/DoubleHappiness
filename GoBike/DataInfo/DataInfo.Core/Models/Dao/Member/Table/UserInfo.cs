@@ -36,6 +36,11 @@
         public int County { get; set; }
 
         /// <summary>
+        /// Gets or sets Email
+        /// </summary>
+        public string Email { get; set; }
+
+        /// <summary>
         /// Gets or sets FriendList
         /// </summary>
         public string FriendList { get; set; }
@@ -44,11 +49,6 @@
         /// Gets or sets FrontCover
         /// </summary>
         public string FrontCover { get; set; }
-
-        /// <summary>
-        /// Gets or sets SpecificationModel
-        /// </summary>
-        public string SpecificationModel { get; set; }
 
         /// <summary>
         /// Gets or sets Gender
@@ -74,6 +74,11 @@
         /// Gets or sets Photo
         /// </summary>
         public string Photo { get; set; }
+
+        /// <summary>
+        /// Gets or sets SpecificationModel
+        /// </summary>
+        public string SpecificationModel { get; set; }
 
         /// <summary>
         /// Gets or sets TeamList

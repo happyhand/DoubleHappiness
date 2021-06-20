@@ -61,7 +61,7 @@ namespace DataInfo.Repository.Managers.Member
                             break;
 
                         case MemberSearchType.Email:
-                            query = query.Where((ua, ui) => ua.Email.Equals(key));
+                            query = query.Where((ua, ui) => ui.Email.Equals(key));
                             break;
 
                         case MemberSearchType.Nickname:
@@ -143,11 +143,11 @@ namespace DataInfo.Repository.Managers.Member
                     ISugarQueryable<UserAccount, UserInfo> query = db.Queryable<UserAccount, UserInfo>((ua, ui) => ua.MemberID.Equals(ui.MemberID));
                     if (isFuzzy)
                     {
-                        query = query.Where((ua, ui) => ua.Email.Contains(key) || (!string.IsNullOrEmpty(ui.NickName) && ui.NickName.Contains(key)));
+                        query = query.Where((ua, ui) => ui.Email.Contains(key) || (!string.IsNullOrEmpty(ui.NickName) && ui.NickName.Contains(key)));
                     }
                     else
                     {
-                        query = query.Where((ua, ui) => ua.Email.Equals(key) || (!string.IsNullOrEmpty(ui.NickName) && ui.NickName.Equals(key)));
+                        query = query.Where((ua, ui) => ui.Email.Equals(key) || (!string.IsNullOrEmpty(ui.NickName) && ui.NickName.Equals(key)));
                     }
 
                     query = query.Where(ua => ignoreMemberIDs == null || !ignoreMemberIDs.Contains(ua.MemberID));
@@ -176,11 +176,9 @@ namespace DataInfo.Repository.Managers.Member
                 BodyHeight = ui.BodyHeight,
                 BodyWeight = ui.BodyWeight,
                 County = ui.County,
-                Email = ua.Email,
-                FBToken = ua.FBToken,
+                Email = ui.Email,
                 FrontCover = ui.FrontCover,
                 Gender = ui.Gender,
-                GoogleToken = ua.GoogleToken,
                 MemberID = ua.MemberID,
                 Mobile = ui.Mobile,
                 Nickname = ui.NickName,

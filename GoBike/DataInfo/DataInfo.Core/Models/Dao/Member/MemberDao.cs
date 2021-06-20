@@ -53,11 +53,6 @@ namespace DataInfo.Core.Models.Dao.Member
         public string Email { get; set; }
 
         /// <summary>
-        /// Gets or sets FB認證碼
-        /// </summary>
-        public string FBToken { get; set; }
-
-        /// <summary>
         /// Gets or sets 好友列表
         /// </summary>
         public IEnumerable<string> FriendList { get { return JsonConvert.DeserializeObject<IEnumerable<string>>(this.FriendListDataJson); } }
@@ -76,11 +71,6 @@ namespace DataInfo.Core.Models.Dao.Member
         /// Gets or sets 性別
         /// </summary>
         public int Gender { get; set; }
-
-        /// <summary>
-        /// Gets or sets Google認證碼
-        /// </summary>
-        public string GoogleToken { get; set; }
 
         /// <summary>
         /// Gets or sets MemberID
