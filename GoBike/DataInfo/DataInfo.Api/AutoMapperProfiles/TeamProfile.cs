@@ -60,7 +60,8 @@ namespace DataInfo.AutoMapperProfiles
                 .ForMember(view => view.Avatar, options => options.MapFrom(dao => Utility.GetTeamImageCdn(dao.Avatar)))
                 .ForMember(view => view.FrontCover, options => options.MapFrom(dao => Utility.GetTeamImageCdn(dao.FrontCover)));
             CreateMap<TeamDao, TeamSettingView>()
-                .ForMember(view => view.Avatar, options => options.MapFrom(dao => Utility.GetTeamImageCdn(dao.Avatar)));
+                .ForMember(view => view.Avatar, options => options.MapFrom(dao => Utility.GetTeamImageCdn(dao.Avatar)))
+                .ForMember(view => view.FrontCover, options => options.MapFrom(dao => Utility.GetTeamImageCdn(dao.FrontCover)));
             CreateMap<TeamDao, TeamSearchView>()
                 .ForMember(view => view.Avatar, options => options.MapFrom(dao => Utility.GetTeamImageCdn(dao.Avatar)));
             CreateMap<TeamActivityDao, TeamActivityListView>()

@@ -38,7 +38,7 @@
         /// <summary>
         /// 電子郵件與密碼不符合，請重新輸入
         /// </summary>
-        EmailOrPasswordNotMatch,
+        AccountOrPasswordNotMatch,
 
         /// <summary>
         /// 電子郵件不存在，請重新輸入

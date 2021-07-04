@@ -272,6 +272,11 @@ namespace DataInfo.Core.Applibs
                 return "";
             }
 
+            if (path.IndexOf("http://") != -1 || path.IndexOf("https://") != -1)
+            {
+                return path;
+            }
+
             return $"{AppSettingHelper.Appsetting.CdnServer.Domain}{AppSettingHelper.Appsetting.UploadServer.Member.Path}{path}";
         }
 
@@ -284,6 +289,11 @@ namespace DataInfo.Core.Applibs
             if (string.IsNullOrEmpty(path))
             {
                 return "";
+            }
+
+            if (path.IndexOf("http://") != -1 || path.IndexOf("https://") != -1)
+            {
+                return path;
             }
 
             return $"{AppSettingHelper.Appsetting.CdnServer.Domain}{AppSettingHelper.Appsetting.UploadServer.Ride.Path}{path}";
@@ -300,6 +310,11 @@ namespace DataInfo.Core.Applibs
                 return "";
             }
 
+            if (path.IndexOf("http://") != -1 || path.IndexOf("https://") != -1)
+            {
+                return path;
+            }
+
             return $"{AppSettingHelper.Appsetting.CdnServer.Domain}{AppSettingHelper.Appsetting.UploadServer.TeamActivity.Path}{path}";
         }
 
@@ -312,6 +327,11 @@ namespace DataInfo.Core.Applibs
             if (string.IsNullOrEmpty(path))
             {
                 return "";
+            }
+
+            if (path.IndexOf("http://") != -1 || path.IndexOf("https://") != -1)
+            {
+                return path;
             }
 
             return $"{AppSettingHelper.Appsetting.CdnServer.Domain}{AppSettingHelper.Appsetting.UploadServer.Team.Path}{path}";

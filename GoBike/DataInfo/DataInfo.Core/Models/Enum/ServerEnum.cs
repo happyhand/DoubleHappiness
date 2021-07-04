@@ -172,7 +172,7 @@
         /// <summary>
         /// 帳號錯誤
         /// </summary>
-        EmailError = 2,
+        AccountError = 2,
 
         /// <summary>
         /// 密碼錯誤

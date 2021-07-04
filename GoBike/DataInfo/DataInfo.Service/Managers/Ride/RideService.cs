@@ -200,7 +200,7 @@ namespace DataInfo.Service.Managers.Ride
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultCode = StatusCodes.Status500InternalServerError,
                             ResultMessage = ResponseErrorMessageType.CreateFail.ToString()
                         };
 
@@ -454,7 +454,7 @@ namespace DataInfo.Service.Managers.Ride
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultCode = StatusCodes.Status500InternalServerError,
                             ResultMessage = ResponseErrorMessageType.ReplyFail.ToString()
                         };
 
@@ -515,7 +515,7 @@ namespace DataInfo.Service.Managers.Ride
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultCode = StatusCodes.Status500InternalServerError,
                             ResultMessage = ResponseErrorMessageType.NotifyFail.ToString()
                         };
 
@@ -578,7 +578,7 @@ namespace DataInfo.Service.Managers.Ride
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultCode = StatusCodes.Status500InternalServerError,
                             ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
                         };
 
@@ -666,7 +666,7 @@ namespace DataInfo.Service.Managers.Ride
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultCode = StatusCodes.Status500InternalServerError,
                             ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
                         };
 
@@ -728,7 +728,7 @@ namespace DataInfo.Service.Managers.Ride
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultCode = StatusCodes.Status500InternalServerError,
                             ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
                         };
 

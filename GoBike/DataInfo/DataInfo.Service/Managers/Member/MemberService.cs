@@ -197,17 +197,17 @@ namespace DataInfo.Service.Managers.Member
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultCode = StatusCodes.Status500InternalServerError,
                             ResultMessage = ResponseErrorMessageType.LoginFail.ToString()
                         };
 
-                    case (int)UserLoginResultType.EmailError:
+                    case (int)UserLoginResultType.AccountError:
                     case (int)UserLoginResultType.PasswordError:
                         return new ResponseResult()
                         {
                             Result = false,
                             ResultCode = StatusCodes.Status409Conflict,
-                            ResultMessage = ResponseErrorMessageType.EmailOrPasswordNotMatch.ToString()
+                            ResultMessage = ResponseErrorMessageType.AccountOrPasswordNotMatch.ToString()
                         };
 
                     default:
@@ -464,7 +464,7 @@ namespace DataInfo.Service.Managers.Member
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultCode = StatusCodes.Status500InternalServerError,
                             ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
                         };
 
@@ -725,7 +725,7 @@ namespace DataInfo.Service.Managers.Member
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultCode = StatusCodes.Status500InternalServerError,
                             ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
                         };
 
@@ -1064,7 +1064,7 @@ namespace DataInfo.Service.Managers.Member
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultCode = StatusCodes.Status500InternalServerError,
                             ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
                         };
 

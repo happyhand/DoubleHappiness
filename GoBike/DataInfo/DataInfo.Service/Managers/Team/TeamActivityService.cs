@@ -223,7 +223,7 @@ namespace DataInfo.Service.Managers.Team
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultCode = StatusCodes.Status500InternalServerError,
                             ResultMessage = ResponseErrorMessageType.CreateFail.ToString()
                         };
 
@@ -287,7 +287,7 @@ namespace DataInfo.Service.Managers.Team
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultCode = StatusCodes.Status500InternalServerError,
                             ResultMessage = ResponseErrorMessageType.CreateFail.ToString()
                         };
 
@@ -360,7 +360,7 @@ namespace DataInfo.Service.Managers.Team
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultCode = StatusCodes.Status500InternalServerError,
                             ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
                         };
 
@@ -570,7 +570,7 @@ namespace DataInfo.Service.Managers.Team
                         return new ResponseResult()
                         {
                             Result = false,
-                            ResultCode = StatusCodes.Status409Conflict,
+                            ResultCode = StatusCodes.Status500InternalServerError,
                             ResultMessage = ResponseErrorMessageType.UpdateFail.ToString()
                         };
 
