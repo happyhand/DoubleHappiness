@@ -1,4 +1,7 @@
-﻿namespace DataInfo.Core.Models.Dto.Team.View
+﻿using DataInfo.Core.Models.Dto.Team.View.data;
+using System.Collections.Generic;
+
+namespace DataInfo.Core.Models.Dto.Team.View
 {
     /// <summary>
     /// 車隊活動列表可視資料
@@ -31,6 +34,11 @@
         public int HasJoin { get; set; }
 
         /// <summary>
+        /// Gets or sets 道路線圖
+        /// </summary>
+        public IEnumerable<IEnumerable<LoadMapView>> LoadMap { get; set; }
+
+        /// <summary>
         /// Gets or sets 最高海拔
         /// </summary>
         public float MaxAltitude { get; set; }
@@ -53,6 +61,6 @@
         /// <summary>
         /// Gets or sets 總距離
         /// </summary>
-        public float TotalDistance { get; set; }
+        public IEnumerable<float> TotalDistance { get; set; }
     }
 }

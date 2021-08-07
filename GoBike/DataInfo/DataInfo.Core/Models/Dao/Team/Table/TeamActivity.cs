@@ -1,4 +1,5 @@
 ﻿using SqlSugar;
+using System.Collections.Generic;
 
 namespace DataInfo.Core.Models.Dao.Team.Table
 {
@@ -22,6 +23,11 @@ namespace DataInfo.Core.Models.Dao.Team.Table
         /// Gets or sets 建立日期
         /// </summary>
         public string CreateDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets 道路線圖
+        /// </summary>
+        public string LoadMap { get; set; }
 
         /// <summary>
         /// Gets or sets 最高海拔
@@ -61,6 +67,6 @@ namespace DataInfo.Core.Models.Dao.Team.Table
         /// <summary>
         /// Gets or sets 總距離
         /// </summary>
-        public float TotalDistance { get; set; }
+        public string TotalDistance { get; set; }
     }
 }

@@ -6,12 +6,12 @@
     public class RouteView
     {
         /// <summary>
-        /// Gets or sets 路線座標
+        /// Gets or sets 緯度
         /// </summary>
         public float Latitude { get; set; }
 
         /// <summary>
-        /// Gets or sets 路線座標
+        /// Gets or sets 經度
         /// </summary>
         public float Longitude { get; set; }
 

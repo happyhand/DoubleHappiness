@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using DataInfo.Core.Extensions;
+﻿using DataInfo.Core.Extensions;
 using DataInfo.Core.Models.Dao.Member.Table;
 using DataInfo.Core.Models.Dao.Team;
 using DataInfo.Core.Models.Dao.Team.Table;
@@ -47,7 +46,8 @@ namespace DataInfo.Repository.Managers.Team
                 TeamID = td.TeamID,
                 TeamName = td.TeamName,
                 Title = ta.Title,
-                TotalDistance = ta.TotalDistance
+                TotalDistance = ta.TotalDistance,
+                LoadMap = ta.LoadMap
             }).ToListAsync().ConfigureAwait(false);
         }
 

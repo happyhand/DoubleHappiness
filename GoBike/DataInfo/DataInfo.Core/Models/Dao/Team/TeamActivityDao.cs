@@ -44,6 +44,11 @@ namespace DataInfo.Core.Models.Dao.Team
         public string FounderName { get; set; }
 
         /// <summary>
+        /// Gets or sets 道路線圖
+        /// </summary>
+        public string LoadMap { get; set; }
+
+        /// <summary>
         /// Gets or sets 最高海拔
         /// </summary>
         public float MaxAltitude { get; set; }
@@ -86,6 +91,6 @@ namespace DataInfo.Core.Models.Dao.Team
         /// <summary>
         /// Gets or sets 總距離
         /// </summary>
-        public float TotalDistance { get; set; }
+        public string TotalDistance { get; set; }
     }
 }

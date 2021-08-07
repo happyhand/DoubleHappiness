@@ -29,7 +29,9 @@ namespace DataInfo.AutoMapperProfiles
             CreateMap<TeamAddActivityContent, TeamUpdateActivityRequest>()
              .ForMember(request => request.Route, options => options.MapFrom(content => JsonConvert.SerializeObject(content.Routes)))
              .ForMember(request => request.ActDate, options => options.MapFrom(content => Convert.ToDateTime(content.ActDate).ToString("yyyy-MM-dd")))
-             .ForMember(request => request.MeetTime, options => options.MapFrom(content => Convert.ToDateTime(content.MeetTime).ToString("HH:mm:ss")));
+             .ForMember(request => request.MeetTime, options => options.MapFrom(content => Convert.ToDateTime(content.MeetTime).ToString("HH:mm:ss")))
+             .ForMember(request => request.TotalDistance, options => options.MapFrom(content => JsonConvert.SerializeObject(content.TotalDistance)))
+             .ForMember(request => request.LoadMap, options => options.MapFrom(content => JsonConvert.SerializeObject(content.LoadMap)));
             CreateMap<TeamChangeLeaderContent, TeamChangeLeaderRequest>();
             CreateMap<TeamResponseApplyJoinContent, TeamJoinOrLeaveRequest>()
              .ForMember(request => request.Action, options => options.MapFrom(content => content.ResponseType));
@@ -48,8 +50,6 @@ namespace DataInfo.AutoMapperProfiles
              .ForMember(dao => dao.TeamMemberIDs, options => options.MapFrom(table => JsonConvert.DeserializeObject<IEnumerable<string>>(table.TeamMemberIDs)))
              .ForMember(dao => dao.ApplyJoinList, options => options.MapFrom(table => JsonConvert.DeserializeObject<IEnumerable<string>>(table.ApplyJoinList)));
 
-            CreateMap<TeamActivity, TeamActivityDao>();
-
             #endregion Table To Dao
 
             #region Dao To View
@@ -65,10 +65,14 @@ namespace DataInfo.AutoMapperProfiles
             CreateMap<TeamDao, TeamSearchView>()
                 .ForMember(view => view.Avatar, options => options.MapFrom(dao => Utility.GetTeamImageCdn(dao.Avatar)));
             CreateMap<TeamActivityDao, TeamActivityListView>()
-                .ForMember(view => view.FounderAvatar, options => options.MapFrom(dao => Utility.GetMemberImageCdn(dao.FounderAvatar)));
+                .ForMember(view => view.FounderAvatar, options => options.MapFrom(dao => Utility.GetMemberImageCdn(dao.FounderAvatar)))
+                .ForMember(view => view.TotalDistance, options => options.MapFrom(dao => JsonConvert.DeserializeObject<IEnumerable<float>>(dao.TotalDistance)))
+                .ForMember(view => view.LoadMap, options => options.MapFrom(dao => JsonConvert.DeserializeObject<IEnumerable<IEnumerable<LoadMapView>>>(dao.LoadMap)));
             CreateMap<TeamActivityDao, TeamActivityDetailView>()
                 .ForMember(view => view.FounderAvatar, options => options.MapFrom(dao => Utility.GetMemberImageCdn(dao.FounderAvatar)))
-                .ForMember(view => view.Routes, options => options.MapFrom(dao => this.RouteHandler(dao.Route)));
+                .ForMember(view => view.Routes, options => options.MapFrom(dao => this.RouteHandler(dao.Route)))
+                .ForMember(view => view.TotalDistance, options => options.MapFrom(dao => JsonConvert.DeserializeObject<IEnumerable<float>>(dao.TotalDistance)))
+                .ForMember(view => view.LoadMap, options => options.MapFrom(dao => JsonConvert.DeserializeObject<IEnumerable<IEnumerable<LoadMapView>>>(dao.LoadMap)));
             CreateMap<TeamBulletinDao, TeamBullentiListView>()
                 .ForMember(view => view.Avatar, options => options.MapFrom(dao => Utility.GetMemberImageCdn(dao.Avatar)));
 

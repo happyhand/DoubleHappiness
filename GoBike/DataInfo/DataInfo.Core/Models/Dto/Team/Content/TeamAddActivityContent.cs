@@ -17,6 +17,11 @@ namespace DataInfo.Core.Models.Dto.Team.Content
         public string ActDate { get; set; }
 
         /// <summary>
+        /// Gets or sets 道路線圖資料
+        /// </summary>
+        public IEnumerable<IEnumerable<LoadMap>> LoadMap { get; set; }
+
+        /// <summary>
         /// Gets or sets 最高海拔
         /// </summary>
         public float MaxAltitude { get; set; }
@@ -44,7 +49,7 @@ namespace DataInfo.Core.Models.Dto.Team.Content
         /// <summary>
         /// Gets or sets 總距離
         /// </summary>
-        public float TotalDistance { get; set; }
+        public IEnumerable<float> TotalDistance { get; set; }
     }
 
     /// <summary>

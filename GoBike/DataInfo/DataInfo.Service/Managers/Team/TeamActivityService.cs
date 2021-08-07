@@ -143,9 +143,14 @@ namespace DataInfo.Service.Managers.Team
                 request.MaxAltitude = content.MaxAltitude;
             }
 
-            if (content.TotalDistance > default(float))
+            if (content.TotalDistance != null)
             {
-                request.TotalDistance = content.TotalDistance;
+                request.TotalDistance = JsonConvert.SerializeObject(content.TotalDistance);
+            }
+
+            if (content.LoadMap != null)
+            {
+                request.TotalDistance = JsonConvert.SerializeObject(content.LoadMap);
             }
 
             if (!string.IsNullOrEmpty(content.Title))
