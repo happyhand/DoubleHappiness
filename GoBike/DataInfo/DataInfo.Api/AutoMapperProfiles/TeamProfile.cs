@@ -3,12 +3,14 @@ using DataInfo.Core.Applibs;
 using DataInfo.Core.Models.Dao.Team;
 using DataInfo.Core.Models.Dao.Team.Table;
 using DataInfo.Core.Models.Dto.Team.Content;
+using DataInfo.Core.Models.Dto.Team.Content.data;
 using DataInfo.Core.Models.Dto.Team.Request;
 using DataInfo.Core.Models.Dto.Team.View;
 using DataInfo.Core.Models.Dto.Team.View.data;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DataInfo.AutoMapperProfiles
 {
@@ -31,7 +33,7 @@ namespace DataInfo.AutoMapperProfiles
              .ForMember(request => request.ActDate, options => options.MapFrom(content => Convert.ToDateTime(content.ActDate).ToString("yyyy-MM-dd")))
              .ForMember(request => request.MeetTime, options => options.MapFrom(content => Convert.ToDateTime(content.MeetTime).ToString("HH:mm:ss")))
              .ForMember(request => request.TotalDistance, options => options.MapFrom(content => JsonConvert.SerializeObject(content.TotalDistance)))
-             .ForMember(request => request.LoadMap, options => options.MapFrom(content => JsonConvert.SerializeObject(content.LoadMap)));
+             .ForMember(request => request.LoadMap, options => options.MapFrom(content => this.LoadMapJsonHandler(content.LoadMap)));
             CreateMap<TeamChangeLeaderContent, TeamChangeLeaderRequest>();
             CreateMap<TeamResponseApplyJoinContent, TeamJoinOrLeaveRequest>()
              .ForMember(request => request.Action, options => options.MapFrom(content => content.ResponseType));
@@ -67,16 +69,38 @@ namespace DataInfo.AutoMapperProfiles
             CreateMap<TeamActivityDao, TeamActivityListView>()
                 .ForMember(view => view.FounderAvatar, options => options.MapFrom(dao => Utility.GetMemberImageCdn(dao.FounderAvatar)))
                 .ForMember(view => view.TotalDistance, options => options.MapFrom(dao => JsonConvert.DeserializeObject<IEnumerable<float>>(dao.TotalDistance)))
-                .ForMember(view => view.LoadMap, options => options.MapFrom(dao => JsonConvert.DeserializeObject<IEnumerable<IEnumerable<LoadMapView>>>(dao.LoadMap)));
+                .ForMember(view => view.LoadMap, options => options.MapFrom(dao => this.LoadMapViewHandler(dao.LoadMap)));
             CreateMap<TeamActivityDao, TeamActivityDetailView>()
                 .ForMember(view => view.FounderAvatar, options => options.MapFrom(dao => Utility.GetMemberImageCdn(dao.FounderAvatar)))
                 .ForMember(view => view.Routes, options => options.MapFrom(dao => this.RouteHandler(dao.Route)))
                 .ForMember(view => view.TotalDistance, options => options.MapFrom(dao => JsonConvert.DeserializeObject<IEnumerable<float>>(dao.TotalDistance)))
-                .ForMember(view => view.LoadMap, options => options.MapFrom(dao => JsonConvert.DeserializeObject<IEnumerable<IEnumerable<LoadMapView>>>(dao.LoadMap)));
+                .ForMember(view => view.LoadMap, options => options.MapFrom(dao => this.LoadMapViewHandler(dao.LoadMap)));
             CreateMap<TeamBulletinDao, TeamBullentiListView>()
                 .ForMember(view => view.Avatar, options => options.MapFrom(dao => Utility.GetMemberImageCdn(dao.Avatar)));
 
             #endregion Dao To View
+        }
+
+        /// <summary>
+        /// 道路線圖資料 json 處理
+        /// </summary>
+        /// <param name="data">data</param>
+        /// <returns>string</returns>
+        private string LoadMapJsonHandler(IEnumerable<IEnumerable<LoadMap>> data)
+        {
+            IEnumerable<IEnumerable<List<float>>> transformData = data.Select(item => item.Select(subItem => new List<float>() { subItem.Latitude, subItem.Longitude }));
+            return JsonConvert.SerializeObject(transformData);
+        }
+
+        /// <summary>
+        /// 道路線圖資料可視資料處理
+        /// </summary>
+        /// <param name="data">data</param>
+        /// <returns>string</returns>
+        private IEnumerable<IEnumerable<LoadMapView>> LoadMapViewHandler(string json)
+        {
+            IEnumerable<IEnumerable<List<float>>> data = JsonConvert.DeserializeObject<IEnumerable<IEnumerable<List<float>>>>(json);
+            return data.Select(item => item.Select(subItem => new LoadMapView() { Latitude = subItem[0], Longitude = subItem[1] }));
         }
 
         /// <summary>

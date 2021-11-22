@@ -9,6 +9,7 @@ using DataInfo.Core.Models.Dto.Team.Request;
 using DataInfo.Core.Models.Dto.Team.Response;
 using DataInfo.Core.Models.Dto.Team.View;
 using DataInfo.Core.Models.Enum;
+using DataInfo.Repository.Interfaces.Common;
 using DataInfo.Repository.Interfaces.Team;
 using DataInfo.Service.Interfaces.Server;
 using DataInfo.Service.Interfaces.Team;
@@ -25,7 +26,7 @@ namespace DataInfo.Service.Managers.Team
     /// <summary>
     /// 車隊互動服務
     /// </summary>
-    public class TeamInteractiveService : ITeamInteractiveService
+    public class TeamInteractiveService : TeamBaseService, ITeamInteractiveService
     {
         /// <summary>
         /// logger
@@ -53,7 +54,7 @@ namespace DataInfo.Service.Managers.Team
         /// <param name="mapper">mapper</param>
         /// <param name="serverService">serverService</param>
         /// <param name="teamRepository">teamRepository</param>
-        public TeamInteractiveService(IMapper mapper, IServerService serverService, ITeamRepository teamRepository)
+        public TeamInteractiveService(IMapper mapper, IServerService serverService, ITeamRepository teamRepository, IRedisRepository redisRepository) : base(redisRepository)
         {
             this.mapper = mapper;
             this.serverService = serverService;
@@ -312,6 +313,7 @@ namespace DataInfo.Service.Managers.Team
                     switch (teamJoinOrLeaveResponse.Data.Result)
                     {
                         case (int)JoinOrLeaveTeamResultType.Success:
+                            this.UpdateTeamMessageLatestTime(content.TeamID);
                             return new ResponseResult()
                             {
                                 Result = true,

@@ -958,6 +958,7 @@ namespace DataInfo.Service.Managers.Team
                 switch (teamJoinOrLeaveResponse.Data.Result)
                 {
                     case (int)JoinOrLeaveTeamResultType.Success:
+                        this.UpdateTeamMessageLatestTime(teamID);
                         return new ResponseResult()
                         {
                             Result = true,
