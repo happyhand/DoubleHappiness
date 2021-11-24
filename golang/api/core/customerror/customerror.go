@@ -3,9 +3,6 @@ package customerror
 import "net/http"
 
 const (
-	/*
-	* http 相關錯誤
-	 */
 	// Unauthorized : 未授權
 	Unauthorized int = 10401
 	// Forbidden : 拒絕訪問
@@ -15,9 +12,6 @@ const (
 	// SystemError : 系統發生錯誤，請稍後再試
 	SystemError int = 10500
 
-	/*
-	* api 資料相關錯誤
-	 */
 	// InputParseError : 解析參數錯誤
 	InputParseError int = 20001
 	// InputDataError : 請求參數錯誤
@@ -35,9 +29,6 @@ const (
 	// PrivateDataError : 無法取得非公開資料
 	PrivateDataError int = 20008
 
-	/*
-	* member 相關錯誤
-	 */
 	// RegisterFail : 系統拒絕註冊，請稍後再試
 	RegisterFail int = 21001
 	// LoginFail : 系統拒絕登入，請稍後再試

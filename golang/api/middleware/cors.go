@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"api/core/customerror"
+	"api/temp/api"
 	"net/http"
 	"strconv"
 	"strings"
@@ -87,17 +88,12 @@ func Cors() gin.HandlerFunc {
 		if req.Method == "GET" || req.Method == "POST" || req.Method == "PUT" || req.Method == "DELETE" || req.Method == "PATCH" || req.Method == "HEAD" {
 			statusCode := gc.Writer.Status()
 			if statusCode == 404 {
-				gc.AbortWithStatusJSON(http.StatusNotFound,
-					struct {
-						Result        bool        `json:"result"`
-						ResultCode    int         `json:"resultCode"`
-						ResultMessage string      `json:"resultMessage"`
-						Content       interface{} `json:"content"`
-					}{
-						ResultCode:    customerror.PageNotFound,
-						ResultMessage: "404 page not found",
-					})
+				gc.AbortWithStatusJSON(http.StatusNotFound, api.ResponseBody{
+					ResultCode:    customerror.PageNotFound,
+					ResultMessage: "404 page not found",
+				})
 			}
+
 		} else {
 			gc.Next()
 		}
