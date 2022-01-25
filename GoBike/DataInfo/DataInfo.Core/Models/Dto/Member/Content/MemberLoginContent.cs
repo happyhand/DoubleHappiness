@@ -45,24 +45,24 @@ namespace DataInfo.Core.Models.Dto.Member.Content
         /// </summary>
         public MemberLoginContentValidator()
         {
-            this.CascadeMode = CascadeMode.StopOnFirstFailure;
-            RuleFor(content => content.Token)
-                .NotNull().WithMessage(content =>
-                {
-                    return $"{ResponseErrorMessageType.TokenEmpty}";
-                })
-                .NotEmpty().WithMessage(content =>
-                {
-                    return $"{ResponseErrorMessageType.TokenEmpty}";
-                });
-            RuleFor(content => content.LoginSource)
-              .Must(loginSource =>
-              {
-                  return loginSource >= (int)LoginSourceType.Normal && loginSource <= (int)LoginSourceType.Google;
-              }).WithMessage(content =>
-              {
-                  return $"{ResponseErrorMessageType.LoginSourceFail}|LoginSource: {content.LoginSource}";
-              });
+            //this.CascadeMode = CascadeMode.StopOnFirstFailure;
+            //RuleFor(content => content.Token)
+            //    .NotNull().WithMessage(content =>
+            //    {
+            //        return $"{ResponseErrorMessageType.TokenEmpty}";
+            //    })
+            //    .NotEmpty().WithMessage(content =>
+            //    {
+            //        return $"{ResponseErrorMessageType.TokenEmpty}";
+            //    });
+            //RuleFor(content => content.LoginSource)
+            //  .Must(loginSource =>
+            //  {
+            //      return loginSource >= (int)LoginSourceType.Normal && loginSource <= (int)LoginSourceType.Google;
+            //  }).WithMessage(content =>
+            //  {
+            //      return $"{ResponseErrorMessageType.LoginSourceFail}|LoginSource: {content.LoginSource}";
+            //  });
             //RuleFor(content => content.Email)
             //  .NotNull().WithMessage(content =>
             //  {
