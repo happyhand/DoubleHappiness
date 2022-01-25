@@ -36,11 +36,6 @@
         public string Photo { get; set; }
 
         /// <summary>
-        /// Gets or sets 騎乘路線
-        /// </summary>
-        public string Route { get; set; }
-
-        /// <summary>
         /// Gets or sets 分享內容
         /// </summary>
         public string ShareContent { get; set; }

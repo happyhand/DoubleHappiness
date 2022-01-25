@@ -296,7 +296,12 @@
         /// <summary>
         /// 通知隊友
         /// </summary>
-        NotifyRideGroupMember = 1006
+        NotifyRideGroupMember = 1006,
+
+        /// <summary>
+        /// 建立騎乘路線結果		
+        /// </summary>
+        CreateRideRoute = 1007
     }
 
     /// <summary>
@@ -350,6 +355,22 @@
         /// 組隊已存在
         /// </summary>
         Repeat = 2
+    }
+
+    /// <summary>
+    /// 更新組隊騎乘結果類別資料
+    /// </summary>
+    public enum CreateRideRouteResultType
+    {
+        /// <summary>
+        /// 更新失敗
+        /// </summary>
+        Fail = 0,
+
+        /// <summary>
+        /// 更新成功
+        /// </summary>
+        Success = 1
     }
 
     #endregion 騎乘

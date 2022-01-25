@@ -193,7 +193,10 @@ namespace DataInfo.Service.Managers.Ride
                         {
                             Result = true,
                             ResultCode = StatusCodes.Status200OK,
-                            ResultMessage = ResponseSuccessMessageType.CreateSuccess.ToString()
+                            Content = new RideAddRecordView()
+                            {
+                                RideID = response.Data.RideID
+                            }
                         };
 
                     case (int)CreateRideRecordResultType.Fail:
@@ -746,6 +749,106 @@ namespace DataInfo.Service.Managers.Ride
             catch (Exception ex)
             {
                 this.logger.LogError("更新組隊騎乘邀請發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                };
+            }
+        }
+
+        /// <summary>
+        /// 新增騎乘路線資料
+        /// </summary>
+        /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> AddRideRouteData(AddRideRouteDataContent content, string memberID)
+        {
+            try
+            {
+                #region 發送【建立騎乘路線】指令至後端
+
+                AddRideRouteRequest request = this.mapper.Map<AddRideRouteRequest>(content);
+                request.MemberID = memberID;
+                CommandData<AddRideRouteResponse> response = await this.serverService.DoAction<AddRideRouteResponse>((int)RideCommandIDType.CreateRideRoute, CommandType.Ride, request).ConfigureAwait(false);
+                this.logger.LogInfo("新增騎乘路線資料結果", $"Response: {JsonConvert.SerializeObject(response)} Request: {JsonConvert.SerializeObject(request)}", null);
+
+                switch (response.Data.Result)
+                {
+                    case (int)CreateRideRecordResultType.Success:
+                        return new ResponseResult()
+                        {
+                            Result = true,
+                            ResultCode = StatusCodes.Status200OK,
+                            ResultMessage = ResponseSuccessMessageType.CreateSuccess.ToString(),
+                        };
+
+                    case (int)CreateRideRecordResultType.Fail:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = StatusCodes.Status500InternalServerError,
+                            ResultMessage = ResponseErrorMessageType.CreateFail.ToString()
+                        };
+
+                    default:
+                        return new ResponseResult()
+                        {
+                            Result = false,
+                            ResultCode = StatusCodes.Status502BadGateway,
+                            ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                        };
+                }
+
+                #endregion 發送【建立騎乘紀錄】指令至後端
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("新增騎乘路線資料發生錯誤", $"MemberID: {memberID} Content: {JsonConvert.SerializeObject(content)}", ex);
+                return new ResponseResult()
+                {
+                    Result = false,
+                    ResultCode = StatusCodes.Status500InternalServerError,
+                    ResultMessage = ResponseErrorMessageType.SystemError.ToString()
+                };
+            }
+        }
+
+        /// <summary>
+        /// 取得騎乘路線資料
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="rideID">rideID</param>
+        /// <param name="index">memberID</param>
+        /// <param name="count">rideID</param>
+        /// <returns>ResponseResult</returns>
+        public async Task<ResponseResult> GetRideRoute(string memberID, string rideID, int index, int count)
+        {
+            try
+            {
+                //RideDao rideDao = await this.rideRepository.Get(memberID, rideID).ConfigureAwait(false);
+                //if (rideDao == null)
+                //{
+                //    return new ResponseResult()
+                //    {
+                //        Result = false,
+                //        ResultCode = StatusCodes.Status409Conflict,
+                //        ResultMessage = ResponseErrorMessageType.GetFail.ToString()
+                //    };
+                //}
+
+                return new ResponseResult()
+                {
+                    Result = true,
+                    ResultCode = StatusCodes.Status200OK,
+                    Content = new RideRouteView() { Route = new List<IEnumerable<string>> { } }
+                };
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("取得騎乘路線資料發生錯誤", $"MemberID: {memberID} RideID: {rideID} index: {index} count: {count}", ex);
                 return new ResponseResult()
                 {
                     Result = false,

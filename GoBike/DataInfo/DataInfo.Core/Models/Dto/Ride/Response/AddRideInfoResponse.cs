@@ -11,6 +11,11 @@
         public int Result { get; set; }
 
         /// <summary>
+        /// Gets or sets 騎乘 ID
+        /// </summary>
+        public string RideID { get; set; }
+
+        /// <summary>
         /// Gets or sets 總高度
         /// </summary>
         public float TotalAltitude { get; set; }

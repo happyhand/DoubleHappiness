@@ -87,5 +87,23 @@ namespace DataInfo.Service.Interfaces.Ride
         /// <param name="memberID">memberID</param>
         /// <returns>ResponseResult</returns>
         Task<ResponseResult> UpdateRideGroupInvite(UpdateRideGroupContent content, string memberID);
+
+        /// <summary>
+        /// 新增騎乘路線資料
+        /// </summary>
+        /// <param name="content">content</param>
+        /// <param name="memberID">memberID</param>
+        /// <returns>ResponseResult</returns>
+        Task<ResponseResult> AddRideRouteData(AddRideRouteDataContent content, string memberID);
+
+        /// <summary>
+        /// 取得騎乘路線資料
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <param name="rideID">rideID</param>
+        /// <param name="index">memberID</param>
+        /// <param name="count">rideID</param>
+        /// <returns>ResponseResult</returns>
+        Task<ResponseResult> GetRideRoute(string memberID, string rideID, int index, int count)
     }
 }

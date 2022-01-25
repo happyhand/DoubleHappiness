@@ -28,11 +28,6 @@ namespace DataInfo.Core.Models.Dto.Member.Content
         public string RideID { get; set; }
 
         /// <summary>
-        /// Gets or sets Route
-        /// </summary>
-        public IEnumerable<IEnumerable<string>> Route { get; set; }
-
-        /// <summary>
         /// Gets or sets ShareContent
         /// </summary>
         public IEnumerable<IEnumerable<string>> ShareContent { get; set; }

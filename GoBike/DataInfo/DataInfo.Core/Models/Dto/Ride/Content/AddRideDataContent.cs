@@ -38,11 +38,6 @@ namespace DataInfo.Core.Models.Dto.Ride.Content
         public string Photo { get; set; }
 
         /// <summary>
-        /// Gets or sets Route
-        /// </summary>
-        public IEnumerable<IEnumerable<string>> Route { get; set; }
-
-        /// <summary>
         /// Gets or sets ShareContent
         /// </summary>
         public IEnumerable<IEnumerable<string>> ShareContent { get; set; }
@@ -143,16 +138,6 @@ namespace DataInfo.Core.Models.Dto.Ride.Content
             //  {
             //      return $"{ResponseErrorMessageType.RideLevelEmpty}|Level: {content.Level}";
             //  });
-
-            RuleFor(content => content.Route)
-              .NotNull().WithMessage(content =>
-              {
-                  return $"{ResponseErrorMessageType.RideRouteEmpty}";
-              })
-              .NotEmpty().WithMessage(content =>
-              {
-                  return $"{ResponseErrorMessageType.RideRouteEmpty}";
-              });
 
             RuleFor(content => content.Photo)
               .NotNull().WithMessage(content =>

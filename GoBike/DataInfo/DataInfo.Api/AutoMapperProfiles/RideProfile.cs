@@ -25,7 +25,9 @@ namespace DataInfo.AutoMapperProfiles
             #region Content To Request
 
             CreateMap<AddRideDataContent, AddRideInfoRequest>()
-            .ForMember(data => data.ShareContent, options => options.MapFrom(dto => JsonConvert.SerializeObject(dto.ShareContent)))
+            .ForMember(data => data.ShareContent, options => options.MapFrom(dto => JsonConvert.SerializeObject(dto.ShareContent)));
+
+            CreateMap<AddRideRouteDataContent, AddRideRouteRequest>()
             .ForMember(data => data.Route, options => options.MapFrom(dto => JsonConvert.SerializeObject(dto.Route)));
 
             #endregion Content To Request
