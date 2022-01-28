@@ -74,21 +74,20 @@ namespace DataInfo.Api.Controllers.Ride
         /// </summary>
         /// <param name="rideID">rideID</param>
         /// <param name="index">index</param>
-        /// <param name="count">count</param>
         /// <returns>IActionResult</returns>
-        [HttpGet("{rideID}/{index}/{count}")]
-        public async Task<IActionResult> Get(string rideID, int index, int count)
+        [HttpGet("{rideID}/{index}")]
+        public async Task<IActionResult> Get(string rideID, int index)
         {
             string memberID = this.GetMemberID();
             try
             {
-                this.logger.LogInfo("會員請求取得騎乘路線資料", $"MemberID: {memberID} RideID: {rideID} index: {index} count: {count}", null);
-                ResponseResult responseResult = await this.rideService.GetRideRoute(memberID, rideID, index, count).ConfigureAwait(false);
+                this.logger.LogInfo("會員請求取得騎乘路線資料", $"MemberID: {memberID} RideID: {rideID} index: {index}", null);
+                ResponseResult responseResult = await this.rideService.GetRideRoute(memberID, rideID, index).ConfigureAwait(false);
                 return this.ResponseHandler(responseResult);
             }
             catch (Exception ex)
             {
-                this.logger.LogError("會員請求取得騎乘路線資料發生錯誤", $"MemberID: {memberID} RideID: {rideID} index: {index} count: {count}", ex);
+                this.logger.LogError("會員請求取得騎乘路線資料發生錯誤", $"MemberID: {memberID} RideID: {rideID} index: {index}", ex);
                 return this.ResponseHandler(new ResponseResult()
                 {
                     Result = false,

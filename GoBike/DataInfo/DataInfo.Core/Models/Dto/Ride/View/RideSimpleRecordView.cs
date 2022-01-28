@@ -28,11 +28,6 @@ namespace DataInfo.Core.Models.Dto.Ride.View
         public float Distance { get; set; }
 
         /// <summary>
-        /// Gets or sets 等級
-        /// </summary>
-        public int Level { get; set; }
-
-        /// <summary>
         /// Gets or sets 騎乘 ID
         /// </summary>
         public string RideID { get; set; }

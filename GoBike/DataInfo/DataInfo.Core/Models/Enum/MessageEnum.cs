@@ -206,11 +206,6 @@
         RideCountyEmpty,
 
         /// <summary>
-        /// 未輸入騎乘等級，請重新輸入
-        /// </summary>
-        RideLevelEmpty,
-
-        /// <summary>
         /// 未輸入騎乘路徑資料，請重新輸入
         /// </summary>
         RideRouteEmpty,

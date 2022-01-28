@@ -338,6 +338,16 @@ namespace DataInfo.Core.Applibs
             public string RideGroup { get; set; }
 
             /// <summary>
+            /// Gets or sets RideRouteCount
+            /// </summary>
+            public string RideRouteCount { get; set; }
+
+            /// <summary>
+            /// Gets or sets RideRouteInfo
+            /// </summary>
+            public string RideRouteInfo { get; set; }
+
+            /// <summary>
             /// Gets or sets Team
             /// </summary>
             public string Team { get; set; }

@@ -21,11 +21,6 @@
         public float Distance { get; set; }
 
         /// <summary>
-        /// Gets or sets 等級
-        /// </summary>
-        public int Level { get; set; }
-
-        /// <summary>
         /// Gets or sets 會員 ID
         /// </summary>
         public string MemberID { get; set; }

@@ -29,11 +29,6 @@ namespace DataInfo.Core.Models.Dao.Ride.Table
         public float Distance { get; set; }
 
         /// <summary>
-        /// Gets or sets Level
-        /// </summary>
-        public int Level { get; set; }
-
-        /// <summary>
         /// Gets or sets MemberID
         /// </summary>
         public string MemberID { get; set; }

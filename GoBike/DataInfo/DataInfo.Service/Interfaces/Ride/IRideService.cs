@@ -102,8 +102,7 @@ namespace DataInfo.Service.Interfaces.Ride
         /// <param name="memberID">memberID</param>
         /// <param name="rideID">rideID</param>
         /// <param name="index">memberID</param>
-        /// <param name="count">rideID</param>
         /// <returns>ResponseResult</returns>
-        Task<ResponseResult> GetRideRoute(string memberID, string rideID, int index, int count)
+        Task<ResponseResult> GetRideRoute(string memberID, string rideID, int index);
     }
 }

@@ -44,8 +44,8 @@ namespace DataInfo.AutoMapperProfiles
             CreateMap<RideDao, RideSimpleRecordView>();
             CreateMap<RideDao, RideDetailRecordView>()
                 .ForMember(view => view.Photo, options => options.MapFrom(dao => Utility.GetRideImageCdn(dao.Photo)))
-                .ForMember(view => view.Route, options => options.MapFrom(dao => JsonConvert.DeserializeObject<IEnumerable<IEnumerable<string>>>(dao.Route)))
                 .ForMember(view => view.ShareContent, options => options.MapFrom(dao => this.ShareContentHandler(dao.ShareContent)));
+            CreateMap<RideDao, RideRouteView>();
 
             #endregion Dao To View
         }

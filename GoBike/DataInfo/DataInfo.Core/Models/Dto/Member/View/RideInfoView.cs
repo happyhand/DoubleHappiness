@@ -23,11 +23,6 @@ namespace DataInfo.Core.Models.Dto.Member.View
         public string Distance { get; set; }
 
         /// <summary>
-        /// Gets or sets Level
-        /// </summary>
-        public string Level { get; set; }
-
-        /// <summary>
         /// Gets or sets Photo
         /// </summary>
         public string Photo { get; set; }
@@ -36,11 +31,6 @@ namespace DataInfo.Core.Models.Dto.Member.View
         /// Gets or sets RideID
         /// </summary>
         public string RideID { get; set; }
-
-        /// <summary>
-        /// Gets or sets Route
-        /// </summary>
-        public IEnumerable<IEnumerable<string>> Route { get; set; }
 
         /// <summary>
         /// Gets or sets ShareContent

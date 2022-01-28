@@ -44,5 +44,13 @@ namespace DataInfo.Repository.Interfaces.Ride
         /// <param name="memberIDs">memberIDs</param>
         /// <returns>RideDistanceDaos</returns>
         Task<IEnumerable<RideDistanceDao>> GetWeekDistance(IEnumerable<string> memberIDs);
+
+        /// <summary>
+        /// 取得組隊騎乘路線
+        /// </summary>
+        /// <param name="rideID">rideID</param>
+        /// <param name="index">index</param>
+        /// <returns>RideRouteDao</returns>
+        Task<RideRouteDao> GetRideRoute(string rideID, int index);
     }
 }

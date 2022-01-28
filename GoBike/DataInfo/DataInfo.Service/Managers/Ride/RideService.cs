@@ -822,33 +822,32 @@ namespace DataInfo.Service.Managers.Ride
         /// <param name="memberID">memberID</param>
         /// <param name="rideID">rideID</param>
         /// <param name="index">memberID</param>
-        /// <param name="count">rideID</param>
         /// <returns>ResponseResult</returns>
-        public async Task<ResponseResult> GetRideRoute(string memberID, string rideID, int index, int count)
+        public async Task<ResponseResult> GetRideRoute(string memberID, string rideID, int index)
         {
             try
             {
-                //RideDao rideDao = await this.rideRepository.Get(memberID, rideID).ConfigureAwait(false);
-                //if (rideDao == null)
-                //{
-                //    return new ResponseResult()
-                //    {
-                //        Result = false,
-                //        ResultCode = StatusCodes.Status409Conflict,
-                //        ResultMessage = ResponseErrorMessageType.GetFail.ToString()
-                //    };
-                //}
+                RideRouteDao dao = await this.rideRepository.GetRideRoute(rideID, index).ConfigureAwait(false);
+                if (dao == null)
+                {
+                    return new ResponseResult()
+                    {
+                        Result = false,
+                        ResultCode = StatusCodes.Status409Conflict,
+                        ResultMessage = ResponseErrorMessageType.GetFail.ToString()
+                    };
+                }
 
                 return new ResponseResult()
                 {
                     Result = true,
                     ResultCode = StatusCodes.Status200OK,
-                    Content = new RideRouteView() { Route = new List<IEnumerable<string>> { } }
+                    Content = this.mapper.Map<RideRouteView>(dao)
                 };
             }
             catch (Exception ex)
             {
-                this.logger.LogError("取得騎乘路線資料發生錯誤", $"MemberID: {memberID} RideID: {rideID} index: {index} count: {count}", ex);
+                this.logger.LogError("取得騎乘路線資料發生錯誤", $"MemberID: {memberID} RideID: {rideID} index: {index}", ex);
                 return new ResponseResult()
                 {
                     Result = false,

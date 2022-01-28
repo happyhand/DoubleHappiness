@@ -28,11 +28,6 @@ namespace DataInfo.Core.Models.Dao.Ride
         public float Distance { get; set; }
 
         /// <summary>
-        /// Gets or sets 等級
-        /// </summary>
-        public int Level { get; set; }
-
-        /// <summary>
         /// Gets or sets 會員 ID
         /// </summary>
         public string MemberID { get; set; }
@@ -46,11 +41,6 @@ namespace DataInfo.Core.Models.Dao.Ride
         /// Gets or sets 騎乘 ID
         /// </summary>
         public string RideID { get; set; }
-
-        /// <summary>
-        /// Gets or sets 騎乘路線
-        /// </summary>
-        public string Route { get; set; }
 
         /// <summary>
         /// Gets or sets 分享內容

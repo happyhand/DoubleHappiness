@@ -28,11 +28,6 @@ namespace DataInfo.Core.Models.Dto.Ride.Content
         public string Distance { get; set; }
 
         /// <summary>
-        /// Gets or sets Level
-        /// </summary>
-        public int Level { get; set; }
-
-        /// <summary>
         /// Gets or sets Photo
         /// </summary>
         public string Photo { get; set; }
@@ -129,15 +124,6 @@ namespace DataInfo.Core.Models.Dto.Ride.Content
               {
                   return $"{ResponseErrorMessageType.RideCountyEmpty}|County: {content.County}";
               });
-
-            //RuleFor(content => content.Level)
-            //  .Must(level =>
-            //  {
-            //      return level >= (int)RideLevelType.Easy && level <= (int)RideLevelType.Hard;
-            //  }).WithMessage(content =>
-            //  {
-            //      return $"{ResponseErrorMessageType.RideLevelEmpty}|Level: {content.Level}";
-            //  });
 
             RuleFor(content => content.Photo)
               .NotNull().WithMessage(content =>

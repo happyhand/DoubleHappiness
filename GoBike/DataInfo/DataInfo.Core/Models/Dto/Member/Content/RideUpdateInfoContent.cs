@@ -13,11 +13,6 @@ namespace DataInfo.Core.Models.Dto.Member.Content
         public int County { get; set; }
 
         /// <summary>
-        /// Gets or sets Level
-        /// </summary>
-        public int Level { get; set; }
-
-        /// <summary>
         /// Gets or sets Photo
         /// </summary>
         public string Photo { get; set; }
