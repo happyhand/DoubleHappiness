@@ -190,7 +190,7 @@ namespace DataInfo.Service.Managers.Member
                         {
                             Result = true,
                             ResultCode = StatusCodes.Status200OK,
-                            Content = new MemberLoginView() { Token = this.jwtService.GenerateToken(jwtClaims) }
+                            Content = new MemberLoginView() { Token = this.jwtService.GenerateToken(jwtClaims, false), RefreshToken = this.jwtService.GenerateToken(jwtClaims, true) }
                         };
 
                     case (int)UserLoginResultType.Fail:
@@ -269,7 +269,7 @@ namespace DataInfo.Service.Managers.Member
                 {
                     Result = true,
                     ResultCode = StatusCodes.Status200OK,
-                    Content = new MemberLoginView() { Token = this.jwtService.GenerateToken(jwtClaims) }
+                    Content = new MemberLoginView() { Token = this.jwtService.GenerateToken(jwtClaims, false), RefreshToken = this.jwtService.GenerateToken(jwtClaims, true) }
                 };
             }
             catch (Exception ex)
@@ -457,7 +457,7 @@ namespace DataInfo.Service.Managers.Member
                         {
                             Result = true,
                             ResultCode = StatusCodes.Status200OK,
-                            Content = this.jwtService.GenerateToken(jwtClaims)
+                            Content = new MemberLoginView() { Token = this.jwtService.GenerateToken(jwtClaims, false), RefreshToken = this.jwtService.GenerateToken(jwtClaims, true) }
                         };
 
                     case (int)UpdateUserInfoResultType.Fail:
@@ -718,7 +718,7 @@ namespace DataInfo.Service.Managers.Member
                         {
                             Result = true,
                             ResultCode = StatusCodes.Status200OK,
-                            Content = this.jwtService.GenerateToken(jwtClaims)
+                            Content = new MemberLoginView() { Token = this.jwtService.GenerateToken(jwtClaims, false), RefreshToken = this.jwtService.GenerateToken(jwtClaims, true) }
                         };
 
                     case (int)UpdateUserInfoResultType.Fail:
