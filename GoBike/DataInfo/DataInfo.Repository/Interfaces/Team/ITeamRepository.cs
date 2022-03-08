@@ -75,5 +75,12 @@ namespace DataInfo.Repository.Interfaces.Team
         /// <param name="key">key</param>
         /// <returns>TeamDaos</returns>
         Task<IEnumerable<TeamDao>> Search(string key);
+
+        /// <summary>
+        /// 是否有車隊隊長身分
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>bool</returns>
+        Task<bool> HasTeamLeaderRole(string memberID);
     }
 }

@@ -23,6 +23,11 @@ namespace DataInfo.Core.Models.Dto.Member.View
         public int HasTeam { get; set; }
 
         /// <summary>
+        /// Gets or sets 是否有車隊隊長身分
+        /// </summary>
+        public int HasTeamLeaderRole { get; set; }
+
+        /// <summary>
         /// Gets or sets MemberID
         /// </summary>
         public string MemberID { get; set; }

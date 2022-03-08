@@ -15,6 +15,7 @@ using DataInfo.Core.Models.Enum;
 using DataInfo.Repository.Interfaces.Common;
 using DataInfo.Repository.Interfaces.Member;
 using DataInfo.Repository.Interfaces.Ride;
+using DataInfo.Repository.Interfaces.Team;
 using DataInfo.Service.Interfaces.Common;
 using DataInfo.Service.Interfaces.Member;
 using DataInfo.Service.Interfaces.Server;
@@ -65,6 +66,11 @@ namespace DataInfo.Service.Managers.Member
         private readonly IRideRepository rideRepository;
 
         /// <summary>
+        /// teamRepository
+        /// </summary>
+        private readonly ITeamRepository teamRepository;
+
+        /// <summary>
         /// serverService
         /// </summary>
         private readonly IServerService serverService;
@@ -89,8 +95,9 @@ namespace DataInfo.Service.Managers.Member
         /// <param name="serverService">serverService</param>
         /// <param name="memberRepository">memberRepository</param>
         /// <param name="rideRepository">rideRepository</param>
+        /// <param name="teamRepository">teamRepository</param>
         /// <param name="redisRepository">redisRepository</param>
-        public MemberService(IMapper mapper, IJwtService jwtService, IUploadService uploadService, IVerifyCodeService verifyCodeService, IServerService serverService, IMemberRepository memberRepository, IRideRepository rideRepository, IRedisRepository redisRepository)
+        public MemberService(IMapper mapper, IJwtService jwtService, IUploadService uploadService, IVerifyCodeService verifyCodeService, IServerService serverService, IMemberRepository memberRepository, IRideRepository rideRepository, ITeamRepository teamRepository, IRedisRepository redisRepository)
         {
             this.mapper = mapper;
             this.jwtService = jwtService;
@@ -99,6 +106,7 @@ namespace DataInfo.Service.Managers.Member
             this.serverService = serverService;
             this.memberRepository = memberRepository;
             this.rideRepository = rideRepository;
+            this.teamRepository = teamRepository;
             this.redisRepository = redisRepository;
         }
 
@@ -521,6 +529,8 @@ namespace DataInfo.Service.Managers.Member
                     }
 
                     memberCardInfoView = this.mapper.Map<MemberCardInfoView>(memberDao);
+                    memberCardInfoView.HasTeamLeaderRole = (await this.teamRepository.HasTeamLeaderRole(content.MemberID) ? 1 : 0);
+
                     //this.redisRepository.SetCache(AppSettingHelper.Appsetting.Redis.MemberDB, cacheKey, JsonConvert.SerializeObject(memberCardInfoView), TimeSpan.FromMinutes(AppSettingHelper.Appsetting.Redis.ExpirationDate));
                 }
 

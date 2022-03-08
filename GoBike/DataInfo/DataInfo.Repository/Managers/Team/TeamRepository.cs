@@ -333,5 +333,26 @@ namespace DataInfo.Repository.Managers.Team
                 return new List<TeamDao>();
             }
         }
+
+        /// <summary>
+        /// 是否有車隊隊長身分
+        /// </summary>
+        /// <param name="memberID">memberID</param>
+        /// <returns>bool</returns>
+        public async Task<bool> HasTeamLeaderRole(string memberID)
+        {
+            try
+            {
+                using (SqlSugarClient db = this.NewDB)
+                {
+                    return await db.Queryable<TeamData>().AnyAsync(data => data.Leader.Equals(memberID)).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("是否有車隊隊長身分發生錯誤", $"MemberID: {JsonConvert.SerializeObject(memberID)}", ex);
+                return false;
+            }
+        }
     }
 }
