@@ -1008,6 +1008,12 @@ namespace DataInfo.Service.Managers.Team
             try
             {
                 IEnumerable<TeamDao> teamDaos = await this.teamRepository.Search(content.SearchKey).ConfigureAwait(false);
+                if (teamDaos.Any())
+                {
+                    MemberDao memberDao = await this.memberRepository.Get(memberID, MemberSearchType.MemberID).ConfigureAwait(false);
+                    teamDaos = teamDaos.TakeWhile(dao => !memberDao.TeamList.ToList().Contains(dao.TeamID));
+                }
+
                 return new ResponseResult()
                 {
                     Result = true,
