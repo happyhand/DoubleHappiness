@@ -26,6 +26,11 @@
         public string CreateDate { get; set; }
 
         /// <summary>
+        /// Gets or sets 天數
+        /// </summary>
+        public int Day { get; set; }
+
+        /// <summary>
         /// Gets or sets 公告人名稱
         /// </summary>
         public string Nickname { get; set; }
