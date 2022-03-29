@@ -1,4 +1,5 @@
-﻿using System;
+﻿using StackExchange.Redis;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -48,7 +49,15 @@ namespace DataInfo.Repository.Interfaces.Common
         /// <param name="cacheKey">cacheKey</param>
         /// <param name="hashKey">hashKey</param>
         /// <returns>T</returns>
-        Task<T> GetCache<T>(int db, string cacheKey, string hashKey);
+        Task<T> GetHashCache<T>(int db, string cacheKey, string hashKey);
+
+        /// <summary>
+        /// 讀取快取資料
+        /// </summary>
+        /// <param name="db">db</param>
+        /// <param name="cacheKey">cacheKey</param>
+        /// <returns>Dictionary Map</returns>
+        Task<Dictionary<RedisValue, RedisValue>> GetHashCache(int db, string cacheKey);
 
         /// <summary>
         /// 取得 RedisKeys

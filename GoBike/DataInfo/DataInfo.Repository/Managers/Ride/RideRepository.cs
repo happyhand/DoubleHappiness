@@ -9,6 +9,7 @@ using DataInfo.Repository.Managers.Base;
 using Newtonsoft.Json;
 using NLog;
 using SqlSugar;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -212,28 +213,17 @@ namespace DataInfo.Repository.Managers.Ride
             try
             {
                 string cacheKey = $"{AppSettingHelper.Appsetting.Redis.Flag.RideRouteCount}_{rideID}";
-                RideRouteCountDao rideRouteCountDao = await this.redisRepository.GetCache<RideRouteCountDao>(AppSettingHelper.Appsetting.Redis.RideDB, cacheKey).ConfigureAwait(false);
-                if (rideRouteCountDao == null)
-                {
-                    this.logger.LogWarn("取得組隊騎乘路線失敗，無組隊騎乘路線索引資料", $"RideID: {rideID} Index: {index}", null);
-                    return null;
-                }
-
-                cacheKey = $"{rideID}{AppSettingHelper.Appsetting.Redis.Flag.RideRouteInfo}_{index}";
-                RideRouteInfoDao rideRouteInfoDao = await this.redisRepository.GetCache<RideRouteInfoDao>(AppSettingHelper.Appsetting.Redis.RideDB, cacheKey).ConfigureAwait(false);
-                if (rideRouteInfoDao == null)
-                {
-                    this.logger.LogWarn("取得組隊騎乘路線失敗，無組隊騎乘路線資訊資料", $"RideID: {rideID} Index: {index}", null);
-                    return null;
-                }
-
-
+                int indexCount = await this.redisRepository.GetHashCache<int>(AppSettingHelper.Appsetting.Redis.RideDB, cacheKey, "IndexCount").ConfigureAwait(false);
+                cacheKey = $"{rideID}_{AppSettingHelper.Appsetting.Redis.Flag.RideRouteInfo}_{index}";
+                Dictionary<RedisValue, RedisValue> rideRouteInfoMap = await this.redisRepository.GetHashCache(AppSettingHelper.Appsetting.Redis.RideDB, cacheKey).ConfigureAwait(false);
+                rideRouteInfoMap.TryGetValue("MemberID", out RedisValue memberID);
+                rideRouteInfoMap.TryGetValue("Route", out RedisValue route);
                 return new RideRouteDao()
                 {
-                    MemberID = rideRouteInfoDao.MemberID,
-                    IndexCount = rideRouteCountDao.IndexCount,
-                    Index = rideRouteInfoDao.Index,
-                    Route = JsonConvert.DeserializeObject<IEnumerable<IEnumerable<string>>>(rideRouteInfoDao.Route),
+                    MemberID = memberID.ObjToString(),
+                    IndexCount = indexCount,
+                    Index = index,
+                    Route = JsonConvert.DeserializeObject<IEnumerable<IEnumerable<string>>>(route.ObjToString()),
                 };
             }
             catch (Exception ex)

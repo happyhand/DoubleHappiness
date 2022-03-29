@@ -139,7 +139,7 @@ namespace DataInfo.Repository.Managers.Common
         /// <param name="cacheKey">cacheKey</param>
         /// <param name="hashKey">hashKey</param>
         /// <returns>T</returns>
-        public async Task<T> GetCache<T>(int db, string cacheKey, string hashKey)
+        public async Task<T> GetHashCache<T>(int db, string cacheKey, string hashKey)
         {
             try
             {
@@ -150,6 +150,27 @@ namespace DataInfo.Repository.Managers.Common
             catch (Exception ex)
             {
                 this.logger.LogError("讀取快取資料發生錯誤", $"DB: {db} CacheKey: {cacheKey} HashKey: {hashKey}", ex);
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// 讀取快取資料
+        /// </summary>
+        /// <param name="db">db</param>
+        /// <param name="cacheKey">cacheKey</param>
+        /// <returns>Dictionary Map</returns>
+        public async Task<Dictionary<RedisValue, RedisValue>> GetHashCache(int db, string cacheKey)
+        {
+            try
+            {
+                IDatabase database = this.connectionMultiplexer.GetDatabase(db);
+                HashEntry[] data = await database.HashGetAllAsync(cacheKey).ConfigureAwait(false);
+                return data.ToDictionary(item => item.Name, item => item.Value);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("讀取快取資料發生錯誤", $"DB: {db} CacheKey: {cacheKey}", ex);
                 return default;
             }
         }
