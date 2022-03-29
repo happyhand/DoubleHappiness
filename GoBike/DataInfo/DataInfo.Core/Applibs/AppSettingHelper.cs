@@ -178,6 +178,11 @@ namespace DataInfo.Core.Applibs
             public int Exp { get; set; }
 
             /// <summary>
+            /// Gets or sets RefreshExp
+            /// </summary>
+            public int RefreshExp { get; set; }
+
+            /// <summary>
             /// Gets or sets Iss
             /// </summary>
             public string Iss { get; set; }

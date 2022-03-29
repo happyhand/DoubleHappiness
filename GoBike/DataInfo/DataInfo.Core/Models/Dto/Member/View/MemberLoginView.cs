@@ -9,5 +9,10 @@
         /// Gets or sets Token
         /// </summary>
         public string Token { get; set; }
+
+        /// <summary>
+        /// Gets or sets RefreshToken
+        /// </summary>
+        public string RefreshToken { get; set; }
     }
 }

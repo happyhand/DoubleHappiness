@@ -33,13 +33,15 @@ namespace DataInfo.Service.Managers.Common
         /// 生產 Token
         /// </summary>
         /// <param name="jwtClaims">jwtClaims</param>
+        /// <param name="isRefreshToken">isRefreshToken</param>
         /// <returns>string</returns>
-        public string GenerateToken(JwtClaims jwtClaims)
+        public string GenerateToken(JwtClaims jwtClaims, bool isRefreshToken)
         {
             var issuer = AppSettingHelper.Appsetting.Jwt.Iss;
             var signKey = AppSettingHelper.Appsetting.Jwt.Secret;
             var sub = AppSettingHelper.Appsetting.Jwt.Sub;
             var expireMinutes = AppSettingHelper.Appsetting.Jwt.Exp;
+            var refreshExpireMinutes = AppSettingHelper.Appsetting.Jwt.RefreshExp;
 
             // 設定要加入到 JWT Token 中的聲明資訊(Claims)
             var claims = new List<Claim>
@@ -86,7 +88,7 @@ namespace DataInfo.Service.Managers.Common
                 //NotBefore = DateTime.Now, // 預設值就是 DateTime.Now
                 //IssuedAt = DateTime.Now, // 預設值就是 DateTime.Now
                 Subject = userClaimsIdentity,
-                Expires = DateTime.UtcNow.AddMinutes(expireMinutes),
+                Expires = isRefreshToken ? DateTime.UtcNow.AddMinutes(refreshExpireMinutes) : DateTime.UtcNow.AddMinutes(expireMinutes),
                 SigningCredentials = signingCredentials
             };
 

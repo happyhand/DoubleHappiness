@@ -1,4 +1,6 @@
-﻿namespace DataInfo.Core.Models.Dto.Common
+﻿using System;
+
+namespace DataInfo.Core.Models.Dto.Common
 {
     /// <summary>
     /// Jwy Claims 資料
